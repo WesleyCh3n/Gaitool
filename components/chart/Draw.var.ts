@@ -6,5 +6,6 @@ export var areaHeight  = 80 - margin.top - margin.bottom;
 export var lineHeight  = 150 - margin.top - margin.bottom;
 export var brushHeight = 50
 
-export var xScale = d3.scaleLinear().range([0, width]);
-export var brushXScale = d3.scaleLinear().range([0, width]);
+// in order to update x domain with different brush area, this need to be global
+export var xScale    = d3.scaleLinear().range([0, width]);
+export var xScaleNav = d3.scaleLinear().range([0, width]);
