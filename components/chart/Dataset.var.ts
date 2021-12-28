@@ -46,3 +46,4 @@ export var Dataset: IDatasetInfo[] = [
 ]
 
 // export var GaitCycle = []
+export var GaitCycle: number[] = []
