@@ -1,12 +1,15 @@
-import { FC, useRef, useEffect } from 'react';
+import { FC, useRef, useEffect, RefObject } from 'react';
 import * as d3 from 'd3';
-import { Dataset, GaitCycle } from './Dataset.var';
+import { Data }from './Dataset'
+import { Dataset } from './Dataset.var';
 
 
+var GaitCycle: number[] = []
 var csvFiles = [
   "./2021-09-26-18-36_result_Dr Tsai_1.csv",
   "./2021-09-26-18-36_cycle_Dr Tsai_1.csv"
 ]
+
 var margin = { top: 10, right: 50, bottom: 20, left: 50 };
 var width = 800 - margin.left - margin.right;
 var lineHeight = 150 - margin.top - margin.bottom;
@@ -21,34 +24,34 @@ var brush = d3
   .on("brush", brushed)
   .on("end", brushend);
 
-function brushed({selection}) {
+function brushed({selection}: {selection: any}) {
   var s = selection || xScale.range();
   var realMainDomain = s.map(xScale.invert, xScale);
   brushXScale.domain(realMainDomain);
-  d3.select(this).selectAll(".handle--custom")
+  d3.selectAll(".handle--custom")
   .attr("display", null).attr("transform", function(_, i) { return "translate(" + [ s[i], - brushHeight / 4] + ")"; });
 }
 
-function brushend(event) {
+function brushend(event: any) {
   if (!event.sourceEvent || !event.selection) return;
 
   var d0 = event.selection.map(xScale.invert);
-  var l = interval.reduce((prev, curr) =>
+  var l = GaitCycle.reduce((prev, curr) =>
     Math.abs(curr - d0[0]) < Math.abs(prev - d0[0]) ? curr : prev);
-  var r = interval.reduce((prev, curr) =>
+  var r = GaitCycle.reduce((prev, curr) =>
     Math.abs(curr - d0[1]) < Math.abs(prev - d0[1]) ? curr : prev);
-  d3.select(this).transition().call(event.target.move, [l,r].map(xScale))
-  for (var key in dataset) {
+  d3.select(".brush").transition().call(event.target.move, [l,r].map(xScale))
+  Dataset.forEach(_data => {
     updateChart(
-      dataset[key].data,
-      dataset[key].name,
-      dataset[key].mode
-    );
-  }
+      _data.data,
+      _data.name,
+      _data.mode
+    )
+  })
 }
 
 // This function is for the one time preparations
-function createChart(data, name, mode) {
+function createChart(data: Data[], name:string, mode:string) {
   var h = (mode == "line") ? lineHeight: areaHeight
   var svg = d3
     .select("#" + name)
@@ -71,18 +74,20 @@ function createChart(data, name, mode) {
     .attr("fill", (mode == "line")?"none":"steelblue")
     .attr("stroke", "steelblue");
 
-  brushXScale.domain(d3.extent(data, (d) => d.x))
+  var xlimit = d3.extent(data, (d) => d.x)
+  brushXScale.domain([xlimit[0] ?? 0, xlimit[1] ?? 0])
 
   updateChart(data, name, mode);
 }
 
 // This function needs to be called to update the already prepared chart
-function updateChart(data, name, mode) {
+function updateChart(data: Data[], name: string, mode: string) {
   var svg = d3.select("#" + name + " svg");
   var h = (mode == "line") ? lineHeight: areaHeight
+  var ylimit = d3.extent(data, (d) => d.y)
   var yScale = d3
     .scaleLinear()
-    .domain(d3.extent(data, (d) => d.y)) // input
+    .domain([ylimit[0]??0, ylimit[1]??0]) // input
     .range([h, 0]); // output
 
   var yAxisGen = (mode == "line") ? (
@@ -98,11 +103,12 @@ function updateChart(data, name, mode) {
     .attr("width", width)
     .attr("height", h);
 
+  var xAxisGen = d3.axisBottom(brushXScale)
   svg.select(".x.axis")
-    .call(d3.axisBottom(brushXScale));
+    .call(xAxisGen as any); // TODO: fix type
 
   svg.select(".y.axis")
-    .call(yAxisGen);
+    .call(yAxisGen as any);
 
   svg
     .select(`.${mode}`)
@@ -110,30 +116,19 @@ function updateChart(data, name, mode) {
     .transition()
     .attr("clip-path", "url(#chart-path)")
     .attr("fill", (mode == 'line') ? "none": "steelblue")
-    .attr("d", createGen(brushXScale, yScale, mode));
+    .attr("d", (mode == 'line')?(
+      d3.line<Data>().x((d) => xScale(d.x)).y((d) => yScale(d.y))
+    ):(
+      d3.area<Data>().x((d) => xScale(d.x)).y0(yScale(0)).y1((d) => yScale(d.y))
+    ))
 }
 
-const createGen = (xScale, yScale, mode) => {
-  switch (mode) {
-    case 'line':
-      return d3
-        .line()
-        .x((d) => xScale(d.x))
-        .y((d) => yScale(d.y));
-    case 'area':
-      return d3
-        .area()
-        .x((d) => xScale(d.x))
-        .y0(yScale(0))
-        .y1((d) => yScale(d.y));
-  }
-}
-
-function createNav(data) {
-  xScale.domain(d3.extent(data, (d) => d.x))
+function createNav(data: Data[]) {
+  var xlimit = d3.extent(data, (d) => d.x)
+  xScale.domain([xlimit[0] ?? 0, xlimit[1] ?? 0])
 
   var svg = d3
-    .select("#minimap")
+    .select('#minimap')
     .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", brushHeight + margin.top + 40)
@@ -146,10 +141,10 @@ function createNav(data) {
     .call(brush)
     // .call(brush.move, xScale.range());
 
-  var brushResizePath = function(d) {
+    var brushResizePath = function(d: any) {
     var e = +(d.type == "e"),
-        x = e ? 1 : -1,
-        y = brushHeight / 2;
+    x = e ? 1 : -1,
+    y = brushHeight / 2;
     return "M" + (.5 * x) + "," + y + "A6,6 0 0 " + e + " " + (6.5 * x) + ","
       + (y + 6) + "V" + (2 * y - 6) + "A6,6 0 0 " + e + " " + (.5 * x) + ","
       + (2 * y) + "Z" + "M" + (2.5 * x) + "," + (y + 8) + "V" + (2 * y - 8)
@@ -166,8 +161,8 @@ function createNav(data) {
 
   var xAxisGen = d3
     .axisBottom(xScale)
-    .ticks(interval.length, ",.3f")
-    .tickValues(interval)
+    .ticks(GaitCycle.length, ",.3f")
+    .tickValues(GaitCycle)
     .tickSize(-brushHeight)
 
   svg
@@ -182,38 +177,45 @@ function createNav(data) {
     .attr("transform", "rotate(-40)");
 }
 const DrawChart: FC = () => {
-  const ref = useRef(null);
+  // https://mattclaffey.medium.com/adding-react-refs-to-an-array-of-items-96e9a12ab40c
+  const xRef = useRef<HTMLDivElement>(null);
+  const navRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-{/*     Promise.all(
-  *       csvFiles.map(file => d3.csv(file))
-  *     ).then(([result, cycle]) => {
-  *
-  *       for (var key in dataset) {
-  *         dataset[key].data = result.map(row => (
-  *           { x: +row[dataset[key].csvX], y: +row[dataset[key].csvY] }
-  *         ))
-  *       }
-  *       interval = cycle.map(row => row.time)
-  *
-  *       createNav(dataset.double_support.data);
-  *       for (var key in dataset) {
-  *         createChart(
-  *           dataset[key].data,
-  *           dataset[key].name,
-  *           dataset[key].mode
-  *         );
-  *       }
-  *     }) */}
-    Dataset.forEach(obj => {
-      obj.data.push()
-      console.log(obj.name);
+    Promise.all(
+      csvFiles.map(file => d3.csv(file))
+    ).then(([result, cycle]) => {
+      Dataset.forEach(_data => {
+        result.forEach(row => {
+          _data.data.push({
+            x: +(row[_data.csvX] ?? 0),
+            y: +(row[_data.csvY] ?? 0)
+          })
+        })
+      })
+
+      GaitCycle = cycle.map(row => +(row.time ?? 0))
+
+      createNav(Dataset[0].data);
+      Dataset.forEach(_data => {
+        createChart(
+          _data.data,
+          _data.name,
+          _data.mode
+        )
+      })
     })
   }, [])
 
   return(
     <div>
-      <svg ref={ref}></svg>
+      <div id="accel_x"></div>
+      {/* <div id="accel_y"></div>
+        * <div id="accel_z"></div>
+        * <div id="double_support"></div>
+        * <div id="lt_single_support"></div>
+        * <div id="rt_single_support"></div> */}
+      <div id="minimap"></div>
     </div>
   )
 }
