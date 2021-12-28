@@ -41,9 +41,9 @@ const DrawChart: FC = () => {
       <div id="accel_x"></div>
       <div id="accel_y"></div>
       <div id="accel_z"></div>
-      {/* <div id="double_support"></div>
-        * <div id="lt_single_support"></div>
-        * <div id="rt_single_support"></div> */}
+      <div id="double_support"></div>
+      <div id="lt_single_support"></div>
+      <div id="rt_single_support"></div>
       <div id="minimap"></div>
     </div>
   )
