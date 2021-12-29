@@ -63,6 +63,7 @@ const brush = d3.brushX()
     var d0 = event.selection.map(xScaleNav.invert);
     var d1 = d0.map((x: any) => GaitCycle[findClosestIndex(GaitCycle, x)])
     d3.select(".brush").transition().call(event.target.move, d1.map(xScaleNav))
+    xScale.domain(d1);
     Dataset.forEach(dataObj => {
       updateChart( dataObj.data, dataObj.name, dataObj.mode)
     })
