@@ -1,4 +1,4 @@
-export interface Data {
+export interface IData {
   x: number;
   y: number;
 }
@@ -6,7 +6,7 @@ export interface Data {
 export interface IDatasetInfo{
   name: string;
   mode: string;
-  data: Data[];
+  data: IData[];
   csvX: string;
   csvY: string;
 }

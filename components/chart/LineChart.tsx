@@ -2,20 +2,19 @@ import * as d3 from "d3";
 import { IData } from "./Dataset";
 import { layout, xScale } from "./Draw.var";
 
-export const createChart = (data: IData[], name: string, mode: string) => {
-  var h = mode == "line" ? layout.getLineHeight() : layout.getAreaHeight();
+export function createLineChart(divSelector: string) {
   var svg = d3
-    .select("#" + name)
+    .select("#" + divSelector)
     .append("svg") // global chart svg w/h
     .attr("width", layout.width)
-    .attr("height", h + layout.margin.t+ layout.margin.b)
+    .attr("height", layout.lineHeight)
     .append("g") // workground group
     .attr("transform", `translate(${layout.margin.l} ,${layout.margin.t})`);
 
   svg
     .append("g") // x axis group
     .attr("class", "axis axis__x")
-    .attr("transform", `translate(0, ${h})`);
+    .attr("transform", `translate(0, ${layout.getLineHeight()})`);
 
   svg
     .append("g") // y axis group
@@ -23,18 +22,19 @@ export const createChart = (data: IData[], name: string, mode: string) => {
 
   svg
     .append("path") // line path group
-    .attr("class", mode) // Assign a class for styling
-    .attr("fill", mode == "line" ? "none" : "steelblue")
+    .attr("class", "line") // Assign a class for styling
+    .attr("fill", "none")
     .attr("stroke", "steelblue");
 
-  xScale.domain(d3.extent(data, (d) => d.x).map((x) => x ?? 0));
+  return update;
+}
 
-  updateChart(data, name, mode);
-};
+export function update(data: IData[], name: string, first: boolean) {
+  var h = layout.getLineHeight();
 
-export const updateChart = (data: IData[], name: string, mode: string) => {
-  var h = mode == "line" ? layout.getLineHeight() : layout.getAreaHeight();
-
+  if (first) {
+    xScale.domain(d3.extent(data, (d) => d.x).map((x) => x ?? 0));
+  }
   // prepare scale
   var yScale = d3
     .scaleLinear()
@@ -43,10 +43,7 @@ export const updateChart = (data: IData[], name: string, mode: string) => {
 
   // prepare axisGen
   var xAxisGen = d3.axisBottom(xScale);
-  var yAxisGen =
-    mode == "line"
-      ? d3.axisLeft(yScale)
-      : d3.axisLeft(yScale).ticks(2).tickValues([0, 1]);
+  var yAxisGen = d3.axisLeft(yScale);
 
   // select chart svg
   var chartSvg = d3.select(`#${name} svg`);
@@ -59,27 +56,21 @@ export const updateChart = (data: IData[], name: string, mode: string) => {
     .append("clipPath")
     .attr("id", "chart-path")
     .append("rect") // region clip rect
-    .attr("width", layout.width)
+    .attr("width", layout.getWidth())
     .attr("height", h);
 
   chartSvg
-    .select(`.${mode}`) // region line/area
+    .select(".line") // region line/area
     .datum(data)
     .transition()
     .attr("clip-path", "url(#chart-path)")
-    .attr("fill", mode == "line" ? "none" : "steelblue")
+    .attr("fill", "none")
     .attr(
       "d",
-      mode == "line"
-        ? d3
-            .line<IData>()
-            .x((d) => xScale(d.x))
-            .y((d) => yScale(d.y))
-        : d3
-            .area<IData>()
-            .x((d) => xScale(d.x))
-            .y0(yScale(0))
-            .y1((d) => yScale(d.y))
+      d3
+        .line<IData>()
+        .x((d) => xScale(d.x))
+        .y((d) => yScale(d.y))
     );
 
   var tooltipGroup = chartSvg
@@ -119,7 +110,7 @@ export const updateChart = (data: IData[], name: string, mode: string) => {
     .attr("class", "overlay")
     .attr("fill", "none")
     .attr("pointer-events", "all")
-    .attr("width", layout.width)
+    .attr("width", layout.getWidth())
     .attr("height", h)
     .attr("transform", `translate(${layout.margin.l} ,${layout.margin.t})`)
     .on("mouseover", function () {
@@ -137,9 +128,10 @@ export const updateChart = (data: IData[], name: string, mode: string) => {
       var d = x0 - d0.x > d1.x - x0 ? d1 : d0;
       tooltipGroup.attr(
         "transform",
-        `translate(${xScale(d.x) + layout.margin.l}, ${yScale(d.y) + layout.margin.t})`
+        `translate(
+          ${xScale(d.x) + layout.margin.l}, ${yScale(d.y) + layout.margin.t})`
       );
       tooltipGroup.select(".tooltip-x").text(`x: ${d.x}`);
       tooltipGroup.select(".tooltip-y").text(`y: ${d.y.toFixed(4)}`);
     });
-};
+}
