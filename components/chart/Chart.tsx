@@ -63,13 +63,13 @@ const DrawChart: FC = () => {
 
   return (
     <div>
-      <div id="accel_x"></div>
-      <div id="accel_y"></div>
-      <div id="accel_z"></div>
-      <div id="double_support"></div>
-      <div id="lt_single_support"></div>
-      <div id="rt_single_support"></div>
-      <div id="minimap"></div>
+      <div className="columns-1">
+        <div id="accel_x"></div>
+        <div id="accel_y"></div>
+        <div id="accel_z"></div>
+        <div id="double_support"></div>
+        <div id="minimap"></div>
+      </div>
     </div>
   );
 };

@@ -6,8 +6,10 @@ export function createMultiAreaChart(divSelector: string) {
   var svg = d3
     .select("#" + divSelector)
     .append("svg") // global chart svg w/h
-    .attr("width", layout.width)
-    .attr("height", layout.areaHeight)
+    // .attr("width", layout.width)
+    // .attr("height", layout.areaHeight)
+    .attr("preserveAspectRatio", "xMinYMin meet")
+    .attr("viewBox", `0 0 ${layout.width} ${layout.areaHeight}`)
     .append("g") // workground group
     .attr("transform", `translate(${layout.margin.l} ,${layout.margin.t})`);
 

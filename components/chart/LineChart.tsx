@@ -6,8 +6,8 @@ export function createLineChart(divSelector: string) {
   var svg = d3
     .select("#" + divSelector)
     .append("svg") // global chart svg w/h
-    .attr("width", layout.width)
-    .attr("height", layout.lineHeight)
+    .attr("preserveAspectRatio", "xMinYMin meet")
+    .attr("viewBox", `0 0 ${layout.width} ${layout.lineHeight}`)
     .append("g") // workground group
     .attr("transform", `translate(${layout.margin.l} ,${layout.margin.t})`);
 
@@ -51,6 +51,7 @@ export function createLineChart(divSelector: string) {
       .append("clipPath")
       .attr("id", "chart-path")
       .append("rect") // region clip rect
+      .attr("fill", "black")
       .attr("width", layout.getWidth())
       .attr("height", h);
 
@@ -106,8 +107,7 @@ export function createLineChart(divSelector: string) {
       .attr("fill", "none")
       .attr("pointer-events", "all")
       .attr("width", layout.getWidth())
-      .attr("height", h)
-      .attr("transform", `translate(${layout.margin.l} ,${layout.margin.t})`)
+      .attr("height", layout.getLineHeight())
       .on("mouseover", function () {
         tooltipGroup.style("display", null);
       })
@@ -123,8 +123,7 @@ export function createLineChart(divSelector: string) {
         var d = x0 - d0.x > d1.x - x0 ? d1 : d0;
         tooltipGroup.attr(
           "transform",
-          `translate(
-            ${xScale(d.x) + layout.margin.l}, ${yScale(d.y) + layout.margin.t})`
+          `translate( ${xScale(d.x)}, ${yScale(d.y)})`
         );
         tooltipGroup.select(".tooltip-x").text(`x: ${d.x}`);
         tooltipGroup.select(".tooltip-y").text(`y: ${d.y.toFixed(4)}`);

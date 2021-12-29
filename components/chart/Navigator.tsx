@@ -32,7 +32,6 @@ export function createGaitNav(
         d3.selectAll(".handle__custom").attr("display", "none");
       } else {
         var d0 = event.selection.map(xScaleNav.invert);
-        console.log(d0);
         var d1 = d0.map((x: any) => gaitCycle[findClosestIndex(gaitCycle, x)]);
         d3.select(".brush")
           .transition()
@@ -54,8 +53,10 @@ export function createGaitNav(
   const navSvg = d3
     .select("#minimap")
     .append("svg") // global chart svg w/h
-    .attr("width", layout.width)
-    .attr("height", layout.navHeight)
+    // .attr("width", layout.width)
+    // .attr("height", layout.navHeight)
+    .attr("preserveAspectRatio", "xMinYMin meet")
+    .attr("viewBox", `0 0 ${layout.width} ${layout.lineHeight}`)
     .append("g") // workground group
     .attr("transform", `translate(${layout.margin.l}, ${layout.margin.t})`);
 
