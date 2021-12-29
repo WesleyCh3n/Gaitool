@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { IData, IDatasetInfo, IUpdateFunc } from "./Dataset";
+import { IUpdateFunc } from "./Dataset";
 import { layout, xScaleNav, xScale } from "./Draw.var";
 import { findClosestIndex } from "../../utils/utils";
 
@@ -26,18 +26,19 @@ export function createGaitNav(
         );
     })
     .on("end", (event: any) => {
-      if (!event.selection) {
-        d3.selectAll(".handle__custom").attr("display", "none");
-        return
-      } else if (!event.sourceEvent) {
+      if (!event.sourceEvent){
         return;
+      } else if (!event.selection) {
+        d3.selectAll(".handle__custom").attr("display", "none");
+      } else {
+        var d0 = event.selection.map(xScaleNav.invert);
+        console.log(d0);
+        var d1 = d0.map((x: any) => gaitCycle[findClosestIndex(gaitCycle, x)]);
+        d3.select(".brush")
+          .transition()
+          .call(event.target.move, d1.map(xScaleNav));
+        xScale.domain(d1);
       }
-      var d0 = event.selection.map(xScaleNav.invert);
-      var d1 = d0.map((x: any) => gaitCycle[findClosestIndex(gaitCycle, x)]);
-      d3.select(".brush")
-        .transition()
-        .call(event.target.move, d1.map(xScaleNav));
-      xScale.domain(d1);
       updateLists.forEach((el) => {
         el.func(el.data, false)
       });

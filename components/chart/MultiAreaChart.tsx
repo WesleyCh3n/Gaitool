@@ -20,6 +20,10 @@ export function createMultiAreaChart(divSelector: string) {
     .append("g") // y axis group
     .attr("class", "axis axis__y");
 
+  svg
+    .append("g") // line path group
+    .attr("class", "area") // Assign a class for styling
+
   function update(data: IDatasetInfo[], first: boolean) {
     if (first) {
       xScale.domain(d3.extent(data[0].data, (d) => d.x).map((x) => x ?? 0));
@@ -33,11 +37,7 @@ export function createMultiAreaChart(divSelector: string) {
     var colorScale = d3
       .scaleOrdinal()
       .domain(["double_support", "rt_single_support", "lt_single_support"])
-      .range([
-        "rgba(249, 208, 87, 0.7)",
-        "rgba(54, 174, 175, 0.65)",
-        "rgba(54, 174, 100, 0.65)",
-      ]);
+      .range(["#1f77b4", "#ff7f0e", "#2ca02c"]);
 
     // prepare axisGen
     var xAxisGen = d3.axisBottom(xScale);
@@ -54,31 +54,44 @@ export function createMultiAreaChart(divSelector: string) {
       .attr("width", layout.getWidth())
       .attr("height", layout.getAreaHeight());
 
-    {/* var areaGen = d3
-      *   .area<IData>()
-      *   .x((_d) => xScale(_d.x))
-      *   .y0(yScale(0))
-      *   .y1((_d) => yScale(_d.y)); */}
+    data.forEach((el) => {
+      svg
+        .select(".area") // region line/area
+        .append('path')
+        .attr("class", el.name)
+        .datum(el.data)
+        .transition()
+        .attr("clip-path", "url(#chart-path)")
+        .attr("fill", colorScale(el.name) as string)
+        .attr(
+          "d",
+          d3
+            .area<IData>()
+            .x((d) => xScale(d.x))
+            .y0(yScale(0))
+            .y1((d) => yScale(d.y))
+        );
+    });
 
-    var source = svg
-      .selectAll(".area") // region line/area
-      .data(data)
-      .enter()
-      .append("g")
-      .attr("class", (d) => `area ${d.name}`)
-
-    source
-      .append("path")
-      .transition()
-      .attr("clip-path", "url(#chart-path)")
-      .attr("d", (d) =>
-        d3
-          .area<IData>()
-          .x((_d) => xScale(_d.x))
-          .y0(yScale(0))
-          .y1((_d) => yScale(_d.y))(d.data)
-      )
-      .attr("fill", (d) => colorScale(d.name) as string);
+{/*     var source = svg
+  *       .selectAll(".area") // region line/area
+  *       .data(data)
+  *       .enter()
+  *       .append("g")
+  *       .attr("class", (d) => `area ${d.name}`)
+  *
+  *     source
+  *       .append("path")
+  *       .transition()
+  *       .attr("clip-path", "url(#chart-path)")
+  *       .attr("d", (d) =>
+  *         d3
+  *           .area<IData>()
+  *           .x((_d) => xScale(_d.x))
+  *           .y0(yScale(0))
+  *           .y1((_d) => yScale(_d.y))(d.data)
+  *       )
+  *       .attr("fill", (d) => colorScale(d.name) as string); */}
 
     {
       /*
