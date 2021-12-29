@@ -3,6 +3,7 @@ import { Data }from './Dataset'
 import { Dataset, GaitCycle } from './Dataset.var';
 import { margin, width, xScaleNav, xScale, brushHeight } from './Draw.var'
 import { updateChart } from './DrawLine'
+import { findClosestIndex } from '../../utils/utils'
 
 export function createNav(data: Data[]) {
   xScaleNav.domain(d3.extent(data, (d) => d.x).map(x => x ?? 0))
@@ -67,11 +68,6 @@ const brush = d3.brushX()
     })
   });
 
-function findClosestIndex(arr: number[], target: number): number {
-  const diffArr = arr.map(x => Math.abs(target - x));
-  const minNumber = Math.min(...diffArr);
-  return diffArr.findIndex(x => x === minNumber);
-}
 
 const brushHandlePath = (d: any) => {
   var e = +(d.type == "e"),

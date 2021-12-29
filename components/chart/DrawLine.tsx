@@ -68,4 +68,55 @@ export const updateChart = (data: Data[], name: string, mode: string) => {
       .y0(yScale(0))
       .y1((d) => yScale(d.y))
     ))
+
+    var tooltipGroup = chartSvg.append("g")
+      .attr("class", "tooltip__group")
+      .style("display", "none");
+
+    tooltipGroup.append("circle")
+      .attr("fill", "steelblue")
+      .attr("r", 5);
+
+    tooltipGroup.append("rect")
+      .attr("class", "tooltip")
+      .attr("fill", "white")
+      .attr("stroke", "#000")
+      .attr("width", 100)
+      .attr("height", 50)
+      .attr("x", 10)
+      .attr("y", -22)
+      .attr("rx", 4)
+      .attr("ry", 4);
+
+    tooltipGroup.append("text")
+      .attr("class", "tooltip-x")
+      .attr("x", 18)
+      .attr("y", -2);
+
+    tooltipGroup.append("text")
+      .attr("class", "tooltip-y")
+      .attr("x", 18)
+      .attr("y", 18);
+
+    const bisectX = d3.bisector((d: Data) => d.x).center
+    chartSvg.append("rect")
+      .attr("class", "overlay")
+      .attr("fill", "none")
+      .attr("pointer-events", "all")
+      .attr("width", width)
+      .attr("height", lineHeight)
+      .attr("transform", `translate(${margin.left} ,${margin.top})`)
+      .on("mouseover", function() { tooltipGroup.style("display", null); })
+      .on("mouseout", function() { tooltipGroup.style("display", "none"); })
+      .on("mousemove", (event: any) => {
+        var x0 = xScale.invert(d3.pointer(event)[0]),
+            i  = bisectX(data, x0),
+            d0 = data[i - 1],
+            d1 = data[i]
+        if (!d0 || !d1) return
+        var d  = ((x0 - d0.x) > (d1.x - x0)) ? d1 : d0;
+        tooltipGroup.attr("transform", `translate(${xScale(d.x)+margin.left}, ${yScale(d.y)+margin.top})`);
+        tooltipGroup.select(".tooltip-x").text(`x: ${d.x}`);
+        tooltipGroup.select(".tooltip-y").text(`y: ${d.y.toFixed(4)}`);
+      });
 }
