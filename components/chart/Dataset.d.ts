@@ -11,3 +11,7 @@ export interface IDatasetInfo{
   csvY: string;
 }
 
+export interface IUpdateFunc{
+  data: any;
+  func: any;
+}

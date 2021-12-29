@@ -1,13 +1,12 @@
 import * as d3 from "d3";
-import { IData, IDatasetInfo } from "./Dataset";
+import { IData, IDatasetInfo, IUpdateFunc } from "./Dataset";
 import { layout, xScaleNav, xScale } from "./Draw.var";
 import { findClosestIndex } from "../../utils/utils";
 
 export function createGaitNav(
   gaitCycle: number[],
   xDomain: number[],
-  update: (data: IData[], name: string, first: boolean) => void,
-  updateLists: IDatasetInfo[]
+  updateLists: IUpdateFunc[]
 ) {
   const brush = d3
     .brushX()
@@ -39,10 +38,8 @@ export function createGaitNav(
         .transition()
         .call(event.target.move, d1.map(xScaleNav));
       xScale.domain(d1);
-      updateLists.forEach((dataObj) => {
-        if (dataObj.mode == "line") {
-          update(dataObj.data, dataObj.name, false);
-        }
+      updateLists.forEach((el) => {
+        el.func(el.data, false)
       });
     });
 
