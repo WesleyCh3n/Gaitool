@@ -72,6 +72,7 @@ export function createGaitNav(
     .append("path")
     .attr("class", "handle__custom")
     .attr("stroke", "#000")
+    .attr("stroke-width", "1.5")
     .attr("cursor", "ew-resize")
     .attr("d", brushHandlePath);
 
