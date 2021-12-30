@@ -4,8 +4,8 @@ export var layout = {
   width: 1000,
   boxWidth: 200,
   lineHeight: 200,
-  areaHeight: 80,
-  navHeight: 80,
+  areaHeight: 100,
+  navHeight: 100,
   margin: { t: 10, r: 50, b: 30, l: 50, },
   getWidth: function () {
     return this.width - this.margin.l - this.margin.r;

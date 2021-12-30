@@ -63,9 +63,11 @@ const DrawChart: FC = () => {
 
         // create navigator last
         createGaitNav(
+          "minimap",
           GaitCycle,
           [0, Dataset[0].data.slice(-1)[0].x],
-          updateLists
+          updateLists,
+          Dataset[0].data
         );
       }
     );
@@ -78,10 +80,10 @@ const DrawChart: FC = () => {
         <div id="accel_x_box"></div>
         <div id="accel_y" className="col-span-4"></div>
         <div id="accel_y_box"></div>
-        <div id="accel_z" className="col-span-4"></div>
-        <div id="accel_z_box"></div>
+          <div id="accel_z" className="col-span-4"></div>
+          <div id="accel_z_box"></div>
+        <div id="double_support" className="col-span-4"></div>
       </div>
-        <div id="double_support"></div>
         <div id="minimap"></div>
     </div>
   );

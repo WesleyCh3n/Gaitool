@@ -9,33 +9,27 @@ export function createBoxChart(divSelector: string) {
     .attr("preserveAspectRatio", "xMinYMin meet")
     .attr("viewBox", `0 0 ${layout.boxWidth} ${layout.lineHeight}`)
     .append("g") // workground group
-    .attr(
-      "transform",
-      `translate(${layout.margin.l} ,${layout.margin.t})`
-    );
+    .attr("transform", `translate(${layout.margin.l} ,${layout.margin.t})`);
 
-    svg
-      .append("line")
-      .attr('class', 'line__vert')
-      .attr("stroke", "black")
+  svg.append("line").attr("class", "line__vert").attr("stroke", "black");
 
-    svg
-      .append("rect")
-      .attr('class', 'rect')
-      .attr("stroke", "black")
-      .style("fill", "#69b3a2")
+  svg
+    .append("rect")
+    .attr("class", "rect")
+    .attr("stroke", "black")
+    .style("fill", "#69b3a2");
 
-    svg
-      .append("line")
-      .attr('class', 'line__median')
+  var gMedian = svg.append("g").attr("class", "g__median");
+  gMedian.append("line").attr("class", "line__median");
+  gMedian.append("text").attr("class", "text__median");
 
-    svg
-      .append("line")
-      .attr('class', 'line__min')
+  var gMin = svg.append("g").attr("class", "g__min");
+  gMin.append("line").attr("class", "line__min");
+  gMin.append("text").attr("class", "text__min");
 
-    svg
-      .append("line")
-      .attr('class', 'line__max')
+  var gMax = svg.append("g").attr("class", "g__max");
+  gMax.append("line").attr("class", "line__max");
+  gMax.append("text").attr("class", "text__max");
 
   function update(data: IData[], first: boolean) {
     var dataCopy = [...data]; // HACK: copy before sort
@@ -56,13 +50,13 @@ export function createBoxChart(divSelector: string) {
     var min = q1 - 1.5 * interQuantileRange;
     var max = q1 + 1.5 * interQuantileRange;
 
-    var minScale = min - 1
-    var maxScale = max + 1
+    var minScale = min - 1;
+    var maxScale = max + 1;
 
     var yScale = d3
       .scaleLinear()
       .domain([minScale, maxScale])
-      .range([layout.getLineHeight()-20, 0]);
+      .range([layout.getLineHeight() - 20, 0]);
 
     svg.transition().call(d3.axisLeft(yScale));
 
@@ -72,13 +66,13 @@ export function createBoxChart(divSelector: string) {
 
     // Show the main vertical line
     svg
-      .select('.line__vert')
+      .select(".line__vert")
       .attr("x1", boxCenter)
       .attr("x2", boxCenter)
       .attr("y1", yScale(min))
       .attr("y2", yScale(max))
       .attr("stroke", "black")
-      .transition()
+      .transition();
 
     // Show the box
     svg
@@ -87,35 +81,66 @@ export function createBoxChart(divSelector: string) {
       .attr("x", boxCenter - boxWidth / 2)
       .attr("y", yScale(q3))
       .attr("height", yScale(q1) - yScale(q3))
-      .attr("width", boxWidth)
+      .attr("width", boxWidth);
 
     // show median, min and max horizontal lines
-    svg.select('.line__median')
+    svg
+      .select(".line__median")
       .datum(median)
       .transition()
       .attr("x1", boxCenter - boxWidth / 2)
       .attr("x2", boxCenter + boxWidth / 2)
       .attr("y1", (d) => yScale(d))
       .attr("y2", (d) => yScale(d))
-      .attr("stroke", "black")
+      .attr("stroke", "black");
 
-  svg.select('.line__min')
+    svg
+      .select('.text__median')
+      .attr("x", boxCenter + boxWidth * 2)
+      .attr("y", yScale(median))
+      .attr("font-size", "12px")
+      .attr("transform", 'translate(0,5)')
+      .attr("fill", "#fff")
+      .text(`${median.toFixed(2)}`)
+
+    svg
+      .select(".line__min")
       .datum(min)
       .transition()
       .attr("x1", boxCenter - boxWidth / 2)
       .attr("x2", boxCenter + boxWidth / 2)
       .attr("y1", (d) => yScale(d))
       .attr("y2", (d) => yScale(d))
-      .attr("stroke", "black")
+      .attr("stroke", "black");
 
-  svg.select('.line__max')
+    svg
+      .select('.text__min')
+      .attr("x", boxCenter + boxWidth * 2)
+      .attr("y", yScale(min))
+      .attr("font-size", "12px")
+      .attr("transform", 'translate(0,5)')
+      .attr("fill", "#fff")
+      .text(`${min.toFixed(2)}`)
+
+    svg
+      .select(".line__max")
       .datum(max)
       .transition()
       .attr("x1", boxCenter - boxWidth / 2)
       .attr("x2", boxCenter + boxWidth / 2)
       .attr("y1", (d) => yScale(d))
       .attr("y2", (d) => yScale(d))
-      .attr("stroke", "black")
+      .attr("stroke", "black");
+
+    svg
+      .select('.text__max')
+      .attr("x", boxCenter + boxWidth * 2)
+      .attr("y", yScale(max))
+      .attr("font-size", "12px")
+      .attr("transform", 'translate(0,5)')
+      .attr("fill", "#fff")
+      .text(`${max.toFixed(2)}`)
+
   }
   return update;
 }

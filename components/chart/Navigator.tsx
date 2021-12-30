@@ -1,12 +1,14 @@
 import * as d3 from "d3";
-import { IUpdateFunc } from "./Dataset";
+import { IData, IUpdateFunc } from "./Dataset";
 import { layout, xScaleNav, xScale, selectRange } from "./Draw.var";
 import { findClosestIndex } from "../../utils/utils";
 
 export function createGaitNav(
+  divSelector: string,
   gaitCycle: number[],
   xDomain: number[],
-  updateLists: IUpdateFunc[]
+  updateLists: IUpdateFunc[],
+  data?: IData[]
 ) {
   const brush = d3
     .brushX()
@@ -47,23 +49,66 @@ export function createGaitNav(
       });
     });
 
+  const navSvg = d3
+    .select(`#${divSelector}`)
+    .append("svg") // global chart svg w/h
+    .attr("preserveAspectRatio", "xMinYMin meet")
+    .attr("viewBox", `0 0 ${layout.width} ${layout.lineHeight}`)
+    .append("g") // workground group
+    .attr("transform", `translate(${layout.margin.l}, ${layout.margin.t})`);
+
+  var yScale = d3.scaleLinear().range([layout.getNavTickHeight(), 0]);
+
+  if (data) {
+    yScale.domain(d3.extent(data, (d) => d.y).map((y) => y ?? 0));
+  }
+
   xScaleNav.domain(xDomain);
+  const yAxisGen = d3.axisLeft(yScale);
   const xAxisGen = d3
     .axisBottom(xScaleNav)
     .ticks(gaitCycle.length, ",.3f")
     .tickValues(gaitCycle)
     .tickSize(-layout.getNavTickHeight());
 
-  const navSvg = d3
-    .select("#minimap")
-    .append("svg") // global chart svg w/h
-    // .attr("width", layout.width)
-    // .attr("height", layout.navHeight)
-    .attr("preserveAspectRatio", "xMinYMin meet")
-    .attr("viewBox", `0 0 ${layout.width} ${layout.areaHeight}`)
-    .append("g") // workground group
-    .attr("transform", `translate(${layout.margin.l}, ${layout.margin.t})`);
+  {/* navSvg
+    *   .append("g") // region x axis
+    *   .attr("class", "axis__y")
+    *   .call(yAxisGen); */}
 
+  navSvg
+    .append("g") // region x axis
+    .attr("class", "x axis")
+    .attr("transform", `translate(0, ${layout.getNavTickHeight()})`)
+    .call(xAxisGen)
+    .selectAll(".tick text") // region tick style
+    .style("text-anchor", "end")
+    .attr("dx", "-.8em")
+    .attr("dy", ".15em")
+    .attr("transform", "rotate(-40)");
+
+  navSvg
+    .selectAll(".axis line")
+    .attr("stroke", "#566573")
+    .attr("stroke-width", "3px");
+
+  if (data) {
+    navSvg
+      .append("path") // line path group
+      .attr("class", "line") // Assign a class for styling
+      .attr("fill", "none")
+      .attr("stroke", "steelblue")
+      .datum(data)
+      .attr(
+        "d",
+        d3
+          .line<IData>()
+          .x((d) => xScaleNav(d.x))
+          .y((d) => yScale(d.y))
+      );
+  }
+
+  // brush and handle
   const gBrush = navSvg
     .append("g") // region brush
     .attr("class", "brush")
@@ -82,17 +127,6 @@ export function createGaitNav(
 
   // gBrush.call(brush.move, gaitCycle.slice(0, 2).map(xScaleNav));
   // gBrush.call(brush.move, xScaleNav.range());
-
-  navSvg
-    .append("g") // region x axis
-    .attr("class", "x axis")
-    .attr("transform", `translate(0, ${layout.getNavTickHeight()})`)
-    .call(xAxisGen)
-    .selectAll(".tick text") // region tick style
-    .style("text-anchor", "end")
-    .attr("dx", "-.8em")
-    .attr("dy", ".15em")
-    .attr("transform", "rotate(-40)");
 }
 
 const brushHandlePath = (d: any) => {
