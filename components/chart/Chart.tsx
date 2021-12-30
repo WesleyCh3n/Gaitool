@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef, RefObject } from "react";
+import { FC, useEffect, useRef, RefObject, useState } from "react";
 import * as d3 from "d3";
 import { IUpdateFunc } from "./Dataset";
 import { Dataset, GaitCycle } from "./Dataset.var";
@@ -14,6 +14,10 @@ const csvFiles = [
 ];
 
 const DrawChart: FC = () => {
+
+  var options = ['1', '2', '3']
+  const [selectedOption, setSelectedOption] = useState<string>(options[0])
+
   useEffect(() => {
     Promise.all(csvFiles.map((file) => d3.csv(file))).then(
       ([csvResult, csvGaitCycle]) => {
@@ -75,16 +79,31 @@ const DrawChart: FC = () => {
 
   return (
     <div>
+      <div className="flex justify-center">
+        <div className="mb-3 xl:w-96">
+          <select
+            defaultValue={selectedOption}
+            onChange={(e) => setSelectedOption(e.target.value)}
+          >
+            {options.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+      {selectedOption === "1" ? <p>is 1</p> : <p>is else</p>}
       <div className="grid grid-flow-row-dense grid-cols-5">
         <div id="accel_x" className="col-span-4"></div>
         <div id="accel_x_box"></div>
         <div id="accel_y" className="col-span-4"></div>
         <div id="accel_y_box"></div>
-          <div id="accel_z" className="col-span-4"></div>
-          <div id="accel_z_box"></div>
+        <div id="accel_z" className="col-span-4"></div>
+        <div id="accel_z_box"></div>
         <div id="double_support" className="col-span-4"></div>
       </div>
-        <div id="minimap"></div>
+      <div id="minimap"></div>
     </div>
   );
 };
