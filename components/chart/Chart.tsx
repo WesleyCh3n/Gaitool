@@ -79,21 +79,20 @@ const DrawChart: FC = () => {
 
   return (
     <div>
-      <div className="flex justify-center">
-        <div className="mb-3 xl:w-96">
-          <select
-            defaultValue={selectedOption}
-            onChange={(e) => setSelectedOption(e.target.value)}
-          >
-            {options.map((opt) => (
-              <option key={opt} value={opt}>
-                {opt}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-      {selectedOption === "1" ? <p>is 1</p> : <p>is else</p>}
+      {/* <div className="flex justify-center">
+        *   <div className="mb-3 xl:w-96">
+        *     <select
+        *       defaultValue={selectedOption}
+        *       onChange={(e) => setSelectedOption(e.target.value)}
+        *     >
+        *       {options.map((opt) => (
+        *         <option key={opt} value={opt}>
+        *           {opt}
+        *         </option>
+        *       ))}
+        *     </select>
+        *   </div>
+        * </div> */}
       <div className="grid grid-flow-row-dense grid-cols-5">
         <div id="accel_x" className="col-span-4"></div>
         <div id="accel_x_box"></div>

@@ -111,7 +111,7 @@ export function createBoxChart(divSelector: string) {
       .attr("y", yScale(min))
       .attr("font-size", "12px")
       .attr("transform", 'translate(0,5)')
-      .attr("fill", "#fff")
+      .attr("fill", "#000")
       .text(`${min.toFixed(2)}`)
 
     gOutlier
@@ -120,7 +120,7 @@ export function createBoxChart(divSelector: string) {
       .attr("y", yScale(max))
       .attr("font-size", "12px")
       .attr("transform", 'translate(0,5)')
-      .attr("fill", "#fff")
+      .attr("fill", "#000")
       .text(`${max.toFixed(2)}`)
 
     // show median, min and max horizontal lines
@@ -140,7 +140,7 @@ export function createBoxChart(divSelector: string) {
       .attr("y", yScale(median))
       .attr("font-size", "12px")
       .attr("transform", 'translate(0,5)')
-      .attr("fill", "#fff")
+      .attr("fill", "#000")
       .text(`${median.toFixed(2)}`)
 
     svg
@@ -159,7 +159,7 @@ export function createBoxChart(divSelector: string) {
       .attr("y", yScale(lowerFence))
       .attr("font-size", "12px")
       .attr("transform", 'translate(0,5)')
-      .attr("fill", "#fff")
+      .attr("fill", "#000")
       .text(`${lowerFence.toFixed(2)}`)
 
     svg
@@ -178,7 +178,7 @@ export function createBoxChart(divSelector: string) {
       .attr("y", yScale(upperFence))
       .attr("font-size", "12px")
       .attr("transform", 'translate(0,5)')
-      .attr("fill", "#fff")
+      .attr("fill", "#000")
       .text(`${upperFence.toFixed(2)}`)
 
   }

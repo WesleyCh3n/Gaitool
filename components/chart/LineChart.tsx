@@ -1,5 +1,4 @@
 import * as d3 from "d3";
-import { type } from "os";
 import { IData } from "./Dataset";
 import { layout, xScale } from "./Draw.var";
 
@@ -31,8 +30,9 @@ export function createLineChart(divSelector: string) {
     .append("defs") // region clip path
     .append("clipPath")
     .attr("id", "chart-path")
+    .attr("fill", "none")
     .append("rect") // region clip rect
-    .attr("fill", "black")
+    .attr("fill", "none")
     .attr("width", layout.getWidth())
     .attr("height", layout.getLineHeight());
 
@@ -105,8 +105,8 @@ export function createLineChart(divSelector: string) {
     svg
       .select(".line") // region line/area
       .datum(data)
-      .transition()
       .attr("clip-path", "url(#chart-path)")
+      .transition()
       .attr(
         "d",
         d3
