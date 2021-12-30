@@ -6,6 +6,7 @@ import { createLineChart } from "./LineChart";
 // import { createAreaChart } from "./AreaChart";
 import { createGaitNav } from "./Navigator";
 import { createMultiAreaChart } from './MultiAreaChart'
+import { createBoxChart } from './BoxChart'
 
 const csvFiles = [
   "./2021-09-26-18-36_result_Dr Tsai_1.csv",
@@ -44,14 +45,23 @@ const DrawChart: FC = () => {
               data: dataObj.data,
               func: updateFunc,
             })
+            var barFunc = createBoxChart(`${dataObj.name}_box`)
+            barFunc(dataObj.data, true)
+            updateLists.push({
+              data: dataObj.data,
+              func: barFunc,
+            })
           }
         });
+
         var multiFunc = createMultiAreaChart("double_support")
         multiFunc(Dataset.slice(-3), true)
         updateLists.push({
           data: Dataset.slice(-3),
           func: multiFunc,
         })
+
+        // create navigator last
         createGaitNav(
           GaitCycle,
           [0, Dataset[0].data.slice(-1)[0].x],
@@ -63,13 +73,16 @@ const DrawChart: FC = () => {
 
   return (
     <div>
-      <div className="columns-1">
-        <div id="accel_x"></div>
-        <div id="accel_y"></div>
-        <div id="accel_z"></div>
+      <div className="grid grid-flow-row-dense grid-cols-5">
+        <div id="accel_x" className="col-span-4"></div>
+        <div id="accel_x_box"></div>
+        <div id="accel_y" className="col-span-4"></div>
+        <div id="accel_y_box"></div>
+        <div id="accel_z" className="col-span-4"></div>
+        <div id="accel_z_box"></div>
+      </div>
         <div id="double_support"></div>
         <div id="minimap"></div>
-      </div>
     </div>
   );
 };

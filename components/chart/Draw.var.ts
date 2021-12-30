@@ -2,7 +2,8 @@ import * as d3 from "d3";
 
 export var layout = {
   width: 1000,
-  lineHeight: 150,
+  boxWidth: 200,
+  lineHeight: 200,
   areaHeight: 80,
   navHeight: 80,
   margin: { t: 10, r: 50, b: 30, l: 50, },
@@ -23,3 +24,10 @@ export var layout = {
 // in order to update x domain with different brush area, this need to be global
 export var xScale = d3.scaleLinear().range([0, layout.getWidth()]);
 export var xScaleNav = d3.scaleLinear().range([0, layout.getWidth()]);
+
+export var selectRange = {
+  cord: {
+    s: 0,
+    e: 0,
+  }
+}

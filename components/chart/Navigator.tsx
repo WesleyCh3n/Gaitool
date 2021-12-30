@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 import { IUpdateFunc } from "./Dataset";
-import { layout, xScaleNav, xScale } from "./Draw.var";
+import { layout, xScaleNav, xScale, selectRange } from "./Draw.var";
 import { findClosestIndex } from "../../utils/utils";
 
 export function createGaitNav(
@@ -26,7 +26,7 @@ export function createGaitNav(
         );
     })
     .on("end", (event: any) => {
-      if (!event.sourceEvent){
+      if (!event.sourceEvent) {
         return;
       } else if (!event.selection) {
         d3.selectAll(".handle__custom").attr("display", "none");
@@ -37,9 +37,13 @@ export function createGaitNav(
           .transition()
           .call(event.target.move, d1.map(xScaleNav));
         xScale.domain(d1);
+
+        // store current scale
+        selectRange.cord.s = d1[0];
+        selectRange.cord.e = d1[1];
       }
       updateLists.forEach((el) => {
-        el.func(el.data, false)
+        el.func(el.data, false);
       });
     });
 
@@ -56,7 +60,7 @@ export function createGaitNav(
     // .attr("width", layout.width)
     // .attr("height", layout.navHeight)
     .attr("preserveAspectRatio", "xMinYMin meet")
-    .attr("viewBox", `0 0 ${layout.width} ${layout.lineHeight}`)
+    .attr("viewBox", `0 0 ${layout.width} ${layout.areaHeight}`)
     .append("g") // workground group
     .attr("transform", `translate(${layout.margin.l}, ${layout.margin.t})`);
 
