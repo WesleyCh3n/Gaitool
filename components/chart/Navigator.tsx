@@ -64,17 +64,11 @@ export function createGaitNav(
   }
 
   xScaleNav.domain(xDomain);
-  const yAxisGen = d3.axisLeft(yScale);
   const xAxisGen = d3
     .axisBottom(xScaleNav)
     .ticks(gaitCycle.length, ",.3f")
     .tickValues(gaitCycle)
     .tickSize(-layout.getNavTickHeight());
-
-  {/* navSvg
-    *   .append("g") // region x axis
-    *   .attr("class", "axis__y")
-    *   .call(yAxisGen); */}
 
   navSvg
     .append("g") // region x axis
@@ -97,7 +91,7 @@ export function createGaitNav(
       .append("path") // line path group
       .attr("class", "line") // Assign a class for styling
       .attr("fill", "none")
-      .attr("stroke", "steelblue")
+      .attr("stroke", "rgba(70, 130, 180, 0.5)")
       .datum(data)
       .attr(
         "d",

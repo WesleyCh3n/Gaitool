@@ -23,13 +23,17 @@ export function createBoxChart(divSelector: string) {
   gMedian.append("line").attr("class", "line__median");
   gMedian.append("text").attr("class", "text__median");
 
-  var gMin = svg.append("g").attr("class", "g__min");
-  gMin.append("line").attr("class", "line__min");
-  gMin.append("text").attr("class", "text__min");
+  var gFence = svg.append("g").attr("class", "g__lower");
+  gFence.append("line").attr("class", "line_lower");
+  gFence.append("text").attr("class", "text_lower");
+  gFence.append("line").attr("class", "line__upper");
+  gFence.append("text").attr("class", "text__upper");
 
-  var gMax = svg.append("g").attr("class", "g__max");
-  gMax.append("line").attr("class", "line__max");
-  gMax.append("text").attr("class", "text__max");
+  var gOutlier = svg.append("g").attr("class", "g__outlier");
+  gOutlier.append("circle").attr("class", "circle__min");
+  gOutlier.append("circle").attr("class", "circle__max");
+  gOutlier.append("text").attr("class", "text__min");
+  gOutlier.append("text").attr("class", "text__max");
 
   function update(data: IData[], first: boolean) {
     var dataCopy = [...data]; // HACK: copy before sort
@@ -47,11 +51,14 @@ export function createBoxChart(divSelector: string) {
     var median = d3.quantile(ySorted, 0.5) ?? 0;
     var q3 = d3.quantile(ySorted, 0.75) ?? 0;
     var interQuantileRange = q3 - q1;
-    var min = q1 - 1.5 * interQuantileRange;
-    var max = q1 + 1.5 * interQuantileRange;
+    var lowerFence = q1 - 1.5 * interQuantileRange;
+    var upperFence = q1 + 1.5 * interQuantileRange;
 
-    var minScale = min - 1;
-    var maxScale = max + 1;
+    var min = Math.min(...ySorted)
+    var max = Math.max(...ySorted)
+
+    var minScale = min - interQuantileRange/4;
+    var maxScale = max + interQuantileRange/4;
 
     var yScale = d3
       .scaleLinear()
@@ -61,7 +68,7 @@ export function createBoxChart(divSelector: string) {
     svg.transition().call(d3.axisLeft(yScale));
 
     // a few features for the box
-    var boxCenter = 40;
+    var boxCenter = 60;
     var boxWidth = 25;
 
     // Show the main vertical line
@@ -69,8 +76,8 @@ export function createBoxChart(divSelector: string) {
       .select(".line__vert")
       .attr("x1", boxCenter)
       .attr("x2", boxCenter)
-      .attr("y1", yScale(min))
-      .attr("y2", yScale(max))
+      .attr("y1", yScale(lowerFence))
+      .attr("y2", yScale(upperFence))
       .attr("stroke", "black")
       .transition();
 
@@ -82,6 +89,39 @@ export function createBoxChart(divSelector: string) {
       .attr("y", yScale(q3))
       .attr("height", yScale(q1) - yScale(q3))
       .attr("width", boxWidth);
+
+    // Outlier
+    gOutlier.select('.circle__min')
+      .attr("r", 2)
+      .attr("cx", boxCenter)
+      .attr("cy", yScale(min))
+      .attr("fill", "none")
+      .attr("stroke", "black")
+
+    gOutlier.select('.circle__max')
+      .attr("r", 2)
+      .attr("cx", boxCenter)
+      .attr("cy", yScale(max))
+      .attr("fill", "none")
+      .attr("stroke", "black")
+
+    gOutlier
+      .select('.text__min')
+      .attr("x", boxCenter + boxWidth * 2)
+      .attr("y", yScale(min))
+      .attr("font-size", "12px")
+      .attr("transform", 'translate(0,5)')
+      .attr("fill", "#fff")
+      .text(`${min.toFixed(2)}`)
+
+    gOutlier
+      .select('.text__max')
+      .attr("x", boxCenter + boxWidth * 2)
+      .attr("y", yScale(max))
+      .attr("font-size", "12px")
+      .attr("transform", 'translate(0,5)')
+      .attr("fill", "#fff")
+      .text(`${max.toFixed(2)}`)
 
     // show median, min and max horizontal lines
     svg
@@ -104,8 +144,8 @@ export function createBoxChart(divSelector: string) {
       .text(`${median.toFixed(2)}`)
 
     svg
-      .select(".line__min")
-      .datum(min)
+      .select(".line_lower")
+      .datum(lowerFence)
       .transition()
       .attr("x1", boxCenter - boxWidth / 2)
       .attr("x2", boxCenter + boxWidth / 2)
@@ -114,17 +154,17 @@ export function createBoxChart(divSelector: string) {
       .attr("stroke", "black");
 
     svg
-      .select('.text__min')
-      .attr("x", boxCenter + boxWidth * 2)
-      .attr("y", yScale(min))
+      .select('.text_lower')
+      .attr("x", boxCenter - boxWidth*0.7)
+      .attr("y", yScale(lowerFence))
       .attr("font-size", "12px")
       .attr("transform", 'translate(0,5)')
       .attr("fill", "#fff")
-      .text(`${min.toFixed(2)}`)
+      .text(`${lowerFence.toFixed(2)}`)
 
     svg
-      .select(".line__max")
-      .datum(max)
+      .select(".line__upper")
+      .datum(upperFence)
       .transition()
       .attr("x1", boxCenter - boxWidth / 2)
       .attr("x2", boxCenter + boxWidth / 2)
@@ -133,13 +173,13 @@ export function createBoxChart(divSelector: string) {
       .attr("stroke", "black");
 
     svg
-      .select('.text__max')
-      .attr("x", boxCenter + boxWidth * 2)
-      .attr("y", yScale(max))
+      .select('.text__upper')
+      .attr("x", boxCenter - boxWidth*0.7)
+      .attr("y", yScale(upperFence))
       .attr("font-size", "12px")
       .attr("transform", 'translate(0,5)')
       .attr("fill", "#fff")
-      .text(`${max.toFixed(2)}`)
+      .text(`${upperFence.toFixed(2)}`)
 
   }
   return update;
