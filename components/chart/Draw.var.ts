@@ -26,8 +26,12 @@ export var xScale = d3.scaleLinear().range([0, layout.getWidth()]);
 export var xScaleNav = d3.scaleLinear().range([0, layout.getWidth()]);
 
 export var selectRange = {
-  cord: {
+  index: {
     s: 0,
     e: 0,
-  }
+  },
+  value: {
+    s: 0,
+    e: 0,
+  },
 }

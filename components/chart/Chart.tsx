@@ -5,8 +5,9 @@ import { Dataset, GaitCycle } from "./Dataset.var";
 import { createLineChart } from "./LineChart";
 // import { createAreaChart } from "./AreaChart";
 import { createGaitNav } from "./Navigator";
-import { createMultiAreaChart } from './MultiAreaChart'
-import { createBoxChart } from './BoxChart'
+import { createMultiAreaChart } from "./MultiAreaChart";
+import { createBoxChart } from "./BoxChart";
+import { IQR, cycleMaxIQR, cycleMinIQR } from "../../utils/dataPreprocess";
 
 const csvFiles = [
   "./2021-09-26-18-36_result_Dr Tsai_1.csv",
@@ -14,9 +15,8 @@ const csvFiles = [
 ];
 
 const DrawChart: FC = () => {
-
-  var options = ['1', '2', '3']
-  const [selectedOption, setSelectedOption] = useState<string>(options[0])
+  var options = ["1", "2", "3"];
+  const [selectedOption, setSelectedOption] = useState<string>(options[0]);
 
   useEffect(() => {
     Promise.all(csvFiles.map((file) => d3.csv(file))).then(
@@ -39,8 +39,7 @@ const DrawChart: FC = () => {
         GaitCycle.unshift(startEnd[0]);
         GaitCycle.push(startEnd[1]);
 
-
-        var updateLists: IUpdateFunc[] = []
+        var updateLists: IUpdateFunc[] = [];
         Dataset.forEach((dataObj) => {
           if (dataObj.mode === "line") {
             var updateFunc = createLineChart(dataObj.name);
@@ -48,22 +47,28 @@ const DrawChart: FC = () => {
             updateLists.push({
               data: dataObj.data,
               func: updateFunc,
-            })
-            var barFunc = createBoxChart(`${dataObj.name}_box`)
-            barFunc(dataObj.data, true)
+            });
+            var barFuncMax = createBoxChart(`${dataObj.name}_max`, cycleMaxIQR);
+            barFuncMax(dataObj.data, true);
             updateLists.push({
               data: dataObj.data,
-              func: barFunc,
-            })
+              func: barFuncMax,
+            });
+            var barFuncMin = createBoxChart(`${dataObj.name}_min`, cycleMinIQR);
+            barFuncMin(dataObj.data, true);
+            updateLists.push({
+              data: dataObj.data,
+              func: barFuncMin,
+            });
           }
         });
 
-        var multiFunc = createMultiAreaChart("double_support")
-        multiFunc(Dataset.slice(-3), true)
+        var multiFunc = createMultiAreaChart("double_support");
+        multiFunc(Dataset.slice(-3), true);
         updateLists.push({
           data: Dataset.slice(-3),
           func: multiFunc,
-        })
+        });
 
         // create navigator last
         createGaitNav(
@@ -80,29 +85,39 @@ const DrawChart: FC = () => {
   return (
     <div>
       {/* <div className="flex justify-center">
-        *   <div className="mb-3 xl:w-96">
-        *     <select
-        *       defaultValue={selectedOption}
-        *       onChange={(e) => setSelectedOption(e.target.value)}
-        *     >
-        *       {options.map((opt) => (
-        *         <option key={opt} value={opt}>
-        *           {opt}
-        *         </option>
-        *       ))}
-        *     </select>
-        *   </div>
-        * </div> */}
-      <div className="grid grid-flow-row-dense grid-cols-5">
-        <div id="accel_x" className="col-span-4"></div>
-        <div id="accel_x_box"></div>
-        <div id="accel_y" className="col-span-4"></div>
-        <div id="accel_y_box"></div>
-        <div id="accel_z" className="col-span-4"></div>
-        <div id="accel_z_box"></div>
-        <div id="double_support" className="col-span-4"></div>
-      </div>
+       *   <div className="mb-3 xl:w-96">
+       *     <select
+       *       defaultValue={selectedOption}
+       *       onChange={(e) => setSelectedOption(e.target.value)}
+       *     >
+       *       {options.map((opt) => (
+       *         <option key={opt} value={opt}>
+       *           {opt}
+       *         </option>
+       *       ))}
+       *     </select>
+       *   </div>
+       * </div> */}
+      {Dataset.map((dataObj) => {
+        return (
+          <div className="grid grid-flow-row-dense grid-cols-6" key={dataObj.name}>
+            <div className="col-span-4">
+              <h1 className="text-center">{dataObj.name}</h1>
+              <div id={dataObj.name}></div>
+            </div>
+            <div>
+              <h1 className="text-center">Max</h1>
+              <div id={`${dataObj.name}_max`}></div>
+            </div>
+            <div>
+              <h1 className="text-center">Min</h1>
+              <div id={`${dataObj.name}_min`}></div>
+            </div>
+          </div>
+        );
+      })}
       <div id="minimap"></div>
+      {/* <div id="double_support"></div> */}
     </div>
   );
 };

@@ -34,15 +34,18 @@ export function createGaitNav(
         d3.selectAll(".handle__custom").attr("display", "none");
       } else {
         var d0 = event.selection.map(xScaleNav.invert);
-        var d1 = d0.map((x: any) => gaitCycle[findClosestIndex(gaitCycle, x)]);
+        let rangeIndex = d0.map((x: any) => findClosestIndex(gaitCycle, x));
+        let rangeValue = d0.map(
+          (x: any) => gaitCycle[findClosestIndex(gaitCycle, x)]
+        );
         d3.select(".brush")
           .transition()
-          .call(event.target.move, d1.map(xScaleNav));
-        xScale.domain(d1);
+          .call(event.target.move, rangeValue.map(xScaleNav));
+        xScale.domain(rangeValue);
 
         // store current scale
-        selectRange.cord.s = d1[0];
-        selectRange.cord.e = d1[1];
+        selectRange.index = { s: rangeIndex[0], e: rangeIndex[1] }
+        selectRange.value = { s: rangeValue[0], e: rangeValue[1] }
       }
       updateLists.forEach((el) => {
         el.func(el.data, false);

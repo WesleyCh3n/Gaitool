@@ -1,8 +1,12 @@
 import * as d3 from "d3";
 import { IData } from "./Dataset";
 import { layout, selectRange } from "./Draw.var";
+import { IBoxResult } from "./BoxChart.d";
 
-export function createBoxChart(divSelector: string) {
+export function createBoxChart(
+  divSelector: string,
+  dataPreprocess: (data: IData[]) => IBoxResult
+) {
   var svg = d3
     .select("#" + divSelector)
     .append("svg") // global chart svg w/h
@@ -35,30 +39,24 @@ export function createBoxChart(divSelector: string) {
   gOutlier.append("text").attr("class", "text__min");
   gOutlier.append("text").attr("class", "text__max");
 
+  svg.append("g").attr("class", "line_horz")
+
+  svg.append("g").attr("class", "text__left");
+  svg.append("g").attr("class", "text__right");
+
   function update(data: IData[], first: boolean) {
     var dataCopy = [...data]; // HACK: copy before sort
     if (!first) {
       dataCopy = dataCopy.filter(
-        (d) => d.x >= selectRange.cord.s && d.x <= selectRange.cord.e
+        (d) => d.x >= selectRange.value.s && d.x <= selectRange.value.e
       );
     }
 
     // process data
-    var dataSorted = dataCopy.sort((a, b) => d3.ascending(a.y, b.y));
-    var ySorted = dataSorted.map((d) => d.y);
+    const result = dataPreprocess(dataCopy);
 
-    var q1 = d3.quantile(ySorted, 0.25) ?? 0;
-    var median = d3.quantile(ySorted, 0.5) ?? 0;
-    var q3 = d3.quantile(ySorted, 0.75) ?? 0;
-    var interQuantileRange = q3 - q1;
-    var lowerFence = q1 - 1.5 * interQuantileRange;
-    var upperFence = q1 + 1.5 * interQuantileRange;
-
-    var min = Math.min(...ySorted)
-    var max = Math.max(...ySorted)
-
-    var minScale = min - interQuantileRange/4;
-    var maxScale = max + interQuantileRange/4;
+    var minScale = result.min - result.IQR / 4;
+    var maxScale = result.max + result.IQR / 4;
 
     var yScale = d3
       .scaleLinear()
@@ -76,111 +74,65 @@ export function createBoxChart(divSelector: string) {
       .select(".line__vert")
       .attr("x1", boxCenter)
       .attr("x2", boxCenter)
-      .attr("y1", yScale(lowerFence))
-      .attr("y2", yScale(upperFence))
+      .attr("y1", yScale(result.min))
+      .attr("y2", yScale(result.max))
       .attr("stroke", "black")
       .transition();
 
     // Show the box
     svg
       .select(".rect")
-      .transition()
+      // .transition()
       .attr("x", boxCenter - boxWidth / 2)
-      .attr("y", yScale(q3))
-      .attr("height", yScale(q1) - yScale(q3))
+      .attr("y", yScale(result.q3))
+      .attr("height", yScale(result.q1) - yScale(result.q3))
       .attr("width", boxWidth);
 
-    // Outlier
-    gOutlier.select('.circle__min')
-      .attr("r", 2)
-      .attr("cx", boxCenter)
-      .attr("cy", yScale(min))
-      .attr("fill", "none")
-      .attr("stroke", "black")
-
-    gOutlier.select('.circle__max')
-      .attr("r", 2)
-      .attr("cx", boxCenter)
-      .attr("cy", yScale(max))
-      .attr("fill", "none")
-      .attr("stroke", "black")
-
-    gOutlier
-      .select('.text__min')
-      .attr("x", boxCenter + boxWidth * 2)
-      .attr("y", yScale(min))
-      .attr("font-size", "12px")
-      .attr("transform", 'translate(0,5)')
-      .attr("fill", "#000")
-      .text(`${min.toFixed(2)}`)
-
-    gOutlier
-      .select('.text__max')
-      .attr("x", boxCenter + boxWidth * 2)
-      .attr("y", yScale(max))
-      .attr("font-size", "12px")
-      .attr("transform", 'translate(0,5)')
-      .attr("fill", "#000")
-      .text(`${max.toFixed(2)}`)
-
-    // show median, min and max horizontal lines
     svg
-      .select(".line__median")
-      .datum(median)
-      .transition()
+      .select(".line_horz")
+      .selectAll("line")
+      .data([result.min, result.max, result.median])
+      .join(
+        (enter) => enter.append("line").attr("stroke", "black"),
+        (update) => update.transition()
+      )
       .attr("x1", boxCenter - boxWidth / 2)
       .attr("x2", boxCenter + boxWidth / 2)
       .attr("y1", (d) => yScale(d))
-      .attr("y2", (d) => yScale(d))
-      .attr("stroke", "black");
+      .attr("y2", (d) => yScale(d));
 
     svg
-      .select('.text__median')
-      .attr("x", boxCenter + boxWidth * 2)
-      .attr("y", yScale(median))
-      .attr("font-size", "12px")
-      .attr("transform", 'translate(0,5)')
-      .attr("fill", "#000")
-      .text(`${median.toFixed(2)}`)
+      .select(".text__right")
+      .selectAll("text")
+      .data([result.min, result.max, result.median])
+      .join(
+        (enter) =>
+          enter
+            .append("text")
+            .attr("fill", "#000")
+            .attr("y", (d) => yScale(d)+3)
+            .text((d) => `${d.toFixed(2)}`),
+        (update) =>
+          update.attr("y", (d) => yScale(d)).text((d) => `${d.toFixed(2)}`)
+      )
+      .attr("x", boxCenter + boxWidth * 0.7)
+      .attr("text-anchor", "start");
 
     svg
-      .select(".line_lower")
-      .datum(lowerFence)
-      .transition()
-      .attr("x1", boxCenter - boxWidth / 2)
-      .attr("x2", boxCenter + boxWidth / 2)
-      .attr("y1", (d) => yScale(d))
-      .attr("y2", (d) => yScale(d))
-      .attr("stroke", "black");
-
-    svg
-      .select('.text_lower')
-      .attr("x", boxCenter - boxWidth*0.7)
-      .attr("y", yScale(lowerFence))
-      .attr("font-size", "12px")
-      .attr("transform", 'translate(0,5)')
-      .attr("fill", "#000")
-      .text(`${lowerFence.toFixed(2)}`)
-
-    svg
-      .select(".line__upper")
-      .datum(upperFence)
-      .transition()
-      .attr("x1", boxCenter - boxWidth / 2)
-      .attr("x2", boxCenter + boxWidth / 2)
-      .attr("y1", (d) => yScale(d))
-      .attr("y2", (d) => yScale(d))
-      .attr("stroke", "black");
-
-    svg
-      .select('.text__upper')
-      .attr("x", boxCenter - boxWidth*0.7)
-      .attr("y", yScale(upperFence))
-      .attr("font-size", "12px")
-      .attr("transform", 'translate(0,5)')
-      .attr("fill", "#000")
-      .text(`${upperFence.toFixed(2)}`)
-
+      .select(".text__left")
+      .selectAll("text")
+      .data([result.q1, result.q3])
+      .join(
+        (enter) =>
+          enter
+            .append("text")
+            .attr("fill", "#000")
+            .attr("y", (d) => yScale(d))
+            .text((d) => `${d.toFixed(2)}`),
+        (update) =>
+          update.attr("y", (d) => yScale(d)).text((d) => `${d.toFixed(2)}`)
+      )
+      .attr("x", boxCenter - boxWidth * 0.7);
   }
   return update;
 }
