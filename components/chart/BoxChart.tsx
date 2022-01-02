@@ -1,14 +1,15 @@
 import * as d3 from "d3";
+import { RefObject } from "react";
 import { IData } from "./Dataset";
 import { layout, selectRange } from "./Draw.var";
 import { IBoxResult } from "./BoxChart.d";
 
 export function createBoxChart(
-  divSelector: string,
+  ref: RefObject<HTMLDivElement>,
   dataPreprocess: (data: IData[]) => IBoxResult
 ) {
   var svg = d3
-    .select("#" + divSelector)
+    .select(ref.current)
     .append("svg") // global chart svg w/h
     .attr("preserveAspectRatio", "xMinYMin meet")
     .attr("viewBox", `0 0 ${layout.boxWidth} ${layout.lineHeight}`)
@@ -82,7 +83,7 @@ export function createBoxChart(
     // Show the box
     svg
       .select(".rect")
-      // .transition()
+      .transition()
       .attr("x", boxCenter - boxWidth / 2)
       .attr("y", yScale(result.q3))
       .attr("height", yScale(result.q1) - yScale(result.q3))

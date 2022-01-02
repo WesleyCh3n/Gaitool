@@ -1,27 +1,25 @@
 import { IData, IDatasetInfo } from './Dataset';
 
-export var Dataset: IDatasetInfo[] = [
-  {
-    name: "accel_x",
-    mode: "line",
+export var dataSchema: {[name: string]: IDatasetInfo} = {
+  aX: {
+    name: "Accel_x",
     data: new Array<IData>(),
     csvX: "time",
     csvY: "Pelvis_A_X",
   },
-  {
-    name: "accel_y", // html id
-    mode: "line",
+  aY: {
+    name: "Accel_y",
     data: new Array<IData>(),
     csvX: "time",
     csvY: "Pelvis_A_Y",
   },
-  {
-    name: "accel_z", // html id
-    mode: "line",
+  aZ: {
+    name: "Accel_z",
     data: new Array<IData>(),
     csvX: "time",
     csvY: "Pelvis_A_Z",
-  },
+  }
+}
   /* {
    *   name: "double_support",
    *   mode: "area",
@@ -43,7 +41,6 @@ export var Dataset: IDatasetInfo[] = [
    *   csvX: "time",
    *   csvY: "LT_single_support",
    * }, */
-]
 
 // export var GaitCycle = []
 export var GaitCycle: number[] = []

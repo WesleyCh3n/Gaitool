@@ -1,10 +1,12 @@
 import * as d3 from "d3";
+import { RefObject } from "react";
 import { IData } from "./Dataset";
 import { layout, xScale } from "./Draw.var";
 
-export function createLineChart(divSelector: string) {
+export function createLineChart(ref: RefObject<HTMLDivElement>) {
   var svg = d3
-    .select("#" + divSelector)
+    // .select("#" + divSelector)
+    .select(ref.current)
     .append("svg") // global chart svg w/h
     .attr("preserveAspectRatio", "xMinYMin meet")
     .attr("viewBox", `0 0 ${layout.width} ${layout.lineHeight}`)

@@ -1,5 +1,5 @@
 import type { NextPage } from 'next'
-import DrawChart from '../components/chart/Chart'
+import DrawChart from './Chart'
 
 const Home: NextPage = () => {
   return (

@@ -1,59 +1,15 @@
 import * as d3 from "d3";
-import { IData, IUpdateFunc } from "./Dataset";
-import { layout, xScaleNav, xScale, selectRange } from "./Draw.var";
+import { RefObject } from "react";
+import { IData, IUpdateFunc, layout, xScale, xScaleNav, selectRange } from "./";
 import { findClosestIndex } from "../../utils/utils";
 
 export function createGaitNav(
-  divSelector: string,
+  ref: RefObject<HTMLDivElement>,
   gaitCycle: number[],
   xDomain: number[],
-  updateLists: IUpdateFunc[],
-  data?: IData[]
 ) {
-  const brush = d3
-    .brushX()
-    .extent([
-      [0, 0],
-      [layout.getWidth(), layout.getNavTickHeight()],
-    ])
-    .on("brush", (event: any) => {
-      if (!event.selection) return;
-      var s = event.selection;
-      xScale.domain(s.map(xScaleNav.invert));
-      d3.selectAll(".handle__custom")
-        .attr("display", null)
-        .attr(
-          "transform",
-          (_, i) => `translate(${s[i]}, ${-layout.getNavTickHeight() / 4})`
-        );
-    })
-    .on("end", (event: any) => {
-      if (!event.sourceEvent) {
-        return;
-      } else if (!event.selection) {
-        d3.selectAll(".handle__custom").attr("display", "none");
-      } else {
-        var d0 = event.selection.map(xScaleNav.invert);
-        let rangeIndex = d0.map((x: any) => findClosestIndex(gaitCycle, x));
-        let rangeValue = d0.map(
-          (x: any) => gaitCycle[findClosestIndex(gaitCycle, x)]
-        );
-        d3.select(".brush")
-          .transition()
-          .call(event.target.move, rangeValue.map(xScaleNav));
-        xScale.domain(rangeValue);
-
-        // store current scale
-        selectRange.index = { s: rangeIndex[0], e: rangeIndex[1] }
-        selectRange.value = { s: rangeValue[0], e: rangeValue[1] }
-      }
-      updateLists.forEach((el) => {
-        el.func(el.data, false);
-      });
-    });
-
   const navSvg = d3
-    .select(`#${divSelector}`)
+    .select(ref.current)
     .append("svg") // global chart svg w/h
     .attr("preserveAspectRatio", "xMinYMin meet")
     .attr("viewBox", `0 0 ${layout.width} ${layout.lineHeight}`)
@@ -61,11 +17,6 @@ export function createGaitNav(
     .attr("transform", `translate(${layout.margin.l}, ${layout.margin.t})`);
 
   var yScale = d3.scaleLinear().range([layout.getNavTickHeight(), 0]);
-
-  if (data) {
-    yScale.domain(d3.extent(data, (d) => d.y).map((y) => y ?? 0));
-  }
-
   xScaleNav.domain(xDomain);
   const xAxisGen = d3
     .axisBottom(xScaleNav)
@@ -89,41 +40,90 @@ export function createGaitNav(
     .attr("stroke", "#566573")
     .attr("stroke-width", "3px");
 
-  if (data) {
-    navSvg
-      .append("path") // line path group
-      .attr("class", "line") // Assign a class for styling
-      .attr("fill", "none")
-      .attr("stroke", "rgba(70, 130, 180, 0.5)")
-      .datum(data)
-      .attr(
-        "d",
-        d3
-          .line<IData>()
-          .x((d) => xScaleNav(d.x))
-          .y((d) => yScale(d.y))
-      );
-  }
+  navSvg
+    .append("path") // line path group
+    .attr("class", "line__indicate") // Assign a class for styling
+    .attr("fill", "none")
+    .attr("stroke", "rgba(70, 130, 180, 0.5)")
 
-  // brush and handle
   const gBrush = navSvg
     .append("g") // region brush
     .attr("class", "brush")
-    .call(brush);
 
-  gBrush
-    .selectAll(".handle__custom") // brushHandle
-    .data([{ type: "w" }, { type: "e" }])
-    .enter()
-    .append("path")
-    .attr("class", "handle__custom")
-    .attr("stroke", "#000")
-    .attr("stroke-width", "1.5")
-    .attr("cursor", "ew-resize")
-    .attr("d", brushHandlePath);
+
+  function update(updateLists: IUpdateFunc[], data: IData[]) {
+    const brush = d3
+      .brushX()
+      .extent([
+        [0, 0],
+        [layout.getWidth(), layout.getNavTickHeight()],
+      ])
+      .on("brush", (event: any) => {
+        if (!event.selection) return;
+        var s = event.selection;
+        xScale.domain(s.map(xScaleNav.invert));
+        d3.selectAll(".handle__custom")
+          .attr("display", null)
+          .attr(
+            "transform",
+            (_, i) => `translate(${s[i]}, ${-layout.getNavTickHeight() / 4})`
+          );
+      })
+      .on("end", (event: any) => {
+        if (!event.sourceEvent) {
+          return;
+        } else if (!event.selection) {
+          d3.selectAll(".handle__custom").attr("display", "none");
+        } else {
+          var d0 = event.selection.map(xScaleNav.invert);
+          let rangeIndex = d0.map((x: any) => findClosestIndex(gaitCycle, x));
+          let rangeValue = d0.map(
+            (x: any) => gaitCycle[findClosestIndex(gaitCycle, x)]
+          );
+          d3.select(".brush")
+            .transition()
+            .call(event.target.move, rangeValue.map(xScaleNav));
+          xScale.domain(rangeValue);
+
+          // store current scale
+          selectRange.index = { s: rangeIndex[0], e: rangeIndex[1] };
+          selectRange.value = { s: rangeValue[0], e: rangeValue[1] };
+        }
+        updateLists.forEach((el) => {
+          el.func(el.data, false);
+        });
+      });
+
+    if (data) {
+      yScale.domain(d3.extent(data, (d) => d.y).map((y) => y ?? 0));
+      let lineGen = d3
+            .line<IData>()
+            .x((d) => xScaleNav(d.x))
+            .y((d) => yScale(d.y))
+      d3.select(".line__indicate")
+        .datum(data)
+        .transition()
+        .attr( "d", lineGen);
+    }
+
+    // brush and handle
+    gBrush.call(brush);
+
+    gBrush
+      .selectAll(".handle__custom") // brushHandle
+      .data([{ type: "w" }, { type: "e" }])
+      .enter()
+      .append("path")
+      .attr("class", "handle__custom")
+      .attr("stroke", "#000")
+      .attr("stroke-width", "1.5")
+      .attr("cursor", "ew-resize")
+      .attr("d", brushHandlePath);
+  }
 
   // gBrush.call(brush.move, gaitCycle.slice(0, 2).map(xScaleNav));
   // gBrush.call(brush.move, xScaleNav.range());
+  return update;
 }
 
 const brushHandlePath = (d: any) => {

@@ -5,7 +5,6 @@ export interface IData {
 
 export interface IDatasetInfo{
   name: string;
-  mode: string;
   data: IData[];
   csvX: string;
   csvY: string;
