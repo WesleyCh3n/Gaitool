@@ -12,7 +12,7 @@ export function createBoxChart(
     .select(ref.current)
     .append("svg") // global chart svg w/h
     .attr("preserveAspectRatio", "xMinYMin meet")
-    .attr("viewBox", `0 0 ${layout.boxWidth} ${layout.lineHeight}`)
+    .attr("viewBox", `0 0 ${layout.boxWidth} ${layout.boxHeight}`)
     .append("g") // workground group
     .attr("transform", `translate(${layout.margin.l} ,${layout.margin.t})`);
 
@@ -62,7 +62,7 @@ export function createBoxChart(
     var yScale = d3
       .scaleLinear()
       .domain([minScale, maxScale])
-      .range([layout.getLineHeight() - 20, 0]);
+      .range([layout.getBoxHeight() - 20, 0]);
 
     svg.transition().call(d3.axisLeft(yScale));
 

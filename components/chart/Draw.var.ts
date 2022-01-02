@@ -3,6 +3,7 @@ import * as d3 from "d3";
 export var layout = {
   width: 1000,
   boxWidth: 200,
+  boxHeight: 200,
   lineHeight: 200,
   areaHeight: 100,
   navHeight: 100,
@@ -12,6 +13,9 @@ export var layout = {
   },
   getLineHeight: function () {
     return this.lineHeight - this.margin.t - this.margin.b;
+  },
+  getBoxHeight: function () {
+    return this.boxHeight - this.margin.t - this.margin.b;
   },
   getAreaHeight: function () {
     return this.areaHeight - this.margin.t - this.margin.b;

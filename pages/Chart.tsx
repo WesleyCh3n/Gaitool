@@ -21,7 +21,7 @@ const csvFiles = [
 
 
 const options = Object.keys(dataSchema);
-var navFunc: (updateLists: IUpdateFunc[], data: IData[]) => void
+var navFunc: (updateLists: IUpdateFunc[], data: IData[], first: boolean) => void
 var lineFunc: (data: IData[], first: boolean) => void
 var barMaxFunc: (data: IData[], first: boolean) => void
 var barMinFunc: (data: IData[], first: boolean) => void
@@ -81,45 +81,43 @@ const DrawChart: FC = () => {
       *   func: multiFunc,
       * }); */}
 
-    navFunc(updateLists, schema.data)
+    navFunc(updateLists, schema.data, first)
   };
 
   return (
     <div>
-      <div className="flex justify-center">
-        <div className="mb-3 xl:w-96">
+      <div className="grid grid-cols-7 grid-rows-2 flex-col gap-4">
+        <div className="row-span-2 m-7 w-full">
           <select
+            className="w-full overflow-y-auto"
+            size={3}
             defaultValue={selectedOption}
             onChange={(e) => {
-              setSelectedOption(e.target.value)
-              updateApp(dataSchema[e.target.value], false)
+              setSelectedOption(e.target.value);
+              updateApp(dataSchema[e.target.value], false);
             }}
           >
             {options.map((opt) => (
-              <option key={opt} value={opt}>
+              <option key={opt} value={opt} className='text-[24px]'>
                 {opt}
               </option>
             ))}
           </select>
         </div>
+        <div className="col-span-4">
+          <h1 className="text-center">Accelration</h1>
+          <div ref={d3Line}></div>
+        </div>
+        <div>
+          <h1 className="text-center row-span-2">Max</h1>
+          <div ref={d3BoxMax}></div>
+        </div>
+        <div>
+          <h1 className="text-center row-span-2">Min</h1>
+          <div ref={d3BoxMin}></div>
+        </div>
+        <div ref={d3Nav} className="col-span-4"></div>
       </div>
-          <div
-            className="grid grid-flow-row-dense grid-cols-6"
-          >
-            <div className="col-span-4">
-              <h1 className="text-center">Accelration</h1>
-              <div ref={d3Line}></div>
-            </div>
-            <div>
-              <h1 className="text-center">Max</h1>
-              <div ref={d3BoxMax}></div>
-            </div>
-            <div>
-              <h1 className="text-center">Min</h1>
-              <div ref={d3BoxMin}></div>
-            </div>
-          </div>
-      <div ref={d3Nav}></div>
       {/* <div id="double_support"></div> */}
     </div>
   );

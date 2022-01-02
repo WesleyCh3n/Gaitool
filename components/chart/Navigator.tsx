@@ -51,7 +51,7 @@ export function createGaitNav(
     .attr("class", "brush")
 
 
-  function update(updateLists: IUpdateFunc[], data: IData[]) {
+  function update(updateLists: IUpdateFunc[], data: IData[], first: boolean) {
     const brush = d3
       .brushX()
       .extent([
@@ -119,10 +119,13 @@ export function createGaitNav(
       .attr("stroke-width", "1.5")
       .attr("cursor", "ew-resize")
       .attr("d", brushHandlePath);
+
+      if (first) {
+        gBrush.call(brush.move, xScaleNav.range());
+      }
   }
 
   // gBrush.call(brush.move, gaitCycle.slice(0, 2).map(xScaleNav));
-  // gBrush.call(brush.move, xScaleNav.range());
   return update;
 }
 
