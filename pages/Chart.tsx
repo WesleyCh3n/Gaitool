@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { FC, ChangeEvent } from "react";
+import type { ReactElement, ChangeEvent } from "react";
 import * as d3 from "d3";
 
 import {
@@ -15,12 +15,8 @@ import {
 } from "../components/chart";
 import { cycleMaxIQR, cycleMinIQR } from "../utils/dataPreprocess";
 import { Selector } from "../components/selector/Selector";
-import { Uploader } from "../components/upload/Uploader"
+import { Uploader } from "../components/upload/Uploader";
 
-const csvFiles = [
-  "./2021-09-26-18-36_result_Dr Tsai_1.csv",
-  "./2021-09-26-18-36_cycle_Dr Tsai_1.csv",
-];
 
 const options = Object.keys(dataSchema);
 // declare update chart function
@@ -33,55 +29,90 @@ var lineFunc: (data: IData[], first: boolean) => void;
 var barMaxFunc: (data: IData[], first: boolean) => void;
 var barMinFunc: (data: IData[], first: boolean) => void;
 
-const DrawChart: FC = () => {
+function parseCSV(files: d3.DSVRowArray<string>[]) {
+  // load data into corresponding index/axis
+  for (let key in dataSchema) {
+    files[0].forEach((row) => {
+      dataSchema[key].data.push({
+        x: +(row[dataSchema[key].csvX] ?? 0),
+        y: +(row[dataSchema[key].csvY] ?? 0),
+      });
+    });
+  }
+
+  // load Gait cycle
+  files[1].forEach((row) => {
+    GaitCycle.push(+(row.time ?? 0));
+  });
+  var startEnd = d3.extent(dataSchema.aX.data, (d) => d.x).map((x) => x ?? 0);
+  GaitCycle.unshift(startEnd[0]);
+  GaitCycle.push(startEnd[1]);
+}
+
+function DrawChart(): ReactElement | null {
   const [selectedOption, setSelectedOption] = useState<string>(options[0]);
   const d3Line = useRef(null);
   const d3BoxMax = useRef(null);
   const d3BoxMin = useRef(null);
   const d3Nav = useRef(null);
 
-  useEffect(() => {
-    Promise.all(csvFiles.map((file) => d3.csv(file))).then(
-      ([csvResult, csvGaitCycle]) => {
-        // load data into corresponding index/axis
-        for (let key in dataSchema) {
-          csvResult.forEach((row) => {
-            dataSchema[key].data.push({
-              x: +(row[dataSchema[key].csvX] ?? 0),
-              y: +(row[dataSchema[key].csvY] ?? 0),
-            });
-          });
-        }
+  function initChart() {
+    // init selected range to max
+    selectRange.index.s = 0;
+    selectRange.index.e = GaitCycle.length - 1;
+    selectRange.value.s = GaitCycle[0];
+    selectRange.value.e = GaitCycle[GaitCycle.length - 1];
 
-        // load Gait cycle
-        csvGaitCycle.forEach((row) => {
-          GaitCycle.push(+(row.time ?? 0));
+    // create chart
+    navFunc = createGaitNav(d3Nav, GaitCycle, [
+      selectRange.value.s,
+      selectRange.value.e,
+    ]);
+    lineFunc = createLineChart(d3Line);
+    barMaxFunc = createBoxChart(d3BoxMax, cycleMaxIQR);
+    barMinFunc = createBoxChart(d3BoxMin, cycleMinIQR);
+
+    // update chart
+    updateApp(dataSchema.aX, true);
+  }
+
+  function sendFile(f: File) {
+    const formData = new FormData();
+
+    formData.append("file", f);
+
+    fetch("/api/upload", {
+      method: "POST",
+      body: formData,
+    })
+      .then((res) => res.json())
+      .then((jsonData) => {
+        console.log(jsonData);
+        Promise.all(
+          [jsonData["resultUrl"], jsonData["cycleUrl"]].map((file) =>
+            d3.csv(file)
+          )
+        ).then(([csvResult, csvGaitCycle]) => {
+          console.log(jsonData);
+          parseCSV([csvResult, csvGaitCycle]);
+          initChart();
         });
-        var startEnd = d3
-          .extent(dataSchema.aX.data, (d) => d.x)
-          .map((x) => x ?? 0);
-        GaitCycle.unshift(startEnd[0]);
-        GaitCycle.push(startEnd[1]);
+      });
 
-        // init selected range to max
-        selectRange.index.s = 0;
-        selectRange.index.e = GaitCycle.length - 1;
-        selectRange.value.s = GaitCycle[0];
-        selectRange.value.e = GaitCycle[GaitCycle.length - 1];
+  }
 
-        // create chart
-        navFunc = createGaitNav(d3Nav, GaitCycle, [
-          selectRange.value.s,
-          selectRange.value.e,
-        ]);
-        lineFunc = createLineChart(d3Line);
-        barMaxFunc = createBoxChart(d3BoxMax, cycleMaxIQR);
-        barMinFunc = createBoxChart(d3BoxMin, cycleMinIQR);
+  useEffect(() => {
+    const csvFiles = [
+      "./2021-09-26-18-36_result_Dr Tsai_1.csv",
+      "./2021-09-26-18-36_cycle_Dr Tsai_1.csv",
+    ];
 
-        // update chart
-        updateApp(dataSchema.aX, true);
-      }
-    );
+    {/* Promise.all(csvFiles.map((file) => d3.csv(file))).then(
+      *   ([csvResult, csvGaitCycle]) => {
+      *     parseCSV([csvResult, csvGaitCycle]);
+      *     initChart();
+      *   }
+      * ); */}
   }, []);
 
   const updateApp = (schema: IDatasetInfo, first: boolean) => {
@@ -105,7 +136,7 @@ const DrawChart: FC = () => {
   return (
     <div className="grid grid-cols-7 grid-rows-3 flex-col gap-4">
       <div className="col-span-7">
-        <Uploader handleFile={(f) => {console.log(f)}}/>
+        <Uploader handleFile={sendFile} />
       </div>
       <div className="row-span-2 m-5 w-full">
         <Selector
@@ -129,6 +160,6 @@ const DrawChart: FC = () => {
       <div ref={d3Nav} className="col-span-4"></div>
     </div>
   );
-};
+}
 
 export default DrawChart;
