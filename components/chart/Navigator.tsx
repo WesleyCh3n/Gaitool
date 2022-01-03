@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 import { RefObject } from "react";
-import { IData, IUpdateFunc, layout, xScale, xScaleNav, selectRange } from "./";
+import { IData, IUpdateList, layout, xScale, xScaleNav, selectRange } from "./";
 import { findClosestIndex } from "../../utils/utils";
 
 export function createGaitNav(
@@ -51,7 +51,7 @@ export function createGaitNav(
     .attr("class", "brush")
 
 
-  function update(updateLists: IUpdateFunc[], data: IData[], first: boolean) {
+  function update(updateLists: IUpdateList[], data: IData[], first: boolean) {
     const brush = d3
       .brushX()
       .extent([

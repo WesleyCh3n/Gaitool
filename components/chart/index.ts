@@ -8,3 +8,4 @@ export * from './Navigator'
 export * from './MultiAreaChart'
 
 export * from './Draw.var'
+export * from './Parser'

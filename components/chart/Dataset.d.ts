@@ -10,7 +10,16 @@ export interface IDatasetInfo{
   csvY: string;
 }
 
-export interface IUpdateFunc{
+export interface IDataSchema{
+  aX: IDatasetInfo;
+  aY: IDatasetInfo;
+  aZ: IDatasetInfo;
+  [key: string]: IDatasetInfo;
+}
+
+export type IUpdateFunc = (data: IData[], first: boolean) => void;
+
+export interface IUpdateList{
   data: any;
   func: any;
 }

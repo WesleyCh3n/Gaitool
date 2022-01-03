@@ -4,6 +4,7 @@ export interface SelectorProps {
   options: string[];
   selectedOption: string;
   onChange: (e: ChangeEvent<HTMLSelectElement>) => void;
+  disable: boolean
 }
 
 export function Selector(props: SelectorProps): ReactElement | null {
@@ -13,6 +14,7 @@ export function Selector(props: SelectorProps): ReactElement | null {
       size={props.options.length}
       defaultValue={props.selectedOption}
       onChange={props.onChange}
+      disabled={props.disable}
     >
       {props.options.map((opt) => (
         <option key={opt} value={opt} className="text-[24px]">

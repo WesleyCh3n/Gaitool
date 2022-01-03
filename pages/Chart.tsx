@@ -4,24 +4,24 @@ import * as d3 from "d3";
 
 import {
   IData,
-  IUpdateFunc,
+  IUpdateList,
   IDatasetInfo,
+  IDataSchema,
+  IUpdateFunc,
   createLineChart,
   createGaitNav,
   createBoxChart,
-  dataSchema,
   GaitCycle,
   selectRange,
+  parseCSV,
 } from "../components/chart";
 import { cycleMaxIQR, cycleMinIQR } from "../utils/dataPreprocess";
 import { Selector } from "../components/selector/Selector";
 import { Uploader } from "../components/upload/Uploader";
 
-
-const options = Object.keys(dataSchema);
 // declare update chart function
 var navFunc: (
-  updateLists: IUpdateFunc[],
+  updateLists: IUpdateList[],
   data: IData[],
   first: boolean
 ) => void;
@@ -29,32 +29,34 @@ var lineFunc: (data: IData[], first: boolean) => void;
 var barMaxFunc: (data: IData[], first: boolean) => void;
 var barMinFunc: (data: IData[], first: boolean) => void;
 
-function parseCSV(files: d3.DSVRowArray<string>[]) {
-  // load data into corresponding index/axis
-  for (let key in dataSchema) {
-    files[0].forEach((row) => {
-      dataSchema[key].data.push({
-        x: +(row[dataSchema[key].csvX] ?? 0),
-        y: +(row[dataSchema[key].csvY] ?? 0),
-      });
-    });
-  }
-
-  // load Gait cycle
-  files[1].forEach((row) => {
-    GaitCycle.push(+(row.time ?? 0));
-  });
-  var startEnd = d3.extent(dataSchema.aX.data, (d) => d.x).map((x) => x ?? 0);
-  GaitCycle.unshift(startEnd[0]);
-  GaitCycle.push(startEnd[1]);
-}
-
 function DrawChart(): ReactElement | null {
-  const [selectedOption, setSelectedOption] = useState<string>(options[0]);
   const d3Line = useRef(null);
   const d3BoxMax = useRef(null);
   const d3BoxMin = useRef(null);
   const d3Nav = useRef(null);
+  const [dataS, setDataS] = useState<IDataSchema>({
+    aX: {
+      name: "Accel_x",
+      data: new Array<IData>(),
+      csvX: "time",
+      csvY: "Pelvis_A_X",
+    },
+    aY: {
+      name: "Accel_y",
+      data: new Array<IData>(),
+      csvX: "time",
+      csvY: "Pelvis_A_Y",
+    },
+    aZ: {
+      name: "Accel_z",
+      data: new Array<IData>(),
+      csvX: "time",
+      csvY: "Pelvis_A_Z",
+    },
+  });
+  const options = Object.keys(dataS);
+  const [selectedOption, setSelectedOption] = useState<string>(options[0]);
+  const [selectDisable, setSelectDisable] = useState<boolean>(true);
 
   function initChart() {
     // init selected range to max
@@ -68,12 +70,9 @@ function DrawChart(): ReactElement | null {
       selectRange.value.s,
       selectRange.value.e,
     ]);
-    lineFunc = createLineChart(d3Line);
-    barMaxFunc = createBoxChart(d3BoxMax, cycleMaxIQR);
-    barMinFunc = createBoxChart(d3BoxMin, cycleMinIQR);
 
     // update chart
-    updateApp(dataSchema.aX, true);
+    updateApp(dataS.aX, true);
   }
 
   function sendFile(f: File) {
@@ -87,18 +86,16 @@ function DrawChart(): ReactElement | null {
     })
       .then((res) => res.json())
       .then((jsonData) => {
-        console.log(jsonData);
         Promise.all(
           [jsonData["resultUrl"], jsonData["cycleUrl"]].map((file) =>
             d3.csv(file)
           )
         ).then(([csvResult, csvGaitCycle]) => {
-          console.log(jsonData);
-          parseCSV([csvResult, csvGaitCycle]);
+          setDataS(parseCSV([csvResult, csvGaitCycle], dataS));
           initChart();
+          setSelectDisable(false);
         });
       });
-
   }
 
   useEffect(() => {
@@ -106,21 +103,25 @@ function DrawChart(): ReactElement | null {
       "./2021-09-26-18-36_result_Dr Tsai_1.csv",
       "./2021-09-26-18-36_cycle_Dr Tsai_1.csv",
     ];
-
-    {/* Promise.all(csvFiles.map((file) => d3.csv(file))).then(
-      *   ([csvResult, csvGaitCycle]) => {
-      *     parseCSV([csvResult, csvGaitCycle]);
-      *     initChart();
-      *   }
-      * ); */}
+    lineFunc = createLineChart(d3Line)
+    barMaxFunc = createBoxChart(d3BoxMax, cycleMaxIQR);
+    barMinFunc = createBoxChart(d3BoxMin, cycleMinIQR);
+    Promise.all(csvFiles.map((file) => d3.csv(file))).then(
+      ([csvResult, csvGaitCycle]) => {
+        setDataS(parseCSV([csvResult, csvGaitCycle], dataS));
+        initChart();
+        setSelectDisable(false);
+      }
+    );
   }, []);
 
   const updateApp = (schema: IDatasetInfo, first: boolean) => {
+    // console.log(selectRange.index.s, selectRange.index.e);
     lineFunc(schema.data, first);
     barMaxFunc(schema.data, first);
     barMinFunc(schema.data, first);
 
-    var updateLists: IUpdateFunc[] = [];
+    var updateLists: IUpdateList[] = [];
     updateLists.push({ data: schema.data, func: lineFunc });
     updateLists.push({ data: schema.data, func: barMaxFunc });
     updateLists.push({ data: schema.data, func: barMinFunc });
@@ -130,7 +131,7 @@ function DrawChart(): ReactElement | null {
 
   const selectChange = (e: ChangeEvent<HTMLSelectElement>) => {
     setSelectedOption(e.target.value);
-    updateApp(dataSchema[e.target.value], false);
+    updateApp(dataS[e.target.value], false);
   };
 
   return (
@@ -143,6 +144,7 @@ function DrawChart(): ReactElement | null {
           options={options}
           selectedOption={selectedOption}
           onChange={selectChange}
+          disable={selectDisable}
         />
       </div>
       <div className="col-span-4">

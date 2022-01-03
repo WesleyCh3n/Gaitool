@@ -29,37 +29,35 @@ export function Uploader(props: UploaderProps): ReactElement | null {
 
 
   return (
-    <div className="mt-3 mb-3 w-96">
+    <div className="grid h-20 ml-4 grid-cols-3 gap-4 content-center">
       <input
-        className="form-control block w-full px-3 py-1.5 text-base font-normal
-          text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300
-          rounded-lg transition ease-in-out m-0 focus:text-gray-700 focus:bg-white
-          focus:border-blue-600 focus:outline-none shadow-md"
+        className="form-control block w-full p-2 text-base font-normal
+          text-gray-700 bg-white bg-clip-padding border border-solid
+          border-gray-300 rounded-lg transition ease-in-out hover:text-gray-700
+          hover:bg-white hover:border-blue-600 hover:outline-none shadow-md"
         type="file"
         name="file"
         title=" "
         onChange={selectOnChange}
-        multiple
+        // multiple
       />
       <div
-        className="block rounded-lg shadow-md max-w-sm mt-3 border border-solid
-        border-gray-300"
+        className="block rounded-lg shadow-md max-w-sm border
+          border-solid border-gray-300 text-gray-700 p-3"
       >
-        <div className="text-gray-700 py-1.5 px-3">
-          {isSelected ? (
-            selectedFile ? (
-              Array.from(selectedFile).map((file, i) => (
-                <PrintFileInfo file={file} index={i + 1} key={file.name} />
-              ))
-            ) : (
-              <p></p>
-            )
+        {isSelected ? (
+          selectedFile ? (
+            Array.from(selectedFile).map((file, i) => (
+              <PrintFileInfo file={file} index={i + 1} key={file.name} />
+            ))
           ) : (
-            <p className="text-center">Select a file to show details</p>
-          )}
-        </div>
+            <p></p>
+          )
+        ) : (
+          <p className="text-center">Select a file to show details</p>
+        )}
       </div>
-      <div className="flex justify-center">
+      <div className="flex items-center">
         <Button title={"Submit"} onClick={handleSelectList} />
       </div>
     </div>
