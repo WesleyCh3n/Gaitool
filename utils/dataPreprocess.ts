@@ -1,8 +1,5 @@
-import { IData } from "../components/chart/Dataset";
-import { IBoxResult } from "../components/chart/BoxChart.d";
-import { selectRange } from "../components/chart/Draw.var";
-import { GaitCycle } from "../components/chart/Dataset.var";
 import * as d3 from "d3";
+import { IData, IBoxResult, selectRange, GaitCycle } from "../components/chart";
 
 export const IQR = (data: IData[]): IBoxResult => {
   var dataSorted = data.sort((a, b) => d3.ascending(a.y, b.y));
@@ -34,16 +31,14 @@ export const IQR = (data: IData[]): IBoxResult => {
 export const cycleMaxIQR = (data: IData[]): IBoxResult => {
   let s = selectRange.index.s;
   let e = selectRange.index.e;
-  if (s == 0 && e == 0) {
-    e = GaitCycle.length
-  }
   const dataFiltered: number[] = [];
-  for (let i = s; i < (e-1); i++) {
+  for (let i = s; i < e - 1; i++) {
     let cycleDataY = data
       .filter((d) => d.x >= GaitCycle[i] && d.x <= GaitCycle[i + 1])
       .map((d) => d.y);
     dataFiltered.push(Math.max(...cycleDataY));
   }
+  console.log("filter", dataFiltered);
 
   var ySorted = [...dataFiltered].sort((a, b) => d3.ascending(a, b));
 
@@ -73,11 +68,8 @@ export const cycleMaxIQR = (data: IData[]): IBoxResult => {
 export const cycleMinIQR = (data: IData[]): IBoxResult => {
   let s = selectRange.index.s;
   let e = selectRange.index.e;
-  if (s == 0 && e == 0) {
-    e = GaitCycle.length
-  }
   const dataFiltered: number[] = [];
-  for (let i = s; i < (e-1); i++) {
+  for (let i = s; i < e - 1; i++) {
     let cycleDataY = data
       .filter((d) => d.x >= GaitCycle[i] && d.x <= GaitCycle[i + 1])
       .map((d) => d.y);

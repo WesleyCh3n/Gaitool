@@ -6,12 +6,13 @@ import {
   IData,
   IUpdateFunc,
   IDatasetInfo,
-  GaitCycle,
   createLineChart,
   createGaitNav,
   createBoxChart,
 
   dataSchema,
+  GaitCycle,
+  selectRange
 } from "../components/chart";
 
 const csvFiles = [
@@ -21,6 +22,7 @@ const csvFiles = [
 
 
 const options = Object.keys(dataSchema);
+// declare update chart function
 var navFunc: (updateLists: IUpdateFunc[], data: IData[], first: boolean) => void
 var lineFunc: (data: IData[], first: boolean) => void
 var barMaxFunc: (data: IData[], first: boolean) => void
@@ -46,6 +48,7 @@ const DrawChart: FC = () => {
           });
         }
 
+        // load Gait cycle
         csvGaitCycle.forEach((row) => {
           GaitCycle.push(+(row.time ?? 0));
         });
@@ -55,10 +58,22 @@ const DrawChart: FC = () => {
         GaitCycle.unshift(startEnd[0]);
         GaitCycle.push(startEnd[1]);
 
-        navFunc = createGaitNav(d3Nav, GaitCycle, [0, dataSchema.aX.data.slice(-1)[0].x])
+        // init selected range to max
+        selectRange.index.s = 0
+        selectRange.index.e = GaitCycle.length - 1
+        selectRange.value.s = GaitCycle[0]
+        selectRange.value.e = GaitCycle[GaitCycle.length - 1]
+
+        // create chart
+        navFunc = createGaitNav(d3Nav, GaitCycle, [
+          selectRange.value.s,
+          selectRange.value.e,
+        ]);
         lineFunc = createLineChart(d3Line);
         barMaxFunc = createBoxChart(d3BoxMax, cycleMaxIQR);
         barMinFunc = createBoxChart(d3BoxMin, cycleMinIQR);
+
+        // update chart
         updateApp(dataSchema.aX, true);
       }
     );
@@ -74,20 +89,13 @@ const DrawChart: FC = () => {
     updateLists.push({ data: schema.data, func: barMaxFunc });
     updateLists.push({ data: schema.data, func: barMinFunc });
 
-    {/* var multiFunc = createMultiAreaChart("double_support");
-      * multiFunc(dataSchema.slice(-3), true);
-      * updateLists.push({
-      *   data: dataSchema.slice(-3),
-      *   func: multiFunc,
-      * }); */}
-
     navFunc(updateLists, schema.data, first)
   };
 
   return (
     <div>
       <div className="grid grid-cols-7 grid-rows-2 flex-col gap-4">
-        <div className="row-span-2 m-7 w-full">
+        <div className="row-span-2 m-7 w-full h-full">
           <select
             className="w-full overflow-y-auto"
             size={3}
