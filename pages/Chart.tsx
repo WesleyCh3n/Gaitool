@@ -1,5 +1,6 @@
 import { FC, useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
+
 import { cycleMaxIQR, cycleMinIQR } from "../utils/dataPreprocess";
 
 import {
@@ -9,7 +10,6 @@ import {
   createLineChart,
   createGaitNav,
   createBoxChart,
-
   dataSchema,
   GaitCycle,
   selectRange
@@ -95,9 +95,9 @@ const DrawChart: FC = () => {
   return (
     <div>
       <div className="grid grid-cols-7 grid-rows-2 flex-col gap-4">
-        <div className="row-span-2 m-7 w-full h-full">
+        <div className="row-span-2 m-5 w-full">
           <select
-            className="w-full overflow-y-auto"
+            className="w-full selectBox"
             size={3}
             defaultValue={selectedOption}
             onChange={(e) => {
@@ -106,7 +106,7 @@ const DrawChart: FC = () => {
             }}
           >
             {options.map((opt) => (
-              <option key={opt} value={opt} className='text-[24px]'>
+              <option key={opt} value={opt} className="text-[24px]">
                 {opt}
               </option>
             ))}
