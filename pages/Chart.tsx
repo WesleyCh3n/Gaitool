@@ -1,7 +1,6 @@
-import { FC, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { FC, ChangeEvent } from "react";
 import * as d3 from "d3";
-
-import { cycleMaxIQR, cycleMinIQR } from "../utils/dataPreprocess";
 
 import {
   IData,
@@ -12,28 +11,34 @@ import {
   createBoxChart,
   dataSchema,
   GaitCycle,
-  selectRange
+  selectRange,
 } from "../components/chart";
+import { cycleMaxIQR, cycleMinIQR } from "../utils/dataPreprocess";
+import { Selector } from "../components/selector/Selector";
+import { Uploader } from "../components/upload/Uploader"
 
 const csvFiles = [
   "./2021-09-26-18-36_result_Dr Tsai_1.csv",
   "./2021-09-26-18-36_cycle_Dr Tsai_1.csv",
 ];
 
-
 const options = Object.keys(dataSchema);
 // declare update chart function
-var navFunc: (updateLists: IUpdateFunc[], data: IData[], first: boolean) => void
-var lineFunc: (data: IData[], first: boolean) => void
-var barMaxFunc: (data: IData[], first: boolean) => void
-var barMinFunc: (data: IData[], first: boolean) => void
+var navFunc: (
+  updateLists: IUpdateFunc[],
+  data: IData[],
+  first: boolean
+) => void;
+var lineFunc: (data: IData[], first: boolean) => void;
+var barMaxFunc: (data: IData[], first: boolean) => void;
+var barMinFunc: (data: IData[], first: boolean) => void;
 
 const DrawChart: FC = () => {
   const [selectedOption, setSelectedOption] = useState<string>(options[0]);
-  const d3Line = useRef(null)
-  const d3BoxMax = useRef(null)
-  const d3BoxMin = useRef(null)
-  const d3Nav = useRef(null)
+  const d3Line = useRef(null);
+  const d3BoxMax = useRef(null);
+  const d3BoxMin = useRef(null);
+  const d3Nav = useRef(null);
 
   useEffect(() => {
     Promise.all(csvFiles.map((file) => d3.csv(file))).then(
@@ -59,10 +64,10 @@ const DrawChart: FC = () => {
         GaitCycle.push(startEnd[1]);
 
         // init selected range to max
-        selectRange.index.s = 0
-        selectRange.index.e = GaitCycle.length - 1
-        selectRange.value.s = GaitCycle[0]
-        selectRange.value.e = GaitCycle[GaitCycle.length - 1]
+        selectRange.index.s = 0;
+        selectRange.index.e = GaitCycle.length - 1;
+        selectRange.value.s = GaitCycle[0];
+        selectRange.value.e = GaitCycle[GaitCycle.length - 1];
 
         // create chart
         navFunc = createGaitNav(d3Nav, GaitCycle, [
@@ -89,44 +94,39 @@ const DrawChart: FC = () => {
     updateLists.push({ data: schema.data, func: barMaxFunc });
     updateLists.push({ data: schema.data, func: barMinFunc });
 
-    navFunc(updateLists, schema.data, first)
+    navFunc(updateLists, schema.data, first);
+  };
+
+  const selectChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    setSelectedOption(e.target.value);
+    updateApp(dataSchema[e.target.value], false);
   };
 
   return (
-    <div>
-      <div className="grid grid-cols-7 grid-rows-2 flex-col gap-4">
-        <div className="row-span-2 m-5 w-full">
-          <select
-            className="w-full selectBox"
-            size={3}
-            defaultValue={selectedOption}
-            onChange={(e) => {
-              setSelectedOption(e.target.value);
-              updateApp(dataSchema[e.target.value], false);
-            }}
-          >
-            {options.map((opt) => (
-              <option key={opt} value={opt} className="text-[24px]">
-                {opt}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="col-span-4">
-          <h1 className="text-center">Accelration</h1>
-          <div ref={d3Line}></div>
-        </div>
-        <div>
-          <h1 className="text-center row-span-2">Max</h1>
-          <div ref={d3BoxMax}></div>
-        </div>
-        <div>
-          <h1 className="text-center row-span-2">Min</h1>
-          <div ref={d3BoxMin}></div>
-        </div>
-        <div ref={d3Nav} className="col-span-4"></div>
+    <div className="grid grid-cols-7 grid-rows-3 flex-col gap-4">
+      <div className="col-span-7">
+        <Uploader handleFile={(f) => {console.log(f)}}/>
       </div>
-      {/* <div id="double_support"></div> */}
+      <div className="row-span-2 m-5 w-full">
+        <Selector
+          options={options}
+          selectedOption={selectedOption}
+          onChange={selectChange}
+        />
+      </div>
+      <div className="col-span-4">
+        <h1 className="text-center">Accelration</h1>
+        <div ref={d3Line}></div>
+      </div>
+      <div>
+        <h1 className="text-center row-span-2">Max</h1>
+        <div ref={d3BoxMax}></div>
+      </div>
+      <div>
+        <h1 className="text-center row-span-2">Min</h1>
+        <div ref={d3BoxMin}></div>
+      </div>
+      <div ref={d3Nav} className="col-span-4"></div>
     </div>
   );
 };
