@@ -1,86 +1,46 @@
 import * as d3 from "d3";
 import { IData, IBoxResult, selectRange, GaitCycle } from "../components/chart";
 
-export const IQR = (data: IData[]): IBoxResult => {
+export const totalIQR = (data: IData[]): IBoxResult => {
   var dataSorted = data.sort((a, b) => d3.ascending(a.y, b.y));
   var ySorted = dataSorted.map((d) => d.y);
 
-  const q1 = d3.quantile(ySorted, 0.25) ?? 0;
-  const median = d3.quantile(ySorted, 0.5) ?? 0;
-  const q3 = d3.quantile(ySorted, 0.75) ?? 0;
-
-  const IQR = q3 - q1;
-
-  const lowerIQR = q1 - 1.5 * IQR;
-  const upperIQR = q3 + 1.5 * IQR;
-
-  return {
-    min: Math.min(...ySorted),
-    max: Math.max(...ySorted),
-
-    q1: q1,
-    median: median,
-    q3: q3,
-
-    IQR: IQR,
-    lowerIQR: lowerIQR,
-    upperIQR: upperIQR,
-  };
+  return IQR(ySorted);
 };
 
 export const cycleMaxIQR = (data: IData[]): IBoxResult => {
-  let s = selectRange.index.s;
-  let e = selectRange.index.e;
   const dataFiltered: number[] = [];
-  for (let i = s; i < e - 1; i++) {
+  for (let i = selectRange.index.s; i < selectRange.index.e - 1; i++) {
     let cycleDataY = data
       .filter((d) => d.x >= GaitCycle[i] && d.x <= GaitCycle[i + 1])
       .map((d) => d.y);
     dataFiltered.push(Math.max(...cycleDataY));
   }
-  console.log("filter", dataFiltered);
 
   var ySorted = [...dataFiltered].sort((a, b) => d3.ascending(a, b));
 
-  const q1 = d3.quantile(ySorted, 0.25) ?? 0;
-  const median = d3.quantile(ySorted, 0.5) ?? 0;
-  const q3 = d3.quantile(ySorted, 0.75) ?? 0;
-
-  const IQR = q3 - q1;
-
-  const lowerIQR = q1 - 1.5 * IQR;
-  const upperIQR = q3 + 1.5 * IQR;
-
-  return {
-    min: Math.min(...ySorted),
-    max: Math.max(...ySorted),
-
-    q1: q1,
-    median: median,
-    q3: q3,
-
-    IQR: IQR,
-    lowerIQR: lowerIQR,
-    upperIQR: upperIQR,
-  };
+  return IQR(ySorted);
 };
 
 export const cycleMinIQR = (data: IData[]): IBoxResult => {
-  let s = selectRange.index.s;
-  let e = selectRange.index.e;
   const dataFiltered: number[] = [];
-  for (let i = s; i < e - 1; i++) {
+  for (let i = selectRange.index.s; i < selectRange.index.e - 1; i++) {
     let cycleDataY = data
       .filter((d) => d.x >= GaitCycle[i] && d.x <= GaitCycle[i + 1])
       .map((d) => d.y);
-    dataFiltered.push(Math.min(...cycleDataY));
+    dataFiltered.push(Math.max(...cycleDataY));
   }
 
   var ySorted = [...dataFiltered].sort((a, b) => d3.ascending(a, b));
 
-  const q1 = d3.quantile(ySorted, 0.25) ?? 0;
-  const median = d3.quantile(ySorted, 0.5) ?? 0;
-  const q3 = d3.quantile(ySorted, 0.75) ?? 0;
+  return IQR(ySorted);
+};
+
+const IQR = (sortedArray: number[]): IBoxResult => {
+
+  const q1 = d3.quantile(sortedArray, 0.25) ?? 0;
+  const median = d3.quantile(sortedArray, 0.5) ?? 0;
+  const q3 = d3.quantile(sortedArray, 0.75) ?? 0;
 
   const IQR = q3 - q1;
 
@@ -88,8 +48,8 @@ export const cycleMinIQR = (data: IData[]): IBoxResult => {
   const upperIQR = q3 + 1.5 * IQR;
 
   return {
-    min: Math.min(...ySorted),
-    max: Math.max(...ySorted),
+    min: Math.min(...sortedArray),
+    max: Math.max(...sortedArray),
 
     q1: q1,
     median: median,
@@ -98,5 +58,5 @@ export const cycleMinIQR = (data: IData[]): IBoxResult => {
     IQR: IQR,
     lowerIQR: lowerIQR,
     upperIQR: upperIQR,
-  };
-};
+  }
+}
