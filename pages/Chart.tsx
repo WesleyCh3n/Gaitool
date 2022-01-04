@@ -20,12 +20,12 @@ import { Selector } from "../components/selector/Selector";
 import { Uploader } from "../components/upload/Uploader";
 
 // declare update chart function
-var navFunc: (
-  updateLists: IUpdateList[],
-  data: IData[],
-  first: boolean,
-  cycle: number[]
-) => void;
+// var navFunc: (
+  // updateLists: IUpdateList[],
+  // data: IData[],
+  // first: boolean,
+  // cycle: number[]
+// ) => void;
 
 function DrawChart(): ReactElement | null {
   const d3Line = useRef<HTMLDivElement>(null);
@@ -59,6 +59,7 @@ function DrawChart(): ReactElement | null {
       lineChart:   () => {},
       boxMaxChart: () => {},
       boxMinChart: () => {},
+      navFunc: ()=>{},
     })
 
   function sendFile(f: File) {
@@ -78,11 +79,6 @@ function DrawChart(): ReactElement | null {
         selectRange.value.s = tempCycle[0];
         selectRange.value.e = tempCycle[tempCycle.length - 1];
 
-        // create chart
-        navFunc = createGaitNav(d3Nav, [
-          selectRange.value.s,
-          selectRange.value.e,
-        ]);
 
         // update chart
         updateApp(dataS.aX, true, tempCycle);
@@ -90,10 +86,11 @@ function DrawChart(): ReactElement | null {
         setSelectDisable(false);
       }
     );
-{/*     const formData = new FormData();
-  *
-  *     formData.append("file", f);
-  *
+
+    const formData = new FormData();
+
+    formData.append("file", f);
+{/*
   *     fetch("/api/upload", {
   *       method: "POST",
   *       body: formData,
@@ -105,8 +102,26 @@ function DrawChart(): ReactElement | null {
   *             d3.csv(file)
   *           )
   *         ).then(([csvResult, csvGaitCycle]) => {
-  *           setDataS(parseCSV([csvResult, csvGaitCycle], dataS));
-  *           initChart();
+  *
+  *           setDataS(parseResult([csvResult, csvGaitCycle], dataS));
+  *           var tempCycle = parseCycle(csvGaitCycle, dataS.aX.data)
+  *           setCycle(tempCycle)
+  *
+  *           // init selected range to max
+  *           selectRange.index.s = 0;
+  *           selectRange.index.e = tempCycle.length - 1;
+  *           selectRange.value.s = tempCycle[0];
+  *           selectRange.value.e = tempCycle[tempCycle.length - 1];
+  *
+  *           // create chart
+  *           navFunc = createGaitNav(d3Nav, [
+  *             selectRange.value.s,
+  *             selectRange.value.e,
+  *           ]);
+  *
+  *           // update chart
+  *           updateApp(dataS.aX, true, tempCycle);
+  *
   *           setSelectDisable(false);
   *         });
   *       }); */}
@@ -117,6 +132,7 @@ function DrawChart(): ReactElement | null {
       lineChart: createLineChart(d3Line),
       boxMaxChart: createBoxChart(d3BoxMax, cycleMaxIQR),
       boxMinChart: createBoxChart(d3BoxMin, cycleMinIQR),
+      navFunc: createGaitNav(d3Nav),
     })
   }, []);
 
@@ -131,8 +147,7 @@ function DrawChart(): ReactElement | null {
     updateLists.push({ data: schema.data, func: funcs.lineChart });
     updateLists.push({ data: schema.data, func: funcs.boxMaxChart, cycle: cycle});
     updateLists.push({ data: schema.data, func: funcs.boxMinChart, cycle: cycle});
-
-    navFunc(updateLists, schema.data, first, cycle);
+    funcs.navFunc(updateLists, schema.data, first, cycle);
   };
 
   const selectChange = (e: ChangeEvent<HTMLSelectElement>) => {
@@ -142,33 +157,33 @@ function DrawChart(): ReactElement | null {
 
   return (
     <div>
-        <div className="col-span-7">
+      <div className="col-span-7">
         <Uploader handleFile={sendFile} />
-        </div>
-      <div className="grid grid-cols-7 grid-rows-2 flex-col gap-4">
-        <div className="row-span-2 m-5 w-full">
-        <Selector
-          options={Object.keys(dataS)}
-          selectedOption={selectedOption}
-          onChange={selectChange}
-          disable={selectDisable}
-        />
+      </div>
+      <div className="grid grid-cols-7 flex-col gap-4">
+        <div className="m-4">
+          <Selector
+            options={Object.keys(dataS)}
+            selectedOption={selectedOption}
+            onChange={selectChange}
+            disable={selectDisable}
+          />
         </div>
         <div className="col-span-4">
-        <h1 className="text-center">Accelration</h1>
-        <div ref={d3Line}></div>
+          <h1 className="text-center">Accelration</h1>
+          <div className="border" ref={d3Line}></div>
         </div>
         <div>
-        <h1 className="text-center row-span-2">Max</h1>
-        <div ref={d3BoxMax}></div>
+          <h1 className="text-center">Max</h1>
+          <div ref={d3BoxMax}></div>
         </div>
         <div>
-        <h1 className="text-center row-span-2">Min</h1>
-        <div ref={d3BoxMin}></div>
+          <h1 className="text-center">Min</h1>
+          <div ref={d3BoxMin}></div>
         </div>
-      <div ref={d3Nav} className="col-span-4"></div>
       </div>
-      </div>
+        <div ref={d3Nav} className="border"></div>
+    </div>
   );
 }
 

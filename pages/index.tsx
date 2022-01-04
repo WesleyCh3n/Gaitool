@@ -3,10 +3,10 @@ import DrawChart from './Chart'
 
 const Home: NextPage = () => {
   return (
-    <div>
+    <>
       <DrawChart />
       <DrawChart />
-    </div>
+    </>
   )
 }
 

@@ -5,23 +5,17 @@ import { findClosestIndex } from "../../utils/utils";
 
 export function createGaitNav(
   ref: RefObject<HTMLDivElement>,
-  xDomain: number[]
 ) {
   const navSvg = d3
     .select(ref.current)
     .append("svg") // global chart svg w/h
     .attr("preserveAspectRatio", "xMinYMin meet")
-    .attr("viewBox", `0 0 ${layout.width} ${layout.lineHeight}`)
+    .attr("viewBox", `0 0 ${layout.width} ${layout.navHeight}`)
     .append("g") // workground group
     .attr("transform", `translate(${layout.margin.l}, ${layout.margin.t})`);
 
   var xScaleNav = d3.scaleLinear().range([0, layout.getWidth()]);
   var yScale = d3.scaleLinear().range([layout.getNavTickHeight(), 0]);
-  xScaleNav.domain(xDomain);
-
-  const xAxisGen = d3
-    .axisBottom(xScaleNav)
-    .tickSize(-layout.getNavTickHeight());
 
   const xAxisG = navSvg
     .append("g") // region x axis
@@ -33,7 +27,7 @@ export function createGaitNav(
     .attr("stroke", "#566573")
     .attr("stroke-width", "3px");
 
-  navSvg
+  const lineG = navSvg
     .append("path") // line path group
     .attr("class", "line__indicate") // Assign a class for styling
     .attr("fill", "none")
@@ -49,7 +43,6 @@ export function createGaitNav(
     first: boolean,
     gaitCycle: number[]
   ) {
-    type BrushGroup = { brush: any };
     const brush = d3.brushX().extent([
       [0, 0],
       [layout.getWidth(), layout.getNavTickHeight()],
@@ -60,7 +53,8 @@ export function createGaitNav(
         if (!event.selection) return;
         var s = event.selection;
         xScale.domain(s.map(xScaleNav.invert));
-        gBrush.selectAll(".handle__custom")
+        gBrush
+          .selectAll(".handle__custom")
           .attr("display", null)
           .attr(
             "transform",
@@ -68,34 +62,41 @@ export function createGaitNav(
           );
       })
       .on("end", (event: any) => {
-        if (!event.sourceEvent) {
+        if (!event.sourceEvent || !event.mode) {
           return;
         } else if (!event.selection) {
           gBrush.selectAll(".handle__custom").attr("display", "none");
+          return;
         } else {
-          var d0 = event.selection.map(xScaleNav.invert);
+          let d0 = event.selection.map(xScaleNav.invert);
           let rangeIndex = d0.map((x: any) => findClosestIndex(gaitCycle, x));
           let rangeValue = d0.map(
             (x: any) => gaitCycle[findClosestIndex(gaitCycle, x)]
           );
-          gBrush.select(".brush")
+          gBrush
             .transition()
             .call(event.target.move, rangeValue.map(xScaleNav));
-          xScale.domain(rangeValue);
 
+          xScale.domain(rangeValue);
           // store current scale
           selectRange.index = { s: rangeIndex[0], e: rangeIndex[1] };
           selectRange.value = { s: rangeValue[0], e: rangeValue[1] };
+
+          updateLists.forEach((el) => {
+            if (el.cycle) {
+              el.func(el.data, false, el.cycle);
+            } else {
+              el.func(el.data, false);
+            }
+          });
         }
-        updateLists.forEach((el) => {
-          if (el.cycle) {
-            el.func(el.data, false, el.cycle);
-          } else {
-            el.func(el.data, false);
-          }
-        });
       });
-    gBrush.datum({ brush: brush });
+
+    xScaleNav.domain(d3.extent(data, (d) => d.x).map((x) => x ?? 0));
+
+    const xAxisGen = d3
+      .axisBottom(xScaleNav)
+      .tickSize(-layout.getNavTickHeight());
 
     xAxisG
       .call(xAxisGen.ticks(gaitCycle.length, ",.3f").tickValues(gaitCycle))
@@ -111,7 +112,7 @@ export function createGaitNav(
         .line<IData>()
         .x((d) => xScaleNav(d.x))
         .y((d) => yScale(d.y));
-      navSvg.select(".line__indicate").datum(data).transition().attr("d", lineGen);
+      lineG.datum(data).transition().attr("d", lineGen);
     }
 
     // brush and handle

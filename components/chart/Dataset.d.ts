@@ -23,8 +23,18 @@ first: boolean,
 cycle?: number[] | any // TODO: fix this any
 ) => void
 
+export type INavUpdator = (
+  updateLists: IUpdateList[],
+  data: IData[],
+  first: boolean,
+  gaitCycle: number[]
+) => void;
+
 interface IUpdatorList {
-  [key: string]: IUpdator;
+  [key: string]: IUpdator | INavUpdator;
+  lineChart:   IUpdator,
+  boxMaxChart: IUpdator,
+  boxMinChart: IUpdator,
 }
 
 export interface IUpdateList {
