@@ -28,7 +28,7 @@ export const cycleMinIQR = (data: IData[], cycle: number[]): IBoxResult => {
     let cycleDataY = data
       .filter((d) => d.x >= cycle[i] && d.x <= cycle[i + 1])
       .map((d) => d.y);
-    dataFiltered.push(Math.max(...cycleDataY));
+    dataFiltered.push(Math.min(...cycleDataY));
   }
 
   var ySorted = [...dataFiltered].sort((a, b) => d3.ascending(a, b));
