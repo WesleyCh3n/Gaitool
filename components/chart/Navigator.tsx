@@ -1,11 +1,10 @@
 import * as d3 from "d3";
 import { RefObject } from "react";
-import { IData, IUpdateList, layout, xScale, xScaleNav, selectRange } from "./";
+import { IData, IUpdateList, layout, xScale, selectRange } from "./";
 import { findClosestIndex } from "../../utils/utils";
 
 export function createGaitNav(
   ref: RefObject<HTMLDivElement>,
-  gaitCycle: number[],
   xDomain: number[],
 ) {
   const navSvg = d3
@@ -16,24 +15,18 @@ export function createGaitNav(
     .append("g") // workground group
     .attr("transform", `translate(${layout.margin.l}, ${layout.margin.t})`);
 
+  var xScaleNav = d3.scaleLinear().range([0, layout.getWidth()]);
   var yScale = d3.scaleLinear().range([layout.getNavTickHeight(), 0]);
   xScaleNav.domain(xDomain);
+
   const xAxisGen = d3
     .axisBottom(xScaleNav)
-    .ticks(gaitCycle.length, ",.3f")
-    .tickValues(gaitCycle)
-    .tickSize(-layout.getNavTickHeight());
+    .tickSize(-layout.getNavTickHeight())
 
-  navSvg
+  const xAxisG = navSvg
     .append("g") // region x axis
-    .attr("class", "x axis")
+    .attr("class", "axis__x")
     .attr("transform", `translate(0, ${layout.getNavTickHeight()})`)
-    .call(xAxisGen)
-    .selectAll(".tick text") // region tick style
-    .style("text-anchor", "end")
-    .attr("dx", "-.8em")
-    .attr("dy", ".15em")
-    .attr("transform", "rotate(-40)");
 
   navSvg
     .selectAll(".axis line")
@@ -51,7 +44,7 @@ export function createGaitNav(
     .attr("class", "brush")
 
 
-  function update(updateLists: IUpdateList[], data: IData[], first: boolean) {
+  function update(updateLists: IUpdateList[], data: IData[], first: boolean, gaitCycle: number[]) {
     const brush = d3
       .brushX()
       .extent([
@@ -90,9 +83,21 @@ export function createGaitNav(
           selectRange.value = { s: rangeValue[0], e: rangeValue[1] };
         }
         updateLists.forEach((el) => {
-          el.func(el.data, false);
+          if (el.cycle) {
+            el.func(el.data, false, el.cycle);
+          } else {
+            el.func(el.data, false);
+          }
         });
       });
+
+      xAxisG
+        .call(xAxisGen.ticks(gaitCycle.length, ",.3f").tickValues(gaitCycle))
+        .selectAll(".tick text") // region tick style
+        .style("text-anchor", "end")
+        .attr("dx", "-.8em")
+        .attr("dy", ".15em")
+        .attr("transform", "rotate(-40)");
 
     if (data) {
       yScale.domain(d3.extent(data, (d) => d.y).map((y) => y ?? 0));

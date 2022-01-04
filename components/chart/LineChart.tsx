@@ -11,7 +11,8 @@ export function createLineChart(ref: RefObject<HTMLDivElement>) {
     .attr("preserveAspectRatio", "xMinYMin meet")
     .attr("viewBox", `0 0 ${layout.width} ${layout.lineHeight}`)
     .append("g") // workground group
-    .attr("transform", `translate(${layout.margin.l} ,${layout.margin.t})`);
+    .attr("transform", `translate(${layout.margin.l} ,${layout.margin.t})`)
+    .attr("class", 'workspace');
 
   svg
     .append("g") // x axis group
@@ -90,6 +91,11 @@ export function createLineChart(ref: RefObject<HTMLDivElement>) {
     });
 
   function update(data: IData[], first: boolean) {
+    var svg = d3
+      // .select("#" + divSelector)
+      .select(ref.current)
+      .select('.workspace')
+
     if (first) {
       xScale.domain(d3.extent(data, (d) => d.x).map((x) => x ?? 0));
     }

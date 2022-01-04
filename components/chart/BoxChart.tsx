@@ -6,7 +6,7 @@ import { IBoxResult } from "./BoxChart.d";
 
 export function createBoxChart(
   ref: RefObject<HTMLDivElement>,
-  dataPreprocess: (data: IData[]) => IBoxResult
+  dataPreprocess: (data: IData[], cycle: number[]) => IBoxResult
 ) {
   var svg = d3
     .select(ref.current)
@@ -45,7 +45,7 @@ export function createBoxChart(
   svg.append("g").attr("class", "text__left");
   svg.append("g").attr("class", "text__right");
 
-  function update(data: IData[], first: boolean) {
+  function update(data: IData[], first: boolean, cycle: number[]) {
     var dataCopy = [...data]; // HACK: copy before sort
     if (!first) {
       dataCopy = dataCopy.filter(
@@ -54,7 +54,7 @@ export function createBoxChart(
     }
 
     // process data
-    const result = dataPreprocess(dataCopy);
+    const result = dataPreprocess(dataCopy, cycle);
 
     var minScale = result.min - result.IQR / 4;
     var maxScale = result.max + result.IQR / 4;

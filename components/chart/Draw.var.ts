@@ -27,7 +27,7 @@ export var layout = {
 
 // in order to update x domain with different brush area, this need to be global
 export var xScale = d3.scaleLinear().range([0, layout.getWidth()]);
-export var xScaleNav = d3.scaleLinear().range([0, layout.getWidth()]);
+// export var xScaleNav = d3.scaleLinear().range([0, layout.getWidth()]);
 
 export var selectRange = {
   index: {

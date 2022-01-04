@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, } from "react";
 import type { ReactElement, ChangeEvent } from "react";
 import * as d3 from "d3";
 
@@ -7,13 +7,13 @@ import {
   IUpdateList,
   IDatasetInfo,
   IDataSchema,
-  IUpdateFunc,
+  IUpdatorList,
   createLineChart,
   createGaitNav,
   createBoxChart,
-  GaitCycle,
   selectRange,
-  parseCSV,
+  parseResult,
+  parseCycle,
 } from "../components/chart";
 import { cycleMaxIQR, cycleMinIQR } from "../utils/dataPreprocess";
 import { Selector } from "../components/selector/Selector";
@@ -23,16 +23,14 @@ import { Uploader } from "../components/upload/Uploader";
 var navFunc: (
   updateLists: IUpdateList[],
   data: IData[],
-  first: boolean
+  first: boolean,
+  cycle: number[]
 ) => void;
-var lineFunc: (data: IData[], first: boolean) => void;
-var barMaxFunc: (data: IData[], first: boolean) => void;
-var barMinFunc: (data: IData[], first: boolean) => void;
 
 function DrawChart(): ReactElement | null {
-  const d3Line = useRef(null);
-  const d3BoxMax = useRef(null);
-  const d3BoxMin = useRef(null);
+  const d3Line = useRef<HTMLDivElement>(null);
+  const d3BoxMax = useRef<HTMLDivElement>(null);
+  const d3BoxMin = useRef<HTMLDivElement>(null);
   const d3Nav = useRef(null);
   const [dataS, setDataS] = useState<IDataSchema>({
     aX: {
@@ -54,113 +52,123 @@ function DrawChart(): ReactElement | null {
       csvY: "Pelvis_A_Z",
     },
   });
-  const options = Object.keys(dataS);
-  const [selectedOption, setSelectedOption] = useState<string>(options[0]);
+  const [cycle, setCycle] = useState<number[]>([])
+  const [selectedOption, setSelectedOption] = useState<string>(Object.keys(dataS)[0]);
   const [selectDisable, setSelectDisable] = useState<boolean>(true);
-
-  function initChart() {
-    // init selected range to max
-    selectRange.index.s = 0;
-    selectRange.index.e = GaitCycle.length - 1;
-    selectRange.value.s = GaitCycle[0];
-    selectRange.value.e = GaitCycle[GaitCycle.length - 1];
-
-    // create chart
-    navFunc = createGaitNav(d3Nav, GaitCycle, [
-      selectRange.value.s,
-      selectRange.value.e,
-    ]);
-
-    // update chart
-    updateApp(dataS.aX, true);
-  }
+  const [funcs, setFuncs] = useState<IUpdatorList>({
+      lineChart:   () => {},
+      boxMaxChart: () => {},
+      boxMinChart: () => {},
+    })
 
   function sendFile(f: File) {
-    const formData = new FormData();
-
-    formData.append("file", f);
-
-    fetch("/api/upload", {
-      method: "POST",
-      body: formData,
-    })
-      .then((res) => res.json())
-      .then((jsonData) => {
-        Promise.all(
-          [jsonData["resultUrl"], jsonData["cycleUrl"]].map((file) =>
-            d3.csv(file)
-          )
-        ).then(([csvResult, csvGaitCycle]) => {
-          setDataS(parseCSV([csvResult, csvGaitCycle], dataS));
-          initChart();
-          setSelectDisable(false);
-        });
-      });
-  }
-
-  useEffect(() => {
     const csvFiles = [
       "./2021-09-26-18-36_result_Dr Tsai_1.csv",
       "./2021-09-26-18-36_cycle_Dr Tsai_1.csv",
     ];
-    lineFunc = createLineChart(d3Line)
-    barMaxFunc = createBoxChart(d3BoxMax, cycleMaxIQR);
-    barMinFunc = createBoxChart(d3BoxMin, cycleMinIQR);
     Promise.all(csvFiles.map((file) => d3.csv(file))).then(
       ([csvResult, csvGaitCycle]) => {
-        setDataS(parseCSV([csvResult, csvGaitCycle], dataS));
-        initChart();
+        setDataS(parseResult([csvResult, csvGaitCycle], dataS));
+        var tempCycle = parseCycle(csvGaitCycle, dataS.aX.data)
+        setCycle(tempCycle)
+
+        // init selected range to max
+        selectRange.index.s = 0;
+        selectRange.index.e = tempCycle.length - 1;
+        selectRange.value.s = tempCycle[0];
+        selectRange.value.e = tempCycle[tempCycle.length - 1];
+
+        // create chart
+        navFunc = createGaitNav(d3Nav, [
+          selectRange.value.s,
+          selectRange.value.e,
+        ]);
+
+        // update chart
+        updateApp(dataS.aX, true, tempCycle);
+
         setSelectDisable(false);
       }
     );
+{/*     const formData = new FormData();
+  *
+  *     formData.append("file", f);
+  *
+  *     fetch("/api/upload", {
+  *       method: "POST",
+  *       body: formData,
+  *     })
+  *       .then((res) => res.json())
+  *       .then((jsonData) => {
+  *         Promise.all(
+  *           [jsonData["resultUrl"], jsonData["cycleUrl"]].map((file) =>
+  *             d3.csv(file)
+  *           )
+  *         ).then(([csvResult, csvGaitCycle]) => {
+  *           setDataS(parseCSV([csvResult, csvGaitCycle], dataS));
+  *           initChart();
+  *           setSelectDisable(false);
+  *         });
+  *       }); */}
+  }
+
+  useEffect(() => {
+    setFuncs({
+      lineChart: createLineChart(d3Line),
+      boxMaxChart: createBoxChart(d3BoxMax, cycleMaxIQR),
+      boxMinChart: createBoxChart(d3BoxMin, cycleMinIQR),
+    })
   }, []);
 
-  const updateApp = (schema: IDatasetInfo, first: boolean) => {
+  const updateApp = (schema: IDatasetInfo, first: boolean, cycle: number[]) => {
     // console.log(selectRange.index.s, selectRange.index.e);
-    lineFunc(schema.data, first);
-    barMaxFunc(schema.data, first);
-    barMinFunc(schema.data, first);
+
+    funcs.lineChart(schema.data, first);
+    funcs.boxMaxChart(schema.data, first, cycle);
+    funcs.boxMinChart(schema.data, first, cycle);
 
     var updateLists: IUpdateList[] = [];
-    updateLists.push({ data: schema.data, func: lineFunc });
-    updateLists.push({ data: schema.data, func: barMaxFunc });
-    updateLists.push({ data: schema.data, func: barMinFunc });
+    updateLists.push({ data: schema.data, func: funcs.lineChart });
+    updateLists.push({ data: schema.data, func: funcs.boxMaxChart, cycle: cycle});
+    updateLists.push({ data: schema.data, func: funcs.boxMinChart, cycle: cycle});
 
-    navFunc(updateLists, schema.data, first);
+    navFunc(updateLists, schema.data, first, cycle);
   };
 
   const selectChange = (e: ChangeEvent<HTMLSelectElement>) => {
     setSelectedOption(e.target.value);
-    updateApp(dataS[e.target.value], false);
+    updateApp(dataS[e.target.value], false, cycle);
   };
 
   return (
-    <div className="grid grid-cols-7 grid-rows-3 flex-col gap-4">
-      <div className="col-span-7">
+    <div>
+        <div className="col-span-7">
         <Uploader handleFile={sendFile} />
-      </div>
-      <div className="row-span-2 m-5 w-full">
+        </div>
+      <div className="grid grid-cols-7 grid-rows-2 flex-col gap-4">
+        <div className="row-span-2 m-5 w-full">
         <Selector
-          options={options}
+          options={Object.keys(dataS)}
           selectedOption={selectedOption}
           onChange={selectChange}
           disable={selectDisable}
         />
-      </div>
-      <div className="col-span-4">
+        </div>
+        <div className="col-span-4">
         <h1 className="text-center">Accelration</h1>
         <div ref={d3Line}></div>
-      </div>
-      <div>
+        </div>
+        <div>
         <h1 className="text-center row-span-2">Max</h1>
         <div ref={d3BoxMax}></div>
-      </div>
-      <div>
+        </div>
+        <div>
         <h1 className="text-center row-span-2">Min</h1>
         <div ref={d3BoxMin}></div>
-      </div>
+        </div>
       <div ref={d3Nav} className="col-span-4"></div>
-    </div>
+      </div>
+      </div>
   );
 }
 

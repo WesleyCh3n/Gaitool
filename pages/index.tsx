@@ -5,7 +5,7 @@ const Home: NextPage = () => {
   return (
     <div>
       <DrawChart />
-      {/* <DrawChart key={"2"}/> */}
+      <DrawChart />
     </div>
   )
 }

@@ -1,11 +1,9 @@
 import * as d3 from "d3";
-import {
-  GaitCycle,
-} from "./Dataset.var";
 
 import { IDataSchema } from "./Dataset.d";
+import { IData } from ".";
 
-export function parseCSV(
+export function parseResult(
   files: d3.DSVRowArray<string>[],
   dataSchema: IDataSchema
 ): IDataSchema {
@@ -19,13 +17,18 @@ export function parseCSV(
     });
   }
 
-  // load Gait cycle
-  files[1].forEach((row) => {
-    GaitCycle.push(+(row.time ?? 0));
-  });
-  var startEnd = d3.extent(dataSchema.aX.data, (d) => d.x).map((x) => x ?? 0);
-  GaitCycle.unshift(startEnd[0]);
-  GaitCycle.push(startEnd[1]);
-
   return dataSchema;
+}
+
+export function parseCycle(
+  files: d3.DSVRowArray<string>,
+  data: IData[]
+): number[] {
+  // load Gait cycle
+  let cycle = files.map((row) => +(row.time ?? 0));
+  var startEnd = d3.extent(data, (d) => d.x).map((x) => x ?? 0);
+  cycle.unshift(startEnd[0]);
+  cycle.push(startEnd[1]);
+
+  return cycle;
 }

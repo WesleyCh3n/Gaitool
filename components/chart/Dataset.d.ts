@@ -3,23 +3,32 @@ export interface IData {
   y: number;
 }
 
-export interface IDatasetInfo{
+export interface IDatasetInfo {
   name: string;
   data: IData[];
   csvX: string;
   csvY: string;
 }
 
-export interface IDataSchema{
+export interface IDataSchema {
   aX: IDatasetInfo;
   aY: IDatasetInfo;
   aZ: IDatasetInfo;
   [key: string]: IDatasetInfo;
 }
 
-export type IUpdateFunc = (data: IData[], first: boolean) => void;
+export type IUpdator = (
+data: IData[],
+first: boolean,
+cycle?: number[] | any // TODO: fix this any
+) => void
 
-export interface IUpdateList{
+interface IUpdatorList {
+  [key: string]: IUpdator;
+}
+
+export interface IUpdateList {
   data: any;
   func: any;
+  cycle?: number[];
 }
