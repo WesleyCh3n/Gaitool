@@ -160,8 +160,8 @@ function DrawChart(): ReactElement | null {
       <div className="col-span-7">
         <Uploader handleFile={sendFile} />
       </div>
-      <div className="grid grid-cols-7 flex-col gap-4">
-        <div className="m-4">
+      <div className="grid grid-cols-7 flex-col gap-4 m-4">
+        <div className="mt-[28px]">
           <Selector
             options={Object.keys(dataS)}
             selectedOption={selectedOption}
@@ -170,19 +170,20 @@ function DrawChart(): ReactElement | null {
           />
         </div>
         <div className="col-span-4">
-          <h1 className="text-center">Accelration</h1>
-          <div className="border" ref={d3Line}></div>
+          <h1 className="text-center text-xl">Accelration</h1>
+          <div className="border rounded-lg border-solid border-gray-300 shadow-lg" ref={d3Line}></div>
         </div>
         <div>
-          <h1 className="text-center">Max</h1>
-          <div ref={d3BoxMax}></div>
+          <h1 className="text-center text-xl">Max</h1>
+          <div className="border rounded-lg border-solid border-gray-300 shadow-lg" ref={d3BoxMax}></div>
         </div>
         <div>
-          <h1 className="text-center">Min</h1>
-          <div ref={d3BoxMin}></div>
+          <h1 className="text-center text-xl">Min</h1>
+          <div className="border rounded-lg border-solid border-gray-300 shadow-lg" ref={d3BoxMin}></div>
         </div>
       </div>
-        <div ref={d3Nav} className="border"></div>
+        <h1 className="text-center text-xl">Navigator</h1>
+        <div className="mx-4 border rounded-lg border-solid border-gray-300 shadow-lg" ref={d3Nav}></div>
     </div>
   );
 }

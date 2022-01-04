@@ -4,7 +4,7 @@ export var layout = {
   width: 1000,
   boxWidth: 200,
   boxHeight: 200,
-  lineHeight: 200,
+  lineHeight: 240,
   areaHeight: 100,
   navHeight: 100,
   margin: { t: 10, r: 50, b: 30, l: 50, },
@@ -15,7 +15,7 @@ export var layout = {
     return this.lineHeight - this.margin.t - this.margin.b;
   },
   getBoxHeight: function () {
-    return this.boxHeight - this.margin.t - this.margin.b;
+    return this.boxHeight - this.margin.b;
   },
   getAreaHeight: function () {
     return this.areaHeight - this.margin.t - this.margin.b;

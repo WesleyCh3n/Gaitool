@@ -35,6 +35,7 @@ interface IUpdatorList {
   lineChart:   IUpdator,
   boxMaxChart: IUpdator,
   boxMinChart: IUpdator,
+  navFunc: INavUpdator,
 }
 
 export interface IUpdateList {

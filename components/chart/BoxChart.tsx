@@ -62,7 +62,7 @@ export function createBoxChart(
     var yScale = d3
       .scaleLinear()
       .domain([minScale, maxScale])
-      .range([layout.getBoxHeight() - 20, 0]);
+      .range([layout.getBoxHeight(), 0]);
 
     svg.transition().call(d3.axisLeft(yScale));
 
