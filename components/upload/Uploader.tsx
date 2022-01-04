@@ -29,9 +29,10 @@ export function Uploader(props: UploaderProps): ReactElement | null {
 
 
   return (
-    <div className="grid h-20 ml-4 grid-cols-3 gap-4 content-center">
+    <div className="grid grid-cols-7 h-20 ml-4 gap-4 content-center">
       <input
-        className="form-control block w-full p-2 text-base font-normal
+        className="col-span-3
+          form-control block w-full p-2 text-base font-normal
           text-gray-700 bg-white bg-clip-padding border border-solid
           border-gray-300 rounded-lg transition ease-in-out hover:text-gray-700
           hover:bg-white hover:border-blue-600 hover:outline-none shadow-md"
@@ -42,7 +43,8 @@ export function Uploader(props: UploaderProps): ReactElement | null {
         // multiple
       />
       <div
-        className="block rounded-lg shadow-md max-w-sm border
+        className="col-span-3
+          block rounded-lg shadow-md max-w-sm border
           border-solid border-gray-300 text-gray-700 p-3"
       >
         {isSelected ? (
@@ -57,7 +59,7 @@ export function Uploader(props: UploaderProps): ReactElement | null {
           <p className="text-center">Select a file to show details</p>
         )}
       </div>
-      <div className="flex items-center">
+      <div className="col-span-1 flex items-center">
         <Button title={"Submit"} onClick={handleSelectList} />
       </div>
     </div>

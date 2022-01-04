@@ -156,8 +156,8 @@ function DrawChart(): ReactElement | null {
   };
 
   return (
-    <div>
-      <div className="col-span-7">
+    <div className="m-4 border rounded-lg border-solid border-gray-300">
+      <div className="flex justify-center">
         <Uploader handleFile={sendFile} />
       </div>
       <div className="grid grid-cols-7 flex-col gap-4 m-4">
@@ -171,19 +171,19 @@ function DrawChart(): ReactElement | null {
         </div>
         <div className="col-span-4">
           <h1 className="text-center text-xl">Accelration</h1>
-          <div className="border rounded-lg border-solid border-gray-300 shadow-lg" ref={d3Line}></div>
+          <div className="border rounded-lg border-solid border-gray-300 shadow-md" ref={d3Line}></div>
         </div>
         <div>
           <h1 className="text-center text-xl">Max</h1>
-          <div className="border rounded-lg border-solid border-gray-300 shadow-lg" ref={d3BoxMax}></div>
+          <div className="border rounded-lg border-solid border-gray-300 shadow-md" ref={d3BoxMax}></div>
         </div>
         <div>
           <h1 className="text-center text-xl">Min</h1>
-          <div className="border rounded-lg border-solid border-gray-300 shadow-lg" ref={d3BoxMin}></div>
+          <div className="border rounded-lg border-solid border-gray-300 shadow-md" ref={d3BoxMin}></div>
         </div>
       </div>
         <h1 className="text-center text-xl">Navigator</h1>
-        <div className="mx-4 border rounded-lg border-solid border-gray-300 shadow-lg" ref={d3Nav}></div>
+        <div className="m-4 border rounded-lg border-solid border-gray-300 shadow-lg" ref={d3Nav}></div>
     </div>
   );
 }
