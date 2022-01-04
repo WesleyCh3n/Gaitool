@@ -56,17 +56,11 @@ export function createGaitNav(
     ]);
 
     brush
-      .on("start", () => {
-        d3.selectAll(".brush").filter((d) => {
-          console.log((d as BrushGroup).brush != brush);
-          return (d as BrushGroup).brush != brush;
-        });
-      })
       .on("brush", (event: any) => {
         if (!event.selection) return;
         var s = event.selection;
         xScale.domain(s.map(xScaleNav.invert));
-        d3.selectAll(".handle__custom")
+        gBrush.selectAll(".handle__custom")
           .attr("display", null)
           .attr(
             "transform",
@@ -77,14 +71,14 @@ export function createGaitNav(
         if (!event.sourceEvent) {
           return;
         } else if (!event.selection) {
-          d3.selectAll(".handle__custom").attr("display", "none");
+          gBrush.selectAll(".handle__custom").attr("display", "none");
         } else {
           var d0 = event.selection.map(xScaleNav.invert);
           let rangeIndex = d0.map((x: any) => findClosestIndex(gaitCycle, x));
           let rangeValue = d0.map(
             (x: any) => gaitCycle[findClosestIndex(gaitCycle, x)]
           );
-          d3.select(".brush")
+          gBrush.select(".brush")
             .transition()
             .call(event.target.move, rangeValue.map(xScaleNav));
           xScale.domain(rangeValue);
