@@ -111,7 +111,7 @@ export function createGaitNav(
         .line<IData>()
         .x((d) => xScaleNav(d.x))
         .y((d) => yScale(d.y));
-      d3.select(".line__indicate").datum(data).transition().attr("d", lineGen);
+      navSvg.select(".line__indicate").datum(data).transition().attr("d", lineGen);
     }
 
     // brush and handle
