@@ -5,7 +5,7 @@ import { findClosestIndex } from "../../utils/utils";
 
 export function createGaitNav(
   ref: RefObject<HTMLDivElement>,
-  xDomain: number[],
+  xDomain: number[]
 ) {
   const navSvg = d3
     .select(ref.current)
@@ -21,12 +21,12 @@ export function createGaitNav(
 
   const xAxisGen = d3
     .axisBottom(xScaleNav)
-    .tickSize(-layout.getNavTickHeight())
+    .tickSize(-layout.getNavTickHeight());
 
   const xAxisG = navSvg
     .append("g") // region x axis
     .attr("class", "axis__x")
-    .attr("transform", `translate(0, ${layout.getNavTickHeight()})`)
+    .attr("transform", `translate(0, ${layout.getNavTickHeight()})`);
 
   navSvg
     .selectAll(".axis line")
@@ -37,20 +37,31 @@ export function createGaitNav(
     .append("path") // line path group
     .attr("class", "line__indicate") // Assign a class for styling
     .attr("fill", "none")
-    .attr("stroke", "rgba(70, 130, 180, 0.5)")
+    .attr("stroke", "rgba(70, 130, 180, 0.5)");
 
   const gBrush = navSvg
     .append("g") // region brush
-    .attr("class", "brush")
+    .attr("class", "brush");
 
+  function update(
+    updateLists: IUpdateList[],
+    data: IData[],
+    first: boolean,
+    gaitCycle: number[]
+  ) {
+    type BrushGroup = { brush: any };
+    const brush = d3.brushX().extent([
+      [0, 0],
+      [layout.getWidth(), layout.getNavTickHeight()],
+    ]);
 
-  function update(updateLists: IUpdateList[], data: IData[], first: boolean, gaitCycle: number[]) {
-    const brush = d3
-      .brushX()
-      .extent([
-        [0, 0],
-        [layout.getWidth(), layout.getNavTickHeight()],
-      ])
+    brush
+      .on("start", () => {
+        d3.selectAll(".brush").filter((d) => {
+          console.log((d as BrushGroup).brush != brush);
+          return (d as BrushGroup).brush != brush;
+        });
+      })
       .on("brush", (event: any) => {
         if (!event.selection) return;
         var s = event.selection;
@@ -90,25 +101,23 @@ export function createGaitNav(
           }
         });
       });
+    gBrush.datum({ brush: brush });
 
-      xAxisG
-        .call(xAxisGen.ticks(gaitCycle.length, ",.3f").tickValues(gaitCycle))
-        .selectAll(".tick text") // region tick style
-        .style("text-anchor", "end")
-        .attr("dx", "-.8em")
-        .attr("dy", ".15em")
-        .attr("transform", "rotate(-40)");
+    xAxisG
+      .call(xAxisGen.ticks(gaitCycle.length, ",.3f").tickValues(gaitCycle))
+      .selectAll(".tick text") // region tick style
+      .style("text-anchor", "end")
+      .attr("dx", "-.8em")
+      .attr("dy", ".15em")
+      .attr("transform", "rotate(-40)");
 
     if (data) {
       yScale.domain(d3.extent(data, (d) => d.y).map((y) => y ?? 0));
       let lineGen = d3
-            .line<IData>()
-            .x((d) => xScaleNav(d.x))
-            .y((d) => yScale(d.y))
-      d3.select(".line__indicate")
-        .datum(data)
-        .transition()
-        .attr( "d", lineGen);
+        .line<IData>()
+        .x((d) => xScaleNav(d.x))
+        .y((d) => yScale(d.y));
+      d3.select(".line__indicate").datum(data).transition().attr("d", lineGen);
     }
 
     // brush and handle
@@ -125,9 +134,9 @@ export function createGaitNav(
       .attr("cursor", "ew-resize")
       .attr("d", brushHandlePath);
 
-      if (first) {
-        gBrush.call(brush.move, xScaleNav.range());
-      }
+    if (first) {
+      gBrush.call(brush.move, xScaleNav.range());
+    }
   }
 
   // gBrush.call(brush.move, gaitCycle.slice(0, 2).map(xScaleNav));
@@ -138,8 +147,37 @@ const brushHandlePath = (d: any) => {
   var e = +(d.type == "e"),
     x = e ? 1 : -1,
     y = layout.getNavTickHeight() / 2;
-  return ( "M" + 0.5 * x + "," + y + "A6,6 0 0 " + e + " " + 6.5 * x + "," +
-    (y + 6) + "V" + (2 * y - 6) + "A6,6 0 0 " + e + " " + 0.5 * x + "," +
-    2 * y + "Z" + "M" + 2.5 * x + "," + (y + 8) + "V" + (2 * y - 8) + "M" +
-    4.5 * x + "," + (y + 8) + "V" + (2 * y - 8));
+  return (
+    "M" +
+    0.5 * x +
+    "," +
+    y +
+    "A6,6 0 0 " +
+    e +
+    " " +
+    6.5 * x +
+    "," +
+    (y + 6) +
+    "V" +
+    (2 * y - 6) +
+    "A6,6 0 0 " +
+    e +
+    " " +
+    0.5 * x +
+    "," +
+    2 * y +
+    "Z" +
+    "M" +
+    2.5 * x +
+    "," +
+    (y + 8) +
+    "V" +
+    (2 * y - 8) +
+    "M" +
+    4.5 * x +
+    "," +
+    (y + 8) +
+    "V" +
+    (2 * y - 8)
+  );
 };
