@@ -3,20 +3,21 @@ import type { ReactElement, ChangeEvent } from "react";
 import * as d3 from "d3";
 
 import {
-  IData,
-  IUpdateList,
+  // Interface
   IDatasetInfo,
   IDataSchema,
   ICycle,
   IUpdator,
   INavUpdator,
+  // Create chart
   createLineChart,
   createGaitNav,
   createBoxChart,
-  // selectRange,
+  // Utility
   parseResult,
   parseCycle,
 } from "../components/chart";
+
 import { cycleMaxIQR, cycleMinIQR } from "../utils/dataPreprocess";
 import { Selector } from "../components/selector/Selector";
 import { Uploader } from "../components/upload/Uploader";
@@ -32,19 +33,19 @@ interface IUpdatorList {
 const dataSInit: IDataSchema = {
   aX: {
     name: "Accel_x",
-    data: new Array<IData>(),
+    data: [],
     csvX: "time",
     csvY: "Pelvis_A_X",
   },
   aY: {
     name: "Accel_y",
-    data: new Array<IData>(),
+    data: [],
     csvX: "time",
     csvY: "Pelvis_A_Y",
   },
   aZ: {
     name: "Accel_z",
-    data: new Array<IData>(),
+    data: [],
     csvX: "time",
     csvY: "Pelvis_A_Z",
   },
@@ -81,6 +82,37 @@ function DrawChart(): ReactElement | null {
   ];
 
   function sendFile(f: File) {
+    const formData = new FormData();
+    formData.append("file", f); // NOTE: append("key", value)
+
+    fetch("/api/upload", { method: "POST", body: formData })
+      .then((res) => res.json())
+      .then((jsonRslt) => {
+        Promise.all(
+          [jsonRslt["resultUrl"], jsonRslt["cycleUrl"]].map((file) =>
+            d3.csv(file)
+          )
+        ).then(([csvResult, csvGaitCycle]) => {
+          setDataS(parseResult(csvResult, dataS));
+          var tmpCycle = parseCycle(csvGaitCycle);
+          setCycle(tmpCycle);
+
+          // update chart
+          updateApp(dataS.aX, tmpCycle);
+
+          setSelDisable(false);
+        });
+      });
+  }
+
+  useEffect(() => {
+    setUpdators({
+      lineChart: createLineChart(d3Line),
+      boxMaxChart: createBoxChart(d3BoxMax, cycleMaxIQR),
+      boxMinChart: createBoxChart(d3BoxMin, cycleMinIQR),
+      navFunc: createGaitNav(d3Nav),
+    });
+    // DUBUG:
     Promise.all(csvFiles.map((file) => d3.csv(file))).then(
       ([csvResult, csvGaitCycle]) => {
         setDataS(parseResult(csvResult, dataS));
@@ -93,56 +125,6 @@ function DrawChart(): ReactElement | null {
         setSelDisable(false);
       }
     );
-
-    const formData = new FormData();
-
-    formData.append("file", f);
-    {
-      /*
-       *     fetch("/api/upload", {
-       *       method: "POST",
-       *       body: formData,
-       *     })
-       *       .then((res) => res.json())
-       *       .then((jsonData) => {
-       *         Promise.all(
-       *           [jsonData["resultUrl"], jsonData["cycleUrl"]].map((file) =>
-       *             d3.csv(file)
-       *           )
-       *         ).then(([csvResult, csvGaitCycle]) => {
-       *
-       *           setDataS(parseResult([csvResult, csvGaitCycle], dataS));
-       *           var tempCycle = parseCycle(csvGaitCycle, dataS.aX.data)
-       *           setCycle(tempCycle)
-       *
-       *           // init selected range to max
-       *           selectRange.index.s = 0;
-       *           selectRange.index.e = tempCycle.length - 1;
-       *           selectRange.value.s = tempCycle[0];
-       *           selectRange.value.e = tempCycle[tempCycle.length - 1];
-       *
-       *           // create chart
-       *           navFunc = createGaitNav(d3Nav, [
-       *             selectRange.value.s,
-       *             selectRange.value.e,
-       *           ]);
-       *
-       *           // update chart
-       *           updateApp(dataS.aX, true, tempCycle);
-       *
-       *           setSelectDisable(false);
-       *         });
-       *       }); */
-    }
-  }
-
-  useEffect(() => {
-    setUpdators({
-      lineChart: createLineChart(d3Line),
-      boxMaxChart: createBoxChart(d3BoxMax, cycleMaxIQR),
-      boxMinChart: createBoxChart(d3BoxMin, cycleMinIQR),
-      navFunc: createGaitNav(d3Nav),
-    });
   }, []);
 
   const updateApp = (schema: IDatasetInfo, cycle: ICycle) => {
@@ -150,22 +132,23 @@ function DrawChart(): ReactElement | null {
     updators.boxMaxChart(schema.data, cycle);
     updators.boxMinChart(schema.data, cycle);
 
-    var updateLists: IUpdateList[] = [];
-    updateLists.push({
-      data: schema.data,
-      func: updators.lineChart,
-      cycle: cycle,
-    });
-    updateLists.push({
-      data: schema.data,
-      func: updators.boxMaxChart,
-      cycle: cycle,
-    });
-    updateLists.push({
-      data: schema.data,
-      func: updators.boxMinChart,
-      cycle: cycle,
-    });
+    var updateLists = [
+      {
+        data: schema.data,
+        func: updators.lineChart,
+        cycle: cycle,
+      },
+      {
+        data: schema.data,
+        func: updators.boxMaxChart,
+        cycle: cycle,
+      },
+      {
+        data: schema.data,
+        func: updators.boxMinChart,
+        cycle: cycle,
+      },
+    ];
     updators.navFunc(updateLists, schema.data, cycle);
     setCycle(cycle);
   };

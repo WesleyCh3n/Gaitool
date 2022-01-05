@@ -1,6 +1,5 @@
 import * as d3 from "d3";
-import { IData } from "./Dataset";
-import { layout, xScale } from "./Draw.var";
+import { layout, IData } from "./";
 
 export function createAreaChart(divSelector: string) {
   var svg = d3
@@ -30,6 +29,7 @@ export function createAreaChart(divSelector: string) {
 }
 
 export function update(data: IData[], name: string, first: boolean) {
+  var xScale = d3.scaleLinear().range([0, layout.getWidth()]);
   if (first) {
     xScale.domain(d3.extent(data, (d) => d.x).map((x) => x ?? 0));
   }

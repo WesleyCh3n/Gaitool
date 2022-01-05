@@ -11,10 +11,10 @@ export interface IDatasetInfo {
 }
 
 export interface IDataSchema {
+  [key: string]: IDatasetInfo;
   aX: IDatasetInfo;
   aY: IDatasetInfo;
   aZ: IDatasetInfo;
-  [key: string]: IDatasetInfo;
 }
 
 interface ICycle {
@@ -24,7 +24,7 @@ interface ICycle {
 
 export type IUpdator = (
 data: IData[],
-cycle: ICycle // TODO: fix this any
+cycle: ICycle
 ) => void
 
 export type INavUpdator = (
@@ -38,3 +38,16 @@ export interface IUpdateList {
   func: IUpdator;
   cycle: ICycle;
 }
+
+export interface IBoxResult  {
+  [key: string]: number;
+  min: number;
+  max: number;
+  median: number;
+  q1: number;
+  q3: number;
+  IQR: number;
+  lowerIQR: number;
+  upperIQR: number,
+}
+

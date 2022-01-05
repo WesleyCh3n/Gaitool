@@ -1,6 +1,5 @@
 import * as d3 from "d3";
-import { IData, IDatasetInfo } from "./Dataset";
-import { layout, xScale } from "./Draw.var";
+import { IData, IDatasetInfo, layout } from "./";
 
 {/* var multiFunc = createMultiAreaChart("double_support");
   * multiFunc(dataSchema.slice(-3), true);
@@ -32,6 +31,7 @@ export function createMultiAreaChart(divSelector: string) {
     .attr("class", "area") // Assign a class for styling
 
   function update(data: IDatasetInfo[], first: boolean) {
+    var xScale = d3.scaleLinear().range([0, layout.getWidth()]);
     if (first) {
       xScale.domain(d3.extent(data[0].data, (d) => d.x).map((x) => x ?? 0));
     }

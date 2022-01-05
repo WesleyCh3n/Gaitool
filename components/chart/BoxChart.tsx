@@ -1,8 +1,6 @@
 import * as d3 from "d3";
 import { RefObject } from "react";
-import { IData, ICycle } from "./Dataset";
-import { layout, } from "./Draw.var";
-import { IBoxResult } from "./BoxChart.d";
+import { IData, ICycle, IBoxResult, layout } from "./";
 
 export function createBoxChart(
   ref: RefObject<HTMLDivElement>,
