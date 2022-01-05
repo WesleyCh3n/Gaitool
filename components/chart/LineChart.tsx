@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 import { RefObject } from "react";
-import { IData } from "./Dataset";
-import { layout, xScale } from "./Draw.var";
+
+import { IData, ICycle, layout } from ".";
 
 export function createLineChart(ref: RefObject<HTMLDivElement>) {
   var svg = d3
@@ -12,7 +12,7 @@ export function createLineChart(ref: RefObject<HTMLDivElement>) {
     .attr("viewBox", `0 0 ${layout.width} ${layout.lineHeight}`)
     .append("g") // workground group
     .attr("transform", `translate(${layout.margin.l} ,${layout.margin.t})`)
-    .attr("class", 'workspace');
+    .attr("class", "workspace");
 
   svg
     .append("g") // x axis group
@@ -38,8 +38,6 @@ export function createLineChart(ref: RefObject<HTMLDivElement>) {
     .attr("fill", "none")
     .attr("width", layout.getWidth())
     .attr("height", layout.getLineHeight());
-
-  var yScale = d3.scaleLinear().range([layout.getLineHeight(), 0]);
 
   var tooltipGroup = svg
     .append("g")
@@ -90,16 +88,12 @@ export function createLineChart(ref: RefObject<HTMLDivElement>) {
       tooltipGroup.style("display", "none");
     });
 
-  function update(data: IData[], first: boolean) {
-    var svg = d3
-      // .select("#" + divSelector)
-      .select(ref.current)
-      .select('.workspace')
-
-    if (first) {
-      xScale.domain(d3.extent(data, (d) => d.x).map((x) => x ?? 0));
-    }
+  function update(data: IData[], cycle: ICycle) {
     // prepare scale
+    var xScale = d3.scaleLinear().range([0, layout.getWidth()]);
+    var yScale = d3.scaleLinear().range([layout.getLineHeight(), 0]);
+
+    xScale.domain(cycle.sel.map(s => cycle.step[s][0]));
     yScale.domain(d3.extent(data, (d) => d.y).map((y) => y ?? 0));
 
     // prepare axisGen

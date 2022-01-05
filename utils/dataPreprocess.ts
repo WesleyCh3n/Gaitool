@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { IData, IBoxResult, selectRange, } from "../components/chart";
+import { IData, IBoxResult, ICycle, } from "../components/chart";
 
 export const totalIQR = (data: IData[]): IBoxResult => {
   var dataSorted = data.sort((a, b) => d3.ascending(a.y, b.y));
@@ -8,11 +8,11 @@ export const totalIQR = (data: IData[]): IBoxResult => {
   return IQR(ySorted);
 };
 
-export const cycleMaxIQR = (data: IData[], cycle: number[]): IBoxResult => {
+export const cycleMaxIQR = (data: IData[], cycle: ICycle): IBoxResult => {
   const dataFiltered: number[] = [];
-  for (let i = selectRange.index.s; i < selectRange.index.e - 1; i++) {
+  for (let i = cycle.sel[0]; i < cycle.sel[1]; i++) {
     let cycleDataY = data
-      .filter((d) => d.x >= cycle[i] && d.x <= cycle[i + 1])
+      .filter((d) => d.x >= cycle.step[i][0] && d.x <= cycle.step[i+1][0] )
       .map((d) => d.y);
     dataFiltered.push(Math.max(...cycleDataY));
   }
@@ -22,11 +22,11 @@ export const cycleMaxIQR = (data: IData[], cycle: number[]): IBoxResult => {
   return IQR(ySorted);
 };
 
-export const cycleMinIQR = (data: IData[], cycle: number[]): IBoxResult => {
+export const cycleMinIQR = (data: IData[], cycle: ICycle): IBoxResult => {
   const dataFiltered: number[] = [];
-  for (let i = selectRange.index.s; i < selectRange.index.e - 1; i++) {
+  for (let i = cycle.sel[0]; i < cycle.sel[1]; i++) {
     let cycleDataY = data
-      .filter((d) => d.x >= cycle[i] && d.x <= cycle[i + 1])
+      .filter((d) => d.x >= cycle.step[i][0] && d.x <= cycle.step[i+1][0] )
       .map((d) => d.y);
     dataFiltered.push(Math.min(...cycleDataY));
   }

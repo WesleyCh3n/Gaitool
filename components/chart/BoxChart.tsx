@@ -1,12 +1,12 @@
 import * as d3 from "d3";
 import { RefObject } from "react";
-import { IData } from "./Dataset";
-import { layout, selectRange } from "./Draw.var";
+import { IData, ICycle } from "./Dataset";
+import { layout, } from "./Draw.var";
 import { IBoxResult } from "./BoxChart.d";
 
 export function createBoxChart(
   ref: RefObject<HTMLDivElement>,
-  dataPreprocess: (data: IData[], cycle: number[]) => IBoxResult
+  dataPreprocess: (data: IData[], cycle: ICycle) => IBoxResult
 ) {
   var svg = d3
     .select(ref.current)
@@ -45,13 +45,8 @@ export function createBoxChart(
   svg.append("g").attr("class", "text__left");
   svg.append("g").attr("class", "text__right");
 
-  function update(data: IData[], first: boolean, cycle: number[]) {
+  function update(data: IData[], cycle: ICycle) {
     var dataCopy = [...data]; // HACK: copy before sort
-    if (!first) {
-      dataCopy = dataCopy.filter(
-        (d) => d.x >= selectRange.value.s && d.x <= selectRange.value.e
-      );
-    }
 
     // process data
     const result = dataPreprocess(dataCopy, cycle);

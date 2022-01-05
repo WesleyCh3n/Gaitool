@@ -17,29 +17,24 @@ export interface IDataSchema {
   [key: string]: IDatasetInfo;
 }
 
+interface ICycle {
+  step: number[][]
+  sel: [number, number]
+}
+
 export type IUpdator = (
 data: IData[],
-first: boolean,
-cycle?: number[] | any // TODO: fix this any
+cycle: ICycle // TODO: fix this any
 ) => void
 
 export type INavUpdator = (
   updateLists: IUpdateList[],
   data: IData[],
-  first: boolean,
-  gaitCycle: number[]
+  cycle: ICycle
 ) => void;
-
-interface IUpdatorList {
-  [key: string]: IUpdator | INavUpdator;
-  lineChart:   IUpdator,
-  boxMaxChart: IUpdator,
-  boxMinChart: IUpdator,
-  navFunc: INavUpdator,
-}
 
 export interface IUpdateList {
   data: any;
-  func: any;
-  cycle?: number[];
+  func: IUpdator;
+  cycle: ICycle;
 }
