@@ -159,7 +159,7 @@ function DrawChart(): ReactElement | null {
   };
 
   return (
-    <div className="m-4 border rounded-lg border-solid border-gray-300
+    <div className="border rounded-lg border-solid border-gray-300
       ">
       <div className="flex justify-center">
         <Uploader handleFile={sendFile} />
