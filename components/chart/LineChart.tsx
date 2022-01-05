@@ -93,7 +93,7 @@ export function createLineChart(ref: RefObject<HTMLDivElement>) {
     var xScale = d3.scaleLinear().range([0, layout.getWidth()]);
     var yScale = d3.scaleLinear().range([layout.getLineHeight(), 0]);
 
-    xScale.domain(cycle.sel.map(s => cycle.step[s][0]));
+    xScale.domain(cycle.sel.map((s) => cycle.step[s][0]));
     yScale.domain(d3.extent(data, (d) => d.y).map((y) => y ?? 0));
 
     // prepare axisGen
@@ -101,8 +101,16 @@ export function createLineChart(ref: RefObject<HTMLDivElement>) {
     var yAxisGen = d3.axisLeft(yScale);
 
     // region x/y axis
-    svg.select(".axis__x").call(xAxisGen as any); // TODO: fix type
-    svg.select(".axis__y").call(yAxisGen as any); // TODO: fix type
+    svg
+      .select(".axis__x")
+      .call(xAxisGen as any) // TODO: fix type
+      .selectAll(".tick text")
+      .attr("font-size", "20px");
+    svg
+      .select(".axis__y")
+      .call(yAxisGen as any) // TODO: fix type
+      .selectAll(".tick text")
+      .attr("font-size", "15");
 
     svg
       .select(".line") // region line/area

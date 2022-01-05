@@ -10,7 +10,7 @@ export function PrintFileInfo(props: PrintFileInfoProps): ReactElement | null {
 
   return(
     <div>
-      <p>{props.index}: {props.file.name}</p>
+      <p className="text-ellipsis overflow-hidden whitespace-nowrap hover:overflow-visible hover:whitespace-normal">{props.file.name}</p>
       {/* <p>Filetype: {file.type}</p>
         * <p>Size in bytes: {file.size}</p>
         * <p>lastModified: {unixDate.toDateString()}</p> */}
