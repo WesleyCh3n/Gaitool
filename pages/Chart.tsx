@@ -49,6 +49,30 @@ const dataSInit: IDataSchema = {
     csvX: "time",
     csvY: "Pelvis_A_Z",
   },
+  ab: {
+    name: "Accel_z",
+    data: [],
+    csvX: "time",
+    csvY: "Pelvis_A_Z",
+  },
+  ac: {
+    name: "Accel_z",
+    data: [],
+    csvX: "time",
+    csvY: "Pelvis_A_Z",
+  },
+  ad: {
+    name: "Accel_z",
+    data: [],
+    csvX: "time",
+    csvY: "Pelvis_A_Z",
+  },
+  ae: {
+    name: "Accel_z",
+    data: [],
+    csvX: "time",
+    csvY: "Pelvis_A_Z",
+  },
 };
 
 const cycleInit: ICycle = {
@@ -165,7 +189,7 @@ function DrawChart(): ReactElement | null {
         <Uploader handleFile={sendFile} />
       </div>
       <div className="grid grid-cols-7 flex-col gap-4 m-4">
-        <div className="mt-[28px]">
+        <div className="mt-[28px] max-h-1">
           <Selector
             options={Object.keys(dataS)}
             selectedOption={selOpt}
@@ -195,11 +219,16 @@ function DrawChart(): ReactElement | null {
           ></div>
         </div>
       </div>
-      <h1 className="text-center text-xl">Navigator</h1>
-      <div
-        className="m-4 border rounded-lg border-solid border-gray-300 shadow-lg"
-        ref={d3Nav}
-      ></div>
+      <div className="grid grid-cols-10">
+        <div className="col-span-1"> </div>
+        <div className="col-span-8">
+          <div
+            className="mb-4 border rounded-lg border-solid border-gray-300 shadow-lg"
+            ref={d3Nav}
+          ></div>
+        </div>
+        <div className="col-span-1"></div>
+      </div>
     </div>
   );
 }

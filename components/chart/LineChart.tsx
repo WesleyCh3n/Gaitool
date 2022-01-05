@@ -105,7 +105,7 @@ export function createLineChart(ref: RefObject<HTMLDivElement>) {
       .select(".axis__x")
       .call(xAxisGen as any) // TODO: fix type
       .selectAll(".tick text")
-      .attr("font-size", "20px");
+      .attr("font-size", "15");
     svg
       .select(".axis__y")
       .call(yAxisGen as any) // TODO: fix type

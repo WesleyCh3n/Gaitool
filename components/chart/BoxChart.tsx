@@ -57,7 +57,11 @@ export function createBoxChart(
       .domain([minScale, maxScale])
       .range([layout.getBoxHeight(), 0]);
 
-    svg.transition().call(d3.axisLeft(yScale));
+    svg
+      .transition()
+      .call(d3.axisLeft(yScale))
+      .selectAll(".tick text")
+      .attr("font-size", "15px");
 
     // a few features for the box
     var boxCenter = 60;
@@ -110,7 +114,8 @@ export function createBoxChart(
           update.attr("y", (d) => yScale(d)).text((d) => `${d.toFixed(2)}`)
       )
       .attr("x", boxCenter + boxWidth * 0.7)
-      .attr("text-anchor", "start");
+      .attr("text-anchor", "start")
+      .attr("font-size", "16px");
 
     svg
       .select(".text__left")
@@ -126,7 +131,8 @@ export function createBoxChart(
         (update) =>
           update.attr("y", (d) => yScale(d)).text((d) => `${d.toFixed(2)}`)
       )
-      .attr("x", boxCenter - boxWidth * 0.7);
+      .attr("x", boxCenter - boxWidth * 0.7)
+      .attr("font-size", "16px");
   }
   return update;
 }
