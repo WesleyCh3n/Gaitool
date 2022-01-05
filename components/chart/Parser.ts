@@ -1,7 +1,6 @@
 import * as d3 from "d3";
-import { ICycle, IData } from ".";
+import { ICycle, IData, IDataSchema } from "./";
 
-import { IDataSchema } from "./Dataset.d";
 
 export function parseResult(
   files: d3.DSVRowArray<string>,
