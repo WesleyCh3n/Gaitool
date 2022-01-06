@@ -65,11 +65,11 @@ export function createMultiAreaChart(divSelector: string) {
       svg
         .select(".area") // region line/area
         .append('path')
-        .attr("class", el.name)
+        // .attr("class", el.name)
         .datum(el.data)
         .transition()
         .attr("clip-path", "url(#chart-path)")
-        .attr("fill", colorScale(el.name) as string)
+        // .attr("fill", colorScale(el.name) as string)
         .attr(
           "d",
           d3

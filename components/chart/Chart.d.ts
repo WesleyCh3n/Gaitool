@@ -4,7 +4,7 @@ export interface IData {
 }
 
 export interface IDatasetInfo {
-  name: string;
+  // name: string;
   data: IData[];
   csvX: string;
   csvY: string;
@@ -15,6 +15,9 @@ export interface IDataSchema {
   aX: IDatasetInfo;
   aY: IDatasetInfo;
   aZ: IDatasetInfo;
+  gX: IDatasetInfo,
+  gY: IDatasetInfo,
+  gZ: IDatasetInfo,
 }
 
 interface ICycle {

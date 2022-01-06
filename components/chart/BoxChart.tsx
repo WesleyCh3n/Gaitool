@@ -64,7 +64,7 @@ export function createBoxChart(
       .attr("font-size", "15px");
 
     // a few features for the box
-    var boxCenter = 60;
+    var boxCenter = 80;
     var boxWidth = 25;
 
     // Show the main vertical line

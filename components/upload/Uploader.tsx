@@ -5,12 +5,13 @@ import { PrintFileInfo } from "./PrintFileInfo";
 import { Button } from "../button/Button"
 
 export interface UploaderProps {
-  handleFile: (f: File) => void;
+  handleFile: (f: File) => Promise<void>;
 }
 
 export function Uploader(props: UploaderProps): ReactElement | null {
   const [selectedFile, setSelectedFile] = useState<FileList>();
   const [isSelected, setIsSelected] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const selectOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
@@ -19,20 +20,22 @@ export function Uploader(props: UploaderProps): ReactElement | null {
     setIsSelected(true);
   };
 
-  const handleSelectList = () => {
-    if (!selectedFile) return;
+  async function handleSelectList() {
 
-    Array.from(selectedFile).forEach((file) => {
-      props.handleFile(file)
-    });
+    if (!selectedFile) return;
+    setIsLoading(true)
+    await props.handleFile(selectedFile[0]);
+    setIsLoading(false)
+    // Array.from(selectedFile).forEach((file) => {
+    // });
   }
 
 
   return (
     <div className="grid grid-cols-7 h-20 ml-4 gap-4 content-center">
       <input
-        className="col-span-6
-          form-control block w-full h-12 p-2 text-base font-normal
+        className="col-span-6 w-full
+          form-control block h-12 p-2 text-base font-normal
           text-gray-700 bg-white bg-clip-padding border border-solid
           border-gray-300 rounded-lg transition ease-in-out hover:text-gray-700
           hover:bg-white hover:border-blue-600 hover:outline-none shadow-md"
@@ -60,7 +63,7 @@ export function Uploader(props: UploaderProps): ReactElement | null {
         *   )}
         * </div> */}
       <div className="col-span-1 flex items-center">
-        <Button title={"Submit"} onClick={handleSelectList} />
+        <Button title={"Submit"} onClick={handleSelectList} isLoading={isLoading}/>
       </div>
     </div>
   );

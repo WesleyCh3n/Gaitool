@@ -1,7 +1,7 @@
 export var layout = {
   width: 1000,
-  boxWidth: 200,
-  boxHeight: 205,
+  boxWidth: 230,
+  boxHeight: 245,
   lineHeight: 240,
   areaHeight: 100,
   navHeight: 100,

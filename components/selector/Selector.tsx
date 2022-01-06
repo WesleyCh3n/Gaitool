@@ -10,7 +10,7 @@ export interface SelectorProps {
 export function Selector(props: SelectorProps): ReactElement | null {
   return (
     <select
-      className="w-full max-h-48 selectBox"
+      className="w-full h-full selectBox"
       size={props.options.length}
       defaultValue={props.selectedOption}
       onChange={props.onChange}

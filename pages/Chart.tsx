@@ -21,70 +21,32 @@ import {
 import { cycleMaxIQR, cycleMinIQR } from "../utils/dataPreprocess";
 import { Selector } from "../components/selector/Selector";
 import { Uploader } from "../components/upload/Uploader";
+import { Button } from "../components/button/Button";
 
 interface IUpdatorList {
   [key: string]: IUpdator | INavUpdator;
-  lineChart: IUpdator;
-  boxMaxChart: IUpdator;
-  boxMinChart: IUpdator;
-  navFunc: INavUpdator;
+  line: IUpdator;
+  maxBox: IUpdator;
+  minBox: IUpdator;
+  navLine: INavUpdator;
 }
 
 const dataSInit: IDataSchema = {
-  aX: {
-    name: "Accel_x",
-    data: [],
-    csvX: "time",
-    csvY: "Pelvis_A_X",
-  },
-  aY: {
-    name: "Accel_y",
-    data: [],
-    csvX: "time",
-    csvY: "Pelvis_A_Y",
-  },
-  aZ: {
-    name: "Accel_z",
-    data: [],
-    csvX: "time",
-    csvY: "Pelvis_A_Z",
-  },
-  ab: {
-    name: "Accel_z",
-    data: [],
-    csvX: "time",
-    csvY: "Pelvis_A_Z",
-  },
-  ac: {
-    name: "Accel_z",
-    data: [],
-    csvX: "time",
-    csvY: "Pelvis_A_Z",
-  },
-  ad: {
-    name: "Accel_z",
-    data: [],
-    csvX: "time",
-    csvY: "Pelvis_A_Z",
-  },
-  ae: {
-    name: "Accel_z",
-    data: [],
-    csvX: "time",
-    csvY: "Pelvis_A_Z",
-  },
+  aX: { data: [], csvX: "time", csvY: "Pelvis_A_X" },
+  aY: { data: [], csvX: "time", csvY: "Pelvis_A_Y" },
+  aZ: { data: [], csvX: "time", csvY: "Pelvis_A_Z" },
+  gX: { data: [], csvX: "time", csvY: "Pelvis_Gyro_X" },
+  gY: { data: [], csvX: "time", csvY: "Pelvis_Gyro_Y" },
+  gZ: { data: [], csvX: "time", csvY: "Pelvis_Gyro_Z" },
 };
 
-const cycleInit: ICycle = {
-  step: [[]],
-  sel: [0, 0],
-};
+const cycleInit: ICycle = { step: [[]], sel: [0, 0] };
 
 const chartUpdatorInit: IUpdatorList = {
-  lineChart: () => {},
-  boxMaxChart: () => {},
-  boxMinChart: () => {},
-  navFunc: () => {},
+  line: () => {},
+  maxBox: () => {},
+  minBox: () => {},
+  navLine: () => {},
 };
 
 function DrawChart(): ReactElement | null {
@@ -105,11 +67,12 @@ function DrawChart(): ReactElement | null {
     "./2021-09-26-18-36_cycle_Dr Tsai_1.csv",
   ];
 
-  function sendFile(f: File) {
+  async function sendFile(f: File) {
+    console.log("start");
     const formData = new FormData();
     formData.append("file", f); // NOTE: append("key", value)
 
-    fetch("/api/upload", { method: "POST", body: formData })
+    return fetch("/api/upload", { method: "POST", body: formData })
       .then((res) => res.json())
       .then((jsonRslt) => {
         Promise.all(
@@ -131,10 +94,10 @@ function DrawChart(): ReactElement | null {
 
   useEffect(() => {
     setUpdators({
-      lineChart: createLineChart(d3Line),
-      boxMaxChart: createBoxChart(d3BoxMax, cycleMaxIQR),
-      boxMinChart: createBoxChart(d3BoxMin, cycleMinIQR),
-      navFunc: createGaitNav(d3Nav),
+      line: createLineChart(d3Line),
+      maxBox: createBoxChart(d3BoxMax, cycleMaxIQR),
+      minBox: createBoxChart(d3BoxMin, cycleMinIQR),
+      navLine: createGaitNav(d3Nav),
     });
     // DUBUG:
     Promise.all(csvFiles.map((file) => d3.csv(file))).then(
@@ -152,28 +115,16 @@ function DrawChart(): ReactElement | null {
   }, []);
 
   const updateApp = (schema: IDatasetInfo, cycle: ICycle) => {
-    updators.lineChart(schema.data, cycle);
-    updators.boxMaxChart(schema.data, cycle);
-    updators.boxMinChart(schema.data, cycle);
+    updators.line(schema.data, cycle);
+    updators.maxBox(schema.data, cycle);
+    updators.minBox(schema.data, cycle);
 
     var updateLists = [
-      {
-        data: schema.data,
-        func: updators.lineChart,
-        cycle: cycle,
-      },
-      {
-        data: schema.data,
-        func: updators.boxMaxChart,
-        cycle: cycle,
-      },
-      {
-        data: schema.data,
-        func: updators.boxMinChart,
-        cycle: cycle,
-      },
+      { data: schema.data, func: updators.line, cycle: cycle },
+      { data: schema.data, func: updators.maxBox, cycle: cycle },
+      { data: schema.data, func: updators.minBox, cycle: cycle },
     ];
-    updators.navFunc(updateLists, schema.data, cycle);
+    updators.navLine(updateLists, schema.data, cycle);
     setCycle(cycle);
   };
 
@@ -183,13 +134,12 @@ function DrawChart(): ReactElement | null {
   };
 
   return (
-    <div className="border rounded-lg border-solid border-gray-300
-      ">
+    <div className="border rounded-lg border-solid border-gray-300">
       <div className="flex justify-center">
         <Uploader handleFile={sendFile} />
       </div>
-      <div className="grid grid-cols-7 flex-col gap-4 m-4">
-        <div className="mt-[28px] max-h-1">
+      <div className="grid grid-cols-7 gap-4 m-4">
+        <div className="mt-[28px] row-span-2">
           <Selector
             options={Object.keys(dataS)}
             selectedOption={selOpt}
@@ -203,31 +153,26 @@ function DrawChart(): ReactElement | null {
             className="border rounded-lg border-solid border-gray-300 shadow-md"
             ref={d3Line}
           ></div>
+          <div
+            className="mt-4 border rounded-lg border-solid border-gray-300 shadow-lg"
+            ref={d3Nav}
+          ></div>
         </div>
-        <div>
+        <div className="col-span-1 row-span-2">
           <h1 className="text-center text-xl">Max</h1>
           <div
             className="border rounded-lg border-solid border-gray-300 shadow-md"
             ref={d3BoxMax}
           ></div>
+          <Button title={"Select Cycle"} onClick={ _ => console.log(cycle) } />
         </div>
-        <div>
+        <div className="col-span-1 row-span-2">
           <h1 className="text-center text-xl">Min</h1>
           <div
             className="border rounded-lg border-solid border-gray-300 shadow-md"
             ref={d3BoxMin}
           ></div>
         </div>
-      </div>
-      <div className="grid grid-cols-10">
-        <div className="col-span-1"> </div>
-        <div className="col-span-8">
-          <div
-            className="mb-4 border rounded-lg border-solid border-gray-300 shadow-lg"
-            ref={d3Nav}
-          ></div>
-        </div>
-        <div className="col-span-1"></div>
       </div>
     </div>
   );

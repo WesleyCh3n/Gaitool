@@ -90,7 +90,7 @@ export function createGaitNav(ref: RefObject<HTMLDivElement>) {
     xAxisG
       .call(
         xAxisGen
-          .ticks(cycle.step.length, ",.3f")
+          .ticks(cycle.step.length, ",.2f")
           .tickValues(cycle.step.map((s) => s[0]))
       )
       .selectAll(".tick text") // region tick style
