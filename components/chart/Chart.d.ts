@@ -12,12 +12,12 @@ export interface IDatasetInfo {
 
 export interface IDataSchema {
   [key: string]: IDatasetInfo;
-  aX: IDatasetInfo;
-  aY: IDatasetInfo;
-  aZ: IDatasetInfo;
-  gX: IDatasetInfo,
-  gY: IDatasetInfo,
-  gZ: IDatasetInfo,
+  // aX: IDatasetInfo;
+  // aY: IDatasetInfo;
+  // aZ: IDatasetInfo;
+  // gX: IDatasetInfo,
+  // gY: IDatasetInfo,
+  // gZ: IDatasetInfo,
 }
 
 interface ICycle {

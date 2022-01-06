@@ -21,31 +21,45 @@ import {
 import { cycleMaxIQR, cycleMinIQR } from "../utils/dataPreprocess";
 import { Selector } from "../components/selector/Selector";
 import { Uploader } from "../components/upload/Uploader";
-import { Button } from "../components/button/Button";
+
+const dataSInit: IDataSchema = {
+  "Pelvis aX": { data: [], csvX: "time", csvY: "Pelvis_A_X" },
+  "Pelvis aY": { data: [], csvX: "time", csvY: "Pelvis_A_Y" },
+  "Pelvis aZ": { data: [], csvX: "time", csvY: "Pelvis_A_Z" },
+  "Pelvis gX": { data: [], csvX: "time", csvY: "Pelvis_Gyro_X" },
+  "Pelvis gY": { data: [], csvX: "time", csvY: "Pelvis_Gyro_Y" },
+  "Pelvis gZ": { data: [], csvX: "time", csvY: "Pelvis_Gyro_Z" },
+  "Up Spine aX": { data: [], csvX: "time", csvY: "Upper spine_A_X" },
+  "Up Spine aY": { data: [], csvX: "time", csvY: "Upper spine_A_Y" },
+  "Up Spine aZ": { data: [], csvX: "time", csvY: "Upper spine_A_Z" },
+  "Up Spine gX": { data: [], csvX: "time", csvY: "Upper spine_Gyro_X" },
+  "Up Spine gY": { data: [], csvX: "time", csvY: "Upper spine_Gyro_Y" },
+  "Up Spine gZ": { data: [], csvX: "time", csvY: "Upper spine_Gyro_Z" },
+  "Lo Spine aX": { data: [], csvX: "time", csvY: "Lower spine_A_X" },
+  "Lo Spine aY": { data: [], csvX: "time", csvY: "Lower spine_A_Y" },
+  "Lo Spine aZ": { data: [], csvX: "time", csvY: "Lower spine_A_Z" },
+  "Lo Spine gX": { data: [], csvX: "time", csvY: "Lower spine_Gyro_X" },
+  "Lo Spine gY": { data: [], csvX: "time", csvY: "Lower spine_Gyro_Y" },
+  "Lo Spine gZ": { data: [], csvX: "time", csvY: "Lower spine_Gyro_Z" },
+  // db: { data: [], csvX: "time", csvY: "double_support" },
+};
+
+const cycleInit: ICycle = { step: [[]], sel: [0, 0] };
 
 interface IUpdatorList {
   [key: string]: IUpdator | INavUpdator;
   line: IUpdator;
   maxBox: IUpdator;
   minBox: IUpdator;
+  ltBox: IUpdator;
   navLine: INavUpdator;
 }
-
-const dataSInit: IDataSchema = {
-  aX: { data: [], csvX: "time", csvY: "Pelvis_A_X" },
-  aY: { data: [], csvX: "time", csvY: "Pelvis_A_Y" },
-  aZ: { data: [], csvX: "time", csvY: "Pelvis_A_Z" },
-  gX: { data: [], csvX: "time", csvY: "Pelvis_Gyro_X" },
-  gY: { data: [], csvX: "time", csvY: "Pelvis_Gyro_Y" },
-  gZ: { data: [], csvX: "time", csvY: "Pelvis_Gyro_Z" },
-};
-
-const cycleInit: ICycle = { step: [[]], sel: [0, 0] };
 
 const chartUpdatorInit: IUpdatorList = {
   line: () => {},
   maxBox: () => {},
   minBox: () => {},
+  ltBox: () => {},
   navLine: () => {},
 };
 
@@ -53,6 +67,7 @@ function DrawChart(): ReactElement | null {
   const d3Line = useRef<HTMLDivElement>(null);
   const d3BoxMax = useRef<HTMLDivElement>(null);
   const d3BoxMin = useRef<HTMLDivElement>(null);
+  const d3BoxLt = useRef<HTMLDivElement>(null);
   const d3Nav = useRef(null);
 
   const [dataS, setDataS] = useState<IDataSchema>(dataSInit);
@@ -68,7 +83,6 @@ function DrawChart(): ReactElement | null {
   ];
 
   async function sendFile(f: File) {
-    console.log("start");
     const formData = new FormData();
     formData.append("file", f); // NOTE: append("key", value)
 
@@ -85,7 +99,7 @@ function DrawChart(): ReactElement | null {
           setCycle(tmpCycle);
 
           // update chart
-          updateApp(dataS.aX, tmpCycle);
+          updateApp(dataS[Object.keys(dataS)[0]], tmpCycle);
 
           setSelDisable(false);
         });
@@ -97,6 +111,7 @@ function DrawChart(): ReactElement | null {
       line: createLineChart(d3Line),
       maxBox: createBoxChart(d3BoxMax, cycleMaxIQR),
       minBox: createBoxChart(d3BoxMin, cycleMinIQR),
+      ltBox: createBoxChart(d3BoxLt, cycleMaxIQR),
       navLine: createGaitNav(d3Nav),
     });
     // DUBUG:
@@ -107,7 +122,7 @@ function DrawChart(): ReactElement | null {
         setCycle(tmpCycle);
 
         // update chart
-        updateApp(dataS.aX, tmpCycle);
+        updateApp(dataS[Object.keys(dataS)[0]], tmpCycle);
 
         setSelDisable(false);
       }
@@ -118,11 +133,13 @@ function DrawChart(): ReactElement | null {
     updators.line(schema.data, cycle);
     updators.maxBox(schema.data, cycle);
     updators.minBox(schema.data, cycle);
+    updators.ltBox(schema.data, cycle);
 
     var updateLists = [
       { data: schema.data, func: updators.line, cycle: cycle },
       { data: schema.data, func: updators.maxBox, cycle: cycle },
       { data: schema.data, func: updators.minBox, cycle: cycle },
+      { data: schema.data, func: updators.ltBox, cycle: cycle },
     ];
     updators.navLine(updateLists, schema.data, cycle);
     setCycle(cycle);
@@ -147,7 +164,7 @@ function DrawChart(): ReactElement | null {
             disable={selDisable}
           />
         </div>
-        <div className="col-span-4">
+        <div className="col-span-6">
           <h1 className="text-center text-xl">Accelration</h1>
           <div
             className="border rounded-lg border-solid border-gray-300 shadow-md"
@@ -158,20 +175,24 @@ function DrawChart(): ReactElement | null {
             ref={d3Nav}
           ></div>
         </div>
-        <div className="col-span-1 row-span-2">
+        <div className="col-span-1">
           <h1 className="text-center text-xl">Max</h1>
           <div
             className="border rounded-lg border-solid border-gray-300 shadow-md"
             ref={d3BoxMax}
           ></div>
-          <Button title={"Select Cycle"} onClick={ _ => console.log(cycle) } />
         </div>
-        <div className="col-span-1 row-span-2">
+        <div className="col-span-1">
           <h1 className="text-center text-xl">Min</h1>
           <div
             className="border rounded-lg border-solid border-gray-300 shadow-md"
             ref={d3BoxMin}
           ></div>
+        </div>
+        <div className="col-span-2"> </div>
+        <div className="btn-group col-span-2 flex items-end justify-end">
+          <button className="btn btn-outline" onClick={ _ => console.log(cycle) }>Select Cycle</button>
+          <button className="btn btn-outline">Export</button>
         </div>
       </div>
     </div>

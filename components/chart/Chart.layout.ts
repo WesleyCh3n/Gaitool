@@ -2,7 +2,7 @@ export var layout = {
   width: 1000,
   boxWidth: 230,
   boxHeight: 245,
-  lineHeight: 240,
+  lineHeight: 300,
   areaHeight: 100,
   navHeight: 100,
   margin: { t: 20, r: 50, b: 30, l: 50, },
