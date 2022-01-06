@@ -136,10 +136,10 @@ function DrawChart(): ReactElement | null {
     updators.ltBox(schema.data, cycle);
 
     var updateLists = [
-      { data: schema.data, func: updators.line, cycle: cycle },
-      { data: schema.data, func: updators.maxBox, cycle: cycle },
-      { data: schema.data, func: updators.minBox, cycle: cycle },
-      { data: schema.data, func: updators.ltBox, cycle: cycle },
+      updators.line,
+      updators.maxBox,
+      updators.minBox,
+      updators.ltBox,
     ];
     updators.navLine(updateLists, schema.data, cycle);
     setCycle(cycle);

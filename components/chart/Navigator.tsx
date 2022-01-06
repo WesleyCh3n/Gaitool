@@ -1,7 +1,8 @@
 import * as d3 from "d3";
 import { RefObject } from "react";
-import { IData, IUpdateList, ICycle, layout } from "./";
+import { IData, ICycle, layout } from "./";
 import { findClosestIndex } from "../../utils/utils";
+import { IUpdator } from "./Chart";
 
 export function createGaitNav(ref: RefObject<HTMLDivElement>) {
   const navSvg = d3
@@ -35,7 +36,7 @@ export function createGaitNav(ref: RefObject<HTMLDivElement>) {
     .append("g") // region brush
     .attr("class", "brush");
 
-  function update(updateLists: IUpdateList[], data: IData[], cycle: ICycle) {
+  function update(updateLists: IUpdator[], data: IData[], cycle: ICycle) {
     const brush = d3.brushX().extent([
       [0, 0],
       [layout.getWidth(), layout.getNavTickHeight()],
@@ -71,8 +72,8 @@ export function createGaitNav(ref: RefObject<HTMLDivElement>) {
           gBrush.transition().call(event.target.move, selValue.map(xScaleNav));
 
           updateLists.forEach((updt) => {
-            updt.func(updt.data, {
-              ...updt.cycle,
+            updt(data, {
+              ...cycle,
               sel: [selIndex[0], selIndex[1]],
             });
           });

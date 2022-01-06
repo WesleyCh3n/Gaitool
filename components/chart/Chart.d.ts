@@ -31,16 +31,10 @@ cycle: ICycle
 ) => void
 
 export type INavUpdator = (
-  updateLists: IUpdateList[],
+  updateLists: IUpdator[],
   data: IData[],
   cycle: ICycle
 ) => void;
-
-export interface IUpdateList {
-  data: any;
-  func: IUpdator;
-  cycle: ICycle;
-}
 
 export interface IBoxResult  {
   [key: string]: number;
