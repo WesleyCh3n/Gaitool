@@ -20,33 +20,33 @@ import { cycleMaxIQR, cycleMinIQR, timeIQR } from "../utils/dataPreprocess";
 import { Selector } from "../components/selector/Selector";
 import { Uploader } from "../components/upload/Uploader";
 
-const dataSInit: IDataSPos = {};
-const position = ["Pelvis", "Upper spine", "Lower spine"];
-var content = {
-  "Accel X": { data: [], csvX: "time", csvY: "A_X" },
-  "Accel Y": { data: [], csvX: "time", csvY: "A_Y" },
-  "Accel Z": { data: [], csvX: "time", csvY: "A_Z" },
-  "Gyro X": { data: [], csvX: "time", csvY: "Gyro_X" },
-  "Gyro Y": { data: [], csvX: "time", csvY: "Gyro_Y" },
-  "Gyro Z": { data: [], csvX: "time", csvY: "Gyro_Z" },
-};
-position.forEach((p) => {
-  dataSInit[p] = JSON.parse(JSON.stringify(content)); // HACK: deep copy
-});
-
-const cycleInit: ICycle = { step: [[]], sel: [0, 0] };
-
-const chartUpdatorInit: { [key: string]: Function } = {
-  line: new Function(),
-  maxBox: new Function(),
-  minBox: new Function(),
-  ltBox: new Function(),
-  rtBox: new Function(),
-  dbBox: new Function(),
-  navLine: new Function(),
-};
-
 function DrawChart(): ReactElement | null {
+  const dataSInit: IDataSPos = {};
+  const position = ["Pelvis", "Upper spine", "Lower spine"];
+  var content = {
+    "Accel X": { data: [], csvX: "time", csvY: "A_X" },
+    "Accel Y": { data: [], csvX: "time", csvY: "A_Y" },
+    "Accel Z": { data: [], csvX: "time", csvY: "A_Z" },
+    "Gyro X": { data: [], csvX: "time", csvY: "Gyro_X" },
+    "Gyro Y": { data: [], csvX: "time", csvY: "Gyro_Y" },
+    "Gyro Z": { data: [], csvX: "time", csvY: "Gyro_Z" },
+  };
+  position.forEach((p) => {
+    dataSInit[p] = JSON.parse(JSON.stringify(content)); // HACK: deep copy
+  });
+
+  const cycleInit: ICycle = { step: [[]], sel: [0, 0] };
+
+  const chartUpdatorInit: { [key: string]: Function } = {
+    line: new Function(),
+    maxBox: new Function(),
+    minBox: new Function(),
+    ltBox: new Function(),
+    rtBox: new Function(),
+    dbBox: new Function(),
+    navLine: new Function(),
+  };
+
   const d3Line = useRef<HTMLDivElement>(null);
   const d3BoxMax = useRef<HTMLDivElement>(null);
   const d3BoxMin = useRef<HTMLDivElement>(null);
@@ -120,23 +120,23 @@ function DrawChart(): ReactElement | null {
       navLine: createGaitNav(d3Nav),
     });
     // DUBUG:
-{/*     Promise.all(csvFiles.map((file) => d3.csv(file))).then(
-  *       ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
-  *         setDataS(parseResult(csvResult, dataS));
-  *         // console.log(dataS)
-  *         let cycleList: { [key: string]: ICycle } = {
-  *           gait: parseCycle(csvGaitCycle),
-  *           lt: parseCycle(csvLtCycle),
-  *           rt: parseCycle(csvRtCycle),
-  *           db: parseCycle(csvDbCycle),
-  *         };
-  *         //
-  *         // update chart
-  *         updateApp(dataS[selPos][selOpt], cycleList);
-  *
-  *         setSelDisable(false);
-  *       }
-  *     ); */}
+    Promise.all(csvFiles.map((file) => d3.csv(file))).then(
+      ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
+        setDataS(parseResult(csvResult, dataS));
+        // console.log(dataS)
+        let cycleList: { [key: string]: ICycle } = {
+          gait: parseCycle(csvGaitCycle),
+          lt: parseCycle(csvLtCycle),
+          rt: parseCycle(csvRtCycle),
+          db: parseCycle(csvDbCycle),
+        };
+        //
+        // update chart
+        updateApp(dataS[selPos][selOpt], cycleList);
+
+        setSelDisable(false);
+      }
+    );
   }, []);
 
   const updateApp = (schema: IDatasetInfo, c: { [key: string]: ICycle }) => {
@@ -175,7 +175,6 @@ function DrawChart(): ReactElement | null {
   };
 
   const selOptChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    console.log(selPos, e.target.value)
     updateApp(dataS[selPos][e.target.value], {
       gait: cycle,
       lt: ltCycle,
@@ -186,7 +185,6 @@ function DrawChart(): ReactElement | null {
   };
 
   const selPosChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    console.log(e.target.value, selOpt)
     updateApp(dataS[e.target.value][selOpt], {
       gait: cycle,
       lt: ltCycle,
