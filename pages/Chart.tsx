@@ -37,16 +37,6 @@ function DrawChart(): ReactElement | null {
 
   const cycleInit: ICycle = { step: [[]], sel: [0, 0] };
 
-  const chartUpdatorInit: { [key: string]: Function } = {
-    line: new Function(),
-    maxBox: new Function(),
-    minBox: new Function(),
-    ltBox: new Function(),
-    rtBox: new Function(),
-    dbBox: new Function(),
-    navLine: new Function(),
-  };
-
   const d3Line = useRef<HTMLDivElement>(null);
   const d3BoxMax = useRef<HTMLDivElement>(null);
   const d3BoxMin = useRef<HTMLDivElement>(null);
@@ -61,7 +51,7 @@ function DrawChart(): ReactElement | null {
   const [rtCycle, setRtCycle] = useState<ICycle>(cycleInit);
   const [dbCycle, setDbCycle] = useState<ICycle>(cycleInit);
   const [updators, setUpdators] =
-    useState<{ [key: string]: Function }>(chartUpdatorInit);
+    useState<{ [key: string]: Function }>({_: new Function});
 
   const [selPos, setSelPos] = useState<string>(position[0]);
   const [selOpt, setSelOpt] = useState<string>(Object.keys(content)[0]);
@@ -110,33 +100,40 @@ function DrawChart(): ReactElement | null {
 
   useEffect(() => {
     // setup chart when component mount
-    setUpdators({
-      line: createLineChart(d3Line),
-      maxBox: createBoxChart(d3BoxMax, cycleMaxIQR),
-      minBox: createBoxChart(d3BoxMin, cycleMinIQR),
-      ltBox: createBoxChart(d3BoxLt, timeIQR),
-      rtBox: createBoxChart(d3BoxRt, timeIQR),
-      dbBox: createBoxChart(d3BoxDb, timeIQR),
-      navLine: createGaitNav(d3Nav),
-    });
-    // DUBUG:
-    Promise.all(csvFiles.map((file) => d3.csv(file))).then(
-      ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
-        setDataS(parseResult(csvResult, dataS));
-        // console.log(dataS)
-        let cycleList: { [key: string]: ICycle } = {
-          gait: parseCycle(csvGaitCycle),
-          lt: parseCycle(csvLtCycle),
-          rt: parseCycle(csvRtCycle),
-          db: parseCycle(csvDbCycle),
-        };
-        //
-        // update chart
-        updateApp(dataS[selPos][selOpt], cycleList);
+    {/* setUpdators({
+      *   line: createLineChart(d3Line),
+      *   maxBox: createBoxChart(d3BoxMax, cycleMaxIQR),
+      *   minBox: createBoxChart(d3BoxMin, cycleMinIQR),
+      *   ltBox: createBoxChart(d3BoxLt, timeIQR),
+      *   rtBox: createBoxChart(d3BoxRt, timeIQR),
+      *   dbBox: createBoxChart(d3BoxDb, timeIQR),
+      *   navLine: createGaitNav(d3Nav),
+      * }); */}
 
-        setSelDisable(false);
-      }
-    );
+    updators.line = createLineChart(d3Line)
+    updators.maxBox = createBoxChart(d3BoxMax, cycleMaxIQR)
+    updators.minBox = createBoxChart(d3BoxMin, cycleMinIQR)
+    updators.ltBox = createBoxChart(d3BoxLt, timeIQR)
+    updators.rtBox = createBoxChart(d3BoxRt, timeIQR)
+    updators.dbBox = createBoxChart(d3BoxDb, timeIQR)
+    updators.navLine = createGaitNav(d3Nav)
+
+    // DUBUG:
+    // Promise.all(csvFiles.map((file) => d3.csv(file))).then(
+      // ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
+        // setDataS(parseResult(csvResult, dataS));
+        // let cycleList: { [key: string]: ICycle } = {
+          // gait: parseCycle(csvGaitCycle),
+          // lt: parseCycle(csvLtCycle),
+          // rt: parseCycle(csvRtCycle),
+          // db: parseCycle(csvDbCycle),
+        // };
+        // //
+        // // update chart
+        // updateApp(dataS[selPos][selOpt], cycleList);
+        // setSelDisable(false);
+      // }
+    // );
   }, []);
 
   const updateApp = (schema: IDatasetInfo, c: { [key: string]: ICycle }) => {
@@ -195,7 +192,7 @@ function DrawChart(): ReactElement | null {
   };
 
   return (
-    <div className="min-w-[1200px] border rounded-lg border-solid border-gray-300">
+    <div className="border rounded-lg border-solid border-gray-300">
       <div className="flex justify-center">
         <Uploader handleFile={sendFile} />
       </div>
