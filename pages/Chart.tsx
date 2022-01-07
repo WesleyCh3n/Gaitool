@@ -5,7 +5,6 @@ import * as d3 from "d3";
 import {
   // Interface
   IDatasetInfo,
-  IDataSchema,
   ICycle,
   // Create chart
   createLineChart,
@@ -14,33 +13,26 @@ import {
   // Utility
   parseResult,
   parseCycle,
+  IDataSPos,
 } from "../components/chart";
 
 import { cycleMaxIQR, cycleMinIQR, timeIQR } from "../utils/dataPreprocess";
 import { Selector } from "../components/selector/Selector";
 import { Uploader } from "../components/upload/Uploader";
 
-const dataSInit: IDataSchema = {
-  "Pelvis aX": { data: [], csvX: "time", csvY: "Pelvis_A_X" },
-  "Pelvis aY": { data: [], csvX: "time", csvY: "Pelvis_A_Y" },
-  "Pelvis aZ": { data: [], csvX: "time", csvY: "Pelvis_A_Z" },
-  "Pelvis gX": { data: [], csvX: "time", csvY: "Pelvis_Gyro_X" },
-  "Pelvis gY": { data: [], csvX: "time", csvY: "Pelvis_Gyro_Y" },
-  "Pelvis gZ": { data: [], csvX: "time", csvY: "Pelvis_Gyro_Z" },
-  "Up Spine aX": { data: [], csvX: "time", csvY: "Upper spine_A_X" },
-  "Up Spine aY": { data: [], csvX: "time", csvY: "Upper spine_A_Y" },
-  "Up Spine aZ": { data: [], csvX: "time", csvY: "Upper spine_A_Z" },
-  "Up Spine gX": { data: [], csvX: "time", csvY: "Upper spine_Gyro_X" },
-  "Up Spine gY": { data: [], csvX: "time", csvY: "Upper spine_Gyro_Y" },
-  "Up Spine gZ": { data: [], csvX: "time", csvY: "Upper spine_Gyro_Z" },
-  "Lo Spine aX": { data: [], csvX: "time", csvY: "Lower spine_A_X" },
-  "Lo Spine aY": { data: [], csvX: "time", csvY: "Lower spine_A_Y" },
-  "Lo Spine aZ": { data: [], csvX: "time", csvY: "Lower spine_A_Z" },
-  "Lo Spine gX": { data: [], csvX: "time", csvY: "Lower spine_Gyro_X" },
-  "Lo Spine gY": { data: [], csvX: "time", csvY: "Lower spine_Gyro_Y" },
-  "Lo Spine gZ": { data: [], csvX: "time", csvY: "Lower spine_Gyro_Z" },
-  // db: { data: [], csvX: "time", csvY: "double_support" },
+const dataSInit: IDataSPos = {};
+const position = ["Pelvis", "Upper spine", "Lower spine"];
+var content = {
+  "Accel X": { data: [], csvX: "time", csvY: "A_X" },
+  "Accel Y": { data: [], csvX: "time", csvY: "A_Y" },
+  "Accel Z": { data: [], csvX: "time", csvY: "A_Z" },
+  "Gyro X": { data: [], csvX: "time", csvY: "Gyro_X" },
+  "Gyro Y": { data: [], csvX: "time", csvY: "Gyro_Y" },
+  "Gyro Z": { data: [], csvX: "time", csvY: "Gyro_Z" },
 };
+position.forEach((p) => {
+  dataSInit[p] = JSON.parse(JSON.stringify(content)); // HACK: deep copy
+});
 
 const cycleInit: ICycle = { step: [[]], sel: [0, 0] };
 
@@ -63,7 +55,7 @@ function DrawChart(): ReactElement | null {
   const d3BoxDb = useRef<HTMLDivElement>(null);
   const d3Nav = useRef<HTMLDivElement>(null);
 
-  const [dataS, setDataS] = useState<IDataSchema>(dataSInit);
+  const [dataS, setDataS] = useState<IDataSPos>(dataSInit);
   const [cycle, setCycle] = useState<ICycle>(cycleInit);
   const [ltCycle, setLtCycle] = useState<ICycle>(cycleInit);
   const [rtCycle, setRtCycle] = useState<ICycle>(cycleInit);
@@ -71,7 +63,8 @@ function DrawChart(): ReactElement | null {
   const [updators, setUpdators] =
     useState<{ [key: string]: Function }>(chartUpdatorInit);
 
-  const [selOpt, setSelOpt] = useState<string>(Object.keys(dataS)[0]);
+  const [selPos, setSelPos] = useState<string>(position[0]);
+  const [selOpt, setSelOpt] = useState<string>(Object.keys(content)[0]);
   const [selDisable, setSelDisable] = useState<boolean>(true);
 
   const csvFiles = [
@@ -107,7 +100,7 @@ function DrawChart(): ReactElement | null {
               db: parseCycle(csvDbCycle),
             };
             // update chart
-            updateApp(dataS[Object.keys(dataS)[0]], cycleList);
+            updateApp(dataS[selPos][selOpt], cycleList);
 
             setSelDisable(false);
           }
@@ -130,6 +123,7 @@ function DrawChart(): ReactElement | null {
     Promise.all(csvFiles.map((file) => d3.csv(file))).then(
       ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
         setDataS(parseResult(csvResult, dataS));
+        // console.log(dataS)
         let cycleList: { [key: string]: ICycle } = {
           gait: parseCycle(csvGaitCycle),
           lt: parseCycle(csvLtCycle),
@@ -138,7 +132,7 @@ function DrawChart(): ReactElement | null {
         };
         //
         // update chart
-        updateApp(dataS[Object.keys(dataS)[0]], cycleList);
+        updateApp(dataS[selPos][selOpt], cycleList);
 
         setSelDisable(false);
       }
@@ -180,29 +174,51 @@ function DrawChart(): ReactElement | null {
     updators.navLine(updateLists, schema.data, c.gait);
   };
 
-  const selectChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    setSelOpt(e.target.value);
-    updateApp(dataS[e.target.value], {
+  const selOptChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    console.log(selPos, e.target.value)
+    updateApp(dataS[selPos][e.target.value], {
       gait: cycle,
       lt: ltCycle,
       rt: rtCycle,
       db: dbCycle,
     });
+    setSelOpt(e.target.value);
+  };
+
+  const selPosChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    console.log(e.target.value, selOpt)
+    updateApp(dataS[e.target.value][selOpt], {
+      gait: cycle,
+      lt: ltCycle,
+      rt: rtCycle,
+      db: dbCycle,
+    });
+    setSelPos(e.target.value);
   };
 
   return (
-    <div className="min-w-[1100px] border rounded-lg border-solid border-gray-300">
+    <div className="min-w-[1200px] border rounded-lg border-solid border-gray-300">
       <div className="flex justify-center">
         <Uploader handleFile={sendFile} />
       </div>
       <div className="grid grid-cols-7 gap-4 m-4">
         <div className="mt-[28px] row-span-2">
-          <Selector
-            options={Object.keys(dataS)}
-            selectedOption={selOpt}
-            onChange={selectChange}
-            disable={selDisable}
-          />
+          <div className="row-span-1 mb-4 text-sm">
+            <Selector
+              options={position}
+              selectedOption={selPos}
+              onChange={selPosChange}
+              disable={selDisable}
+            />
+          </div>
+          <div className="h-max">
+            <Selector
+              options={Object.keys(content)}
+              selectedOption={selOpt}
+              onChange={selOptChange}
+              disable={selDisable}
+            />
+          </div>
         </div>
         <div className="col-span-6">
           <h1 className="text-center text-xl">Accelration</h1>

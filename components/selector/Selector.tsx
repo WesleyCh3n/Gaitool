@@ -17,7 +17,7 @@ export function Selector(props: SelectorProps): ReactElement | null {
       disabled={props.disable}
     >
       {props.options.map((opt) => (
-        <option key={opt} value={opt} className="text-[24px]">
+        <option key={opt} value={opt} className="text-xl">
           {opt}
         </option>
       ))}

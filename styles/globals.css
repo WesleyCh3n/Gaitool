@@ -5,7 +5,7 @@
 @layer components {
   .selectBox {
     @apply overflow-y-auto appearance-none block px-3 py-1.5
-    text-base font-normal text-gray-500 bg-gray-200 bg-clip-padding bg-no-repeat
+    text-sm font-normal text-gray-500 bg-gray-200 bg-clip-padding bg-no-repeat
     border border-solid border-gray-300 rounded transition ease-in-out
     hover:text-gray-700 hover:bg-white hover:border-blue-600 hover:outline-none;
   }
