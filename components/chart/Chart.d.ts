@@ -20,6 +20,10 @@ export interface IDataSchema {
   // gZ: IDatasetInfo,
 }
 
+export interface IDataSPos {
+  [key: string]: IDataSchema
+}
+
 interface ICycle {
   step: number[][]
   sel: [number, number]
@@ -31,7 +35,7 @@ cycle: ICycle
 ) => void
 
 export type INavUpdator = (
-  updateLists: IUpdator[],
+  updateLists: Function[],
   data: IData[],
   cycle: ICycle
 ) => void;

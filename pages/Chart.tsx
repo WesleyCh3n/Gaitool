@@ -7,8 +7,6 @@ import {
   IDatasetInfo,
   IDataSchema,
   ICycle,
-  IUpdator,
-  INavUpdator,
   // Create chart
   createLineChart,
   createGaitNav,
@@ -18,7 +16,7 @@ import {
   parseCycle,
 } from "../components/chart";
 
-import { cycleMaxIQR, cycleMinIQR } from "../utils/dataPreprocess";
+import { cycleMaxIQR, cycleMinIQR, timeIQR } from "../utils/dataPreprocess";
 import { Selector } from "../components/selector/Selector";
 import { Uploader } from "../components/upload/Uploader";
 
@@ -46,21 +44,14 @@ const dataSInit: IDataSchema = {
 
 const cycleInit: ICycle = { step: [[]], sel: [0, 0] };
 
-interface IUpdatorList {
-  [key: string]: IUpdator | INavUpdator;
-  line: IUpdator;
-  maxBox: IUpdator;
-  minBox: IUpdator;
-  ltBox: IUpdator;
-  navLine: INavUpdator;
-}
-
-const chartUpdatorInit: IUpdatorList = {
-  line: () => {},
-  maxBox: () => {},
-  minBox: () => {},
-  ltBox: () => {},
-  navLine: () => {},
+const chartUpdatorInit: { [key: string]: Function } = {
+  line: new Function(),
+  maxBox: new Function(),
+  minBox: new Function(),
+  ltBox: new Function(),
+  rtBox: new Function(),
+  dbBox: new Function(),
+  navLine: new Function(),
 };
 
 function DrawChart(): ReactElement | null {
@@ -68,11 +59,17 @@ function DrawChart(): ReactElement | null {
   const d3BoxMax = useRef<HTMLDivElement>(null);
   const d3BoxMin = useRef<HTMLDivElement>(null);
   const d3BoxLt = useRef<HTMLDivElement>(null);
-  const d3Nav = useRef(null);
+  const d3BoxRt = useRef<HTMLDivElement>(null);
+  const d3BoxDb = useRef<HTMLDivElement>(null);
+  const d3Nav = useRef<HTMLDivElement>(null);
 
   const [dataS, setDataS] = useState<IDataSchema>(dataSInit);
   const [cycle, setCycle] = useState<ICycle>(cycleInit);
-  const [updators, setUpdators] = useState<IUpdatorList>(chartUpdatorInit);
+  const [ltCycle, setLtCycle] = useState<ICycle>(cycleInit);
+  const [rtCycle, setRtCycle] = useState<ICycle>(cycleInit);
+  const [dbCycle, setDbCycle] = useState<ICycle>(cycleInit);
+  const [updators, setUpdators] =
+    useState<{ [key: string]: Function }>(chartUpdatorInit);
 
   const [selOpt, setSelOpt] = useState<string>(Object.keys(dataS)[0]);
   const [selDisable, setSelDisable] = useState<boolean>(true);
@@ -80,6 +77,9 @@ function DrawChart(): ReactElement | null {
   const csvFiles = [
     "./2021-09-26-18-36_result_Dr Tsai_1.csv",
     "./2021-09-26-18-36_cycle_Dr Tsai_1.csv",
+    "./2021-09-26-18-36_cycle_lt_Dr Tsai_1.csv",
+    "./2021-09-26-18-36_cycle_rt_Dr Tsai_1.csv",
+    "./2021-09-26-18-36_cycle_db_Dr Tsai_1.csv",
   ];
 
   async function sendFile(f: File) {
@@ -90,68 +90,108 @@ function DrawChart(): ReactElement | null {
       .then((res) => res.json())
       .then((jsonRslt) => {
         Promise.all(
-          [jsonRslt["resultUrl"], jsonRslt["cycleUrl"]].map((file) =>
-            d3.csv(file)
-          )
-        ).then(([csvResult, csvGaitCycle]) => {
-          setDataS(parseResult(csvResult, dataS));
-          var tmpCycle = parseCycle(csvGaitCycle);
-          setCycle(tmpCycle);
+          [
+            jsonRslt["rsltUrl"],
+            jsonRslt["cyclUrl"],
+            jsonRslt["ltcyUrl"],
+            jsonRslt["rtcyUrl"],
+            jsonRslt["dbcyUrl"],
+          ].map((file) => d3.csv(file))
+        ).then(
+          ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
+            setDataS(parseResult(csvResult, dataS));
+            let cycleList: { [key: string]: ICycle } = {
+              gait: parseCycle(csvGaitCycle),
+              lt: parseCycle(csvLtCycle),
+              rt: parseCycle(csvRtCycle),
+              db: parseCycle(csvDbCycle),
+            };
+            // update chart
+            updateApp(dataS[Object.keys(dataS)[0]], cycleList);
 
-          // update chart
-          updateApp(dataS[Object.keys(dataS)[0]], tmpCycle);
-
-          setSelDisable(false);
-        });
+            setSelDisable(false);
+          }
+        );
       });
   }
 
   useEffect(() => {
+    // setup chart when component mount
     setUpdators({
       line: createLineChart(d3Line),
       maxBox: createBoxChart(d3BoxMax, cycleMaxIQR),
       minBox: createBoxChart(d3BoxMin, cycleMinIQR),
-      ltBox: createBoxChart(d3BoxLt, cycleMaxIQR),
+      ltBox: createBoxChart(d3BoxLt, timeIQR),
+      rtBox: createBoxChart(d3BoxRt, timeIQR),
+      dbBox: createBoxChart(d3BoxDb, timeIQR),
       navLine: createGaitNav(d3Nav),
     });
     // DUBUG:
     Promise.all(csvFiles.map((file) => d3.csv(file))).then(
-      ([csvResult, csvGaitCycle]) => {
+      ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
         setDataS(parseResult(csvResult, dataS));
-        var tmpCycle = parseCycle(csvGaitCycle);
-        setCycle(tmpCycle);
-
+        let cycleList: { [key: string]: ICycle } = {
+          gait: parseCycle(csvGaitCycle),
+          lt: parseCycle(csvLtCycle),
+          rt: parseCycle(csvRtCycle),
+          db: parseCycle(csvDbCycle),
+        };
+        //
         // update chart
-        updateApp(dataS[Object.keys(dataS)[0]], tmpCycle);
+        updateApp(dataS[Object.keys(dataS)[0]], cycleList);
 
         setSelDisable(false);
       }
     );
   }, []);
 
-  const updateApp = (schema: IDatasetInfo, cycle: ICycle) => {
-    updators.line(schema.data, cycle);
-    updators.maxBox(schema.data, cycle);
-    updators.minBox(schema.data, cycle);
-    updators.ltBox(schema.data, cycle);
+  const updateApp = (schema: IDatasetInfo, c: { [key: string]: ICycle }) => {
+    setCycle(c.gait);
+    setLtCycle(c.lt);
+    setRtCycle(c.rt);
+    setDbCycle(c.db);
+    updators.line(schema.data, c.gait);
+    updators.maxBox(schema.data, c.gait);
+    updators.minBox(schema.data, c.gait);
+    updators.ltBox(schema.data, c.lt);
+    updators.rtBox(schema.data, c.rt);
+    updators.dbBox(schema.data, c.db);
 
     var updateLists = [
-      updators.line,
-      updators.maxBox,
-      updators.minBox,
-      updators.ltBox,
+      function () {
+        return updators.line;
+      },
+      function () {
+        return updators.maxBox;
+      },
+      function () {
+        return updators.minBox;
+      },
+      function () {
+        return { f: updators.ltBox, c: c.lt };
+      },
+      function () {
+        return { f: updators.rtBox, c: c.rt };
+      },
+      function () {
+        return { f: updators.dbBox, c: c.db };
+      },
     ];
-    updators.navLine(updateLists, schema.data, cycle);
-    setCycle(cycle);
+    updators.navLine(updateLists, schema.data, c.gait);
   };
 
   const selectChange = (e: ChangeEvent<HTMLSelectElement>) => {
     setSelOpt(e.target.value);
-    updateApp(dataS[e.target.value], cycle);
+    updateApp(dataS[e.target.value], {
+      gait: cycle,
+      lt: ltCycle,
+      rt: rtCycle,
+      db: dbCycle,
+    });
   };
 
   return (
-    <div className="border rounded-lg border-solid border-gray-300">
+    <div className="min-w-[1100px] border rounded-lg border-solid border-gray-300">
       <div className="flex justify-center">
         <Uploader handleFile={sendFile} />
       </div>
@@ -189,9 +229,38 @@ function DrawChart(): ReactElement | null {
             ref={d3BoxMin}
           ></div>
         </div>
-        <div className="col-span-2"> </div>
-        <div className="btn-group col-span-2 flex items-end justify-end">
-          <button className="btn btn-outline" onClick={ _ => console.log(cycle) }>Select Cycle</button>
+        <div className="col-span-1">
+          <h1 className="text-center text-xl">LT support</h1>
+          <div
+            className="border rounded-lg border-solid border-gray-300 shadow-md"
+            ref={d3BoxLt}
+          ></div>
+        </div>
+        <div className="col-span-1">
+          <h1 className="text-center text-xl">RT support</h1>
+          <div
+            className="border rounded-lg border-solid border-gray-300 shadow-md"
+            ref={d3BoxRt}
+          ></div>
+        </div>
+        <div className="col-span-1">
+          <h1 className="text-center text-xl">DB support</h1>
+          <div
+            className="border rounded-lg border-solid border-gray-300 shadow-md"
+            ref={d3BoxDb}
+          ></div>
+        </div>
+        <div className="col-span-1 grid grid-rows-2 items-center justify-center">
+          <button
+            className="btn btn-outline"
+            onClick={(_) => {
+              console.log(cycle);
+              console.log(ltCycle);
+              console.log(rtCycle);
+            }}
+          >
+            Select Cycle
+          </button>
           <button className="btn btn-outline">Export</button>
         </div>
       </div>

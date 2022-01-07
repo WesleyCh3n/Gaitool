@@ -36,6 +36,18 @@ export const cycleMinIQR = (data: IData[], cycle: ICycle): IBoxResult => {
   return IQR(ySorted);
 };
 
+export const timeIQR = (data: IData[], cycle: ICycle): IBoxResult => {
+  const dataFiltered: number[] = [];
+  for (let i = cycle.sel[0]; i < cycle.sel[1]; i++) {
+    let t = cycle.step[i][1] - cycle.step[i][0]
+    dataFiltered.push(t);
+  }
+
+  var ySorted = [...dataFiltered].sort((a, b) => d3.ascending(a, b));
+
+  return IQR(ySorted);
+};
+
 const IQR = (sortedArray: number[]): IBoxResult => {
 
   const q1 = d3.quantile(sortedArray, 0.25) ?? 0;

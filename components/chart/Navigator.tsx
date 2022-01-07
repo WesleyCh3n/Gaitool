@@ -2,7 +2,6 @@ import * as d3 from "d3";
 import { RefObject } from "react";
 import { IData, ICycle, layout } from "./";
 import { findClosestIndex } from "../../utils/utils";
-import { IUpdator } from "./Chart";
 
 export function createGaitNav(ref: RefObject<HTMLDivElement>) {
   const navSvg = d3
@@ -36,7 +35,7 @@ export function createGaitNav(ref: RefObject<HTMLDivElement>) {
     .append("g") // region brush
     .attr("class", "brush");
 
-  function update(updateLists: IUpdator[], data: IData[], cycle: ICycle) {
+  function update(updateLists: Function[], data: IData[], cycle: ICycle) {
     const brush = d3.brushX().extent([
       [0, 0],
       [layout.getWidth(), layout.getNavTickHeight()],
@@ -71,14 +70,23 @@ export function createGaitNav(ref: RefObject<HTMLDivElement>) {
           let selValue = selIndex.map((s) => cycle.step[s][0]);
           gBrush.transition().call(event.target.move, selValue.map(xScaleNav));
 
-          updateLists.forEach((updt) => {
-            updt(data, {
-              ...cycle,
-              sel: [selIndex[0], selIndex[1]],
-            });
+          updateLists.forEach((updt) => { // Function wrapper
+            let obj = updt()
+
+            // for calculate support time
+            if (typeof updt() !== 'function') {
+              let selIndexCycle = selValue.map((x) =>
+                d3.bisectLeft((obj.c as ICycle).step.map((s) => s[0]), x)
+              );
+              obj.f(data, { ...obj.c, sel: selIndexCycle })
+              obj.c.sel = (selIndexCycle as [number, number])
+              return
+            }
+
+            obj(data, { ...cycle, sel: selIndex });
           });
 
-          cycle.sel = [selIndex[0], selIndex[1]]; // HACK: modify parent cycle
+          cycle.sel = (selIndex as [number, number]); // HACK: modify parent cycle
         }
       });
 
