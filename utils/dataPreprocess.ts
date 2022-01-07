@@ -60,8 +60,8 @@ const IQR = (sortedArray: number[]): IBoxResult => {
   const upperIQR = q3 + 1.5 * IQR;
 
   return {
-    min: Math.min(...sortedArray),
-    max: Math.max(...sortedArray),
+    min: isFinite(Math.min(...sortedArray)) ? Math.min(...sortedArray) : 0,
+    max: isFinite(Math.max(...sortedArray)) ? Math.max(...sortedArray) : 0,
 
     q1: q1,
     median: median,
