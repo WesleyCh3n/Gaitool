@@ -120,23 +120,23 @@ function DrawChart(): ReactElement | null {
       navLine: createGaitNav(d3Nav),
     });
     // DUBUG:
-    Promise.all(csvFiles.map((file) => d3.csv(file))).then(
-      ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
-        setDataS(parseResult(csvResult, dataS));
-        // console.log(dataS)
-        let cycleList: { [key: string]: ICycle } = {
-          gait: parseCycle(csvGaitCycle),
-          lt: parseCycle(csvLtCycle),
-          rt: parseCycle(csvRtCycle),
-          db: parseCycle(csvDbCycle),
-        };
-        //
-        // update chart
-        updateApp(dataS[selPos][selOpt], cycleList);
-
-        setSelDisable(false);
-      }
-    );
+{/*     Promise.all(csvFiles.map((file) => d3.csv(file))).then(
+  *       ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
+  *         setDataS(parseResult(csvResult, dataS));
+  *         // console.log(dataS)
+  *         let cycleList: { [key: string]: ICycle } = {
+  *           gait: parseCycle(csvGaitCycle),
+  *           lt: parseCycle(csvLtCycle),
+  *           rt: parseCycle(csvRtCycle),
+  *           db: parseCycle(csvDbCycle),
+  *         };
+  *         //
+  *         // update chart
+  *         updateApp(dataS[selPos][selOpt], cycleList);
+  *
+  *         setSelDisable(false);
+  *       }
+  *     ); */}
   }, []);
 
   const updateApp = (schema: IDatasetInfo, c: { [key: string]: ICycle }) => {
