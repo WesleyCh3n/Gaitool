@@ -90,14 +90,12 @@ function DrawChart(): ReactElement | null {
         ).then(
           ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
             setDataS(parseResult(csvResult, dataS));
-            let cycleList: ICycleList = {
+            updateApp(dataS[selPos][selOpt], {
               gait: parseCycle(csvGaitCycle),
               lt: parseCycle(csvLtCycle),
               rt: parseCycle(csvRtCycle),
               db: parseCycle(csvDbCycle),
-            };
-            // update chart
-            updateApp(dataS[selPos][selOpt], cycleList);
+            });
 
             setSelDisable(false);
           }
@@ -116,21 +114,18 @@ function DrawChart(): ReactElement | null {
     updators.lnav = createGaitNav(refs.lnav)
 
     // DUBUG:
-    // Promise.all(csvFiles.map((file) => d3.csv(file))).then(
-      // ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
-        // setDataS(parseResult(csvResult, dataS));
-        // let cycleList: ICycleList = {
-          // gait: parseCycle(csvGaitCycle),
-          // lt: parseCycle(csvLtCycle),
-          // rt: parseCycle(csvRtCycle),
-          // db: parseCycle(csvDbCycle),
-        // };
-        // //
-        // // update chart
-        // updateApp(dataS[selPos][selOpt], cycleList);
-        // setSelDisable(false);
-      // }
-    // );
+    Promise.all(csvFiles.map((file) => d3.csv(file))).then(
+      ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
+        setDataS(parseResult(csvResult, dataS));
+        updateApp(dataS[selPos][selOpt], {
+          gait: parseCycle(csvGaitCycle),
+          lt: parseCycle(csvLtCycle),
+          rt: parseCycle(csvRtCycle),
+          db: parseCycle(csvDbCycle),
+        });
+        setSelDisable(false);
+      }
+    );
   }, []);
 
   const updateLogic = (d: IData[], c: ICycleList) => {

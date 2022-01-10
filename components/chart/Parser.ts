@@ -15,7 +15,7 @@ export function parseResult(
           y: +(row[`${pos}_${dataSchema[pos][key].csvY}`] ?? 0),
         });
       });
-      dataSchema[pos][key].data = data;
+      dataSchema[pos][key].data = data; // HACK: modify parent
     }
   }
 

@@ -134,7 +134,7 @@ export function createLineChart(ref: RefObject<HTMLDivElement>) {
       var d = x0 - d0.x > d1.x - x0 ? d1 : d0;
       tooltipGroup.attr(
         "transform",
-        `translate( ${xScale(d.x)}, ${yScale(d.y)})`
+        `translate(${xScale(d.x)}, ${yScale(d.y)})`
       );
       tooltipGroup.select(".tooltip-x").text(`x: ${d.x}`);
       tooltipGroup.select(".tooltip-y").text(`y: ${d.y.toFixed(3)}`);
