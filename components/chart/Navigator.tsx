@@ -2,6 +2,7 @@ import * as d3 from "d3";
 import { RefObject } from "react";
 import { IData, ICycle, layout } from "./";
 import { findClosestIndex } from "../../utils/utils";
+import { ICycleList } from "./Chart";
 
 export function createGaitNav(ref: RefObject<HTMLDivElement>) {
   const navSvg = d3
@@ -35,7 +36,11 @@ export function createGaitNav(ref: RefObject<HTMLDivElement>) {
     .append("g") // region brush
     .attr("class", "brush");
 
-  function update(updateLists: Function[], data: IData[], cycle: ICycle) {
+  function update(
+    updateLogic: (d: IData[], c: ICycleList) => void,
+    data: IData[],
+    cycle: ICycleList
+  ) {
     const brush = d3.brushX().extent([
       [0, 0],
       [layout.getWidth(), layout.getNavTickHeight()],
@@ -62,31 +67,20 @@ export function createGaitNav(ref: RefObject<HTMLDivElement>) {
         } else {
           let d0 = event.selection.map(xScaleNav.invert);
           let selIndex = (d0 as [number, number]).map((x: any) =>
-            findClosestIndex(
-              cycle.step.map((s) => s[0]), // cycle start
-              x
-            )
+            d3.bisectCenter(cycle["gait"].step.map((s) => s[0]), x)
           );
-          let selValue = selIndex.map((s) => cycle.step[s][0]);
+          let selValue = selIndex.map((s) => cycle["gait"].step[s][0]);
           gBrush.transition().call(event.target.move, selValue.map(xScaleNav));
 
-          updateLists.forEach((updt) => { // Function wrapper
-            let obj = updt()
-
-            // for calculate support time
-            if (typeof updt() !== 'function') {
-              let selIndexCycle = selValue.map((x) =>
-                d3.bisectLeft((obj.c as ICycle).step.map((s) => s[0]), x)
-              );
-              obj.f(data, { ...obj.c, sel: selIndexCycle })
-              obj.c.sel = (selIndexCycle as [number, number])
-              return
-            }
-
-            obj(data, { ...cycle, sel: selIndex });
+          // HACK: modify parent cycle
+          cycle["gait"].sel = selIndex as [number, number];
+          ["lt", "rt", "db"].forEach((k) => {
+            cycle[k].sel = selValue.map((x) =>
+              d3.bisectLeft(cycle[k].step.map((s) => s[0]), x)
+            ) as [number, number];
           });
-
-          cycle.sel = (selIndex as [number, number]); // HACK: modify parent cycle
+          // update chart
+          updateLogic(data, cycle)
         }
       });
 
@@ -99,8 +93,8 @@ export function createGaitNav(ref: RefObject<HTMLDivElement>) {
     xAxisG
       .call(
         xAxisGen
-          .ticks(cycle.step.length, ",.2f")
-          .tickValues(cycle.step.map((s) => s[0]))
+          .ticks(cycle["gait"].step.length, ",.2f")
+          .tickValues(cycle["gait"].step.map((s) => s[0]))
       )
       .selectAll(".tick text") // region tick style
       .style("text-anchor", "end")

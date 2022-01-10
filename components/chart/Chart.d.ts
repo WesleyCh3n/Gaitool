@@ -24,9 +24,17 @@ export interface IDataSPos {
   [key: string]: IDataSchema
 }
 
-interface ICycle {
+export interface ICycle {
   step: number[][]
   sel: [number, number]
+}
+
+export interface ICycleList {
+  [k: string]: ICycle
+  gait: ICycle
+  lt: ICycle
+  rt: ICycle
+  db: ICycle
 }
 
 export type IUpdator = (

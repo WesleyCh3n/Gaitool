@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import type { ReactElement, ChangeEvent } from "react";
+import type { ReactElement, ChangeEvent, RefObject } from "react";
 import * as d3 from "d3";
 
 import {
   // Interface
   IDatasetInfo,
   ICycle,
+  ICycleList,
   // Create chart
   createLineChart,
   createGaitNav,
@@ -14,42 +15,48 @@ import {
   parseResult,
   parseCycle,
   IDataSPos,
+  IData,
 } from "../components/chart";
 
 import { cycleMaxIQR, cycleMinIQR, timeIQR } from "../utils/dataPreprocess";
 import { Selector } from "../components/selector/Selector";
 import { Uploader } from "../components/upload/Uploader";
 
+const position = ["Pelvis", "Upper spine", "Lower spine"];
+const content = {
+  "Accel X": { data: [], csvX: "time", csvY: "A_X" },
+  "Accel Y": { data: [], csvX: "time", csvY: "A_Y" },
+  "Accel Z": { data: [], csvX: "time", csvY: "A_Z" },
+  "Gyro X": { data: [], csvX: "time", csvY: "Gyro_X" },
+  "Gyro Y": { data: [], csvX: "time", csvY: "Gyro_Y" },
+  "Gyro Z": { data: [], csvX: "time", csvY: "Gyro_Z" },
+};
+
 function DrawChart(): ReactElement | null {
   const dataSInit: IDataSPos = {};
-  const position = ["Pelvis", "Upper spine", "Lower spine"];
-  var content = {
-    "Accel X": { data: [], csvX: "time", csvY: "A_X" },
-    "Accel Y": { data: [], csvX: "time", csvY: "A_Y" },
-    "Accel Z": { data: [], csvX: "time", csvY: "A_Z" },
-    "Gyro X": { data: [], csvX: "time", csvY: "Gyro_X" },
-    "Gyro Y": { data: [], csvX: "time", csvY: "Gyro_Y" },
-    "Gyro Z": { data: [], csvX: "time", csvY: "Gyro_Z" },
-  };
   position.forEach((p) => {
     dataSInit[p] = JSON.parse(JSON.stringify(content)); // HACK: deep copy
   });
 
   const cycleInit: ICycle = { step: [[]], sel: [0, 0] };
 
-  const d3Line = useRef<HTMLDivElement>(null);
-  const d3BoxMax = useRef<HTMLDivElement>(null);
-  const d3BoxMin = useRef<HTMLDivElement>(null);
-  const d3BoxLt = useRef<HTMLDivElement>(null);
-  const d3BoxRt = useRef<HTMLDivElement>(null);
-  const d3BoxDb = useRef<HTMLDivElement>(null);
-  const d3Nav = useRef<HTMLDivElement>(null);
+  // NOTE: create references (2 places: useEffect, embeded)
+  const chartKey = ['line', 'bmax', 'bmin', 'lnav', 'bclt', 'bcrt', 'bcdb']
+  const refs: {[k:string]: RefObject<HTMLDivElement>} = {}
+  chartKey.forEach((k) => {
+    refs[k] = useRef<HTMLDivElement>(null)
+  })
 
+  // NOTE: data(parse, sel update), cycles(sel update, export, updateApp)
   const [dataS, setDataS] = useState<IDataSPos>(dataSInit);
-  const [cycle, setCycle] = useState<ICycle>(cycleInit);
-  const [ltCycle, setLtCycle] = useState<ICycle>(cycleInit);
-  const [rtCycle, setRtCycle] = useState<ICycle>(cycleInit);
-  const [dbCycle, setDbCycle] = useState<ICycle>(cycleInit);
+  const [cygt, setCygt] = useState<ICycle>(cycleInit);
+  const [cylt, setCylt] = useState<ICycle>(cycleInit);
+  const [cyrt, setCyrt] = useState<ICycle>(cycleInit);
+  const [cydb, setCydb] = useState<ICycle>(cycleInit);
+  // const [cycle, setCycle] = useState<ICycleList>()
+
+
+  // NOTE: updator(useEffect, updateApp)
   const [updators, setUpdators] =
     useState<{ [key: string]: Function }>({_: new Function});
 
@@ -76,14 +83,14 @@ function DrawChart(): ReactElement | null {
           [
             jsonRslt["rsltUrl"],
             jsonRslt["cyclUrl"],
-            jsonRslt["ltcyUrl"],
-            jsonRslt["rtcyUrl"],
-            jsonRslt["dbcyUrl"],
+            jsonRslt["cyltUrl"],
+            jsonRslt["cyrtUrl"],
+            jsonRslt["cydbUrl"],
           ].map((file) => d3.csv(file))
         ).then(
           ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
             setDataS(parseResult(csvResult, dataS));
-            let cycleList: { [key: string]: ICycle } = {
+            let cycleList: ICycleList = {
               gait: parseCycle(csvGaitCycle),
               lt: parseCycle(csvLtCycle),
               rt: parseCycle(csvRtCycle),
@@ -100,29 +107,19 @@ function DrawChart(): ReactElement | null {
 
   useEffect(() => {
     // setup chart when component mount
-    {/* setUpdators({
-      *   line: createLineChart(d3Line),
-      *   maxBox: createBoxChart(d3BoxMax, cycleMaxIQR),
-      *   minBox: createBoxChart(d3BoxMin, cycleMinIQR),
-      *   ltBox: createBoxChart(d3BoxLt, timeIQR),
-      *   rtBox: createBoxChart(d3BoxRt, timeIQR),
-      *   dbBox: createBoxChart(d3BoxDb, timeIQR),
-      *   navLine: createGaitNav(d3Nav),
-      * }); */}
-
-    updators.line = createLineChart(d3Line)
-    updators.maxBox = createBoxChart(d3BoxMax, cycleMaxIQR)
-    updators.minBox = createBoxChart(d3BoxMin, cycleMinIQR)
-    updators.ltBox = createBoxChart(d3BoxLt, timeIQR)
-    updators.rtBox = createBoxChart(d3BoxRt, timeIQR)
-    updators.dbBox = createBoxChart(d3BoxDb, timeIQR)
-    updators.navLine = createGaitNav(d3Nav)
+    updators.line = createLineChart(refs.line)
+    updators.bmax = createBoxChart(refs.bmax, cycleMaxIQR)
+    updators.bmin = createBoxChart(refs.bmin, cycleMinIQR)
+    updators.bclt = createBoxChart(refs.bclt, timeIQR)
+    updators.bcrt = createBoxChart(refs.bcrt, timeIQR)
+    updators.bcdb = createBoxChart(refs.bcdb, timeIQR)
+    updators.lnav = createGaitNav(refs.lnav)
 
     // DUBUG:
     // Promise.all(csvFiles.map((file) => d3.csv(file))).then(
       // ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
         // setDataS(parseResult(csvResult, dataS));
-        // let cycleList: { [key: string]: ICycle } = {
+        // let cycleList: ICycleList = {
           // gait: parseCycle(csvGaitCycle),
           // lt: parseCycle(csvLtCycle),
           // rt: parseCycle(csvRtCycle),
@@ -136,57 +133,40 @@ function DrawChart(): ReactElement | null {
     // );
   }, []);
 
-  const updateApp = (schema: IDatasetInfo, c: { [key: string]: ICycle }) => {
-    setCycle(c.gait);
-    setLtCycle(c.lt);
-    setRtCycle(c.rt);
-    setDbCycle(c.db);
-    updators.line(schema.data, c.gait);
-    updators.maxBox(schema.data, c.gait);
-    updators.minBox(schema.data, c.gait);
-    updators.ltBox(schema.data, c.lt);
-    updators.rtBox(schema.data, c.rt);
-    updators.dbBox(schema.data, c.db);
+  const updateLogic = (d: IData[], c: ICycleList) => {
+    updators.line(d, c.gait);
+    updators.bmax(d, c.gait);
+    updators.bmin(d, c.gait);
+    updators.bclt(d, c.lt);
+    updators.bcrt(d, c.rt);
+    updators.bcdb(d, c.db);
+  }
 
-    var updateLists = [
-      function () {
-        return updators.line;
-      },
-      function () {
-        return updators.maxBox;
-      },
-      function () {
-        return updators.minBox;
-      },
-      function () {
-        return { f: updators.ltBox, c: c.lt };
-      },
-      function () {
-        return { f: updators.rtBox, c: c.rt };
-      },
-      function () {
-        return { f: updators.dbBox, c: c.db };
-      },
-    ];
-    updators.navLine(updateLists, schema.data, c.gait);
+  const updateApp = (schema: IDatasetInfo, c: ICycleList) => {
+    setCygt(c.gait);
+    setCylt(c.lt);
+    setCyrt(c.rt);
+    setCydb(c.db);
+    updateLogic(schema.data, c)
+    updators.lnav(updateLogic, schema.data, c);
   };
 
   const selOptChange = (e: ChangeEvent<HTMLSelectElement>) => {
     updateApp(dataS[selPos][e.target.value], {
-      gait: cycle,
-      lt: ltCycle,
-      rt: rtCycle,
-      db: dbCycle,
+      gait: cygt,
+      lt: cylt,
+      rt: cyrt,
+      db: cydb,
     });
     setSelOpt(e.target.value);
   };
 
   const selPosChange = (e: ChangeEvent<HTMLSelectElement>) => {
     updateApp(dataS[e.target.value][selOpt], {
-      gait: cycle,
-      lt: ltCycle,
-      rt: rtCycle,
-      db: dbCycle,
+      gait: cygt,
+      lt: cylt,
+      rt: cyrt,
+      db: cydb,
     });
     setSelPos(e.target.value);
   };
@@ -219,55 +199,55 @@ function DrawChart(): ReactElement | null {
           <h1 className="text-center text-xl">Accelration</h1>
           <div
             className="border rounded-lg border-solid border-gray-300 shadow-md"
-            ref={d3Line}
+            ref={refs.line}
           ></div>
           <div
             className="mt-4 border rounded-lg border-solid border-gray-300 shadow-lg"
-            ref={d3Nav}
+            ref={refs.lnav}
           ></div>
         </div>
         <div className="col-span-1">
           <h1 className="text-center text-xl">Max</h1>
           <div
             className="border rounded-lg border-solid border-gray-300 shadow-md"
-            ref={d3BoxMax}
+            ref={refs.bmax}
           ></div>
         </div>
         <div className="col-span-1">
           <h1 className="text-center text-xl">Min</h1>
           <div
             className="border rounded-lg border-solid border-gray-300 shadow-md"
-            ref={d3BoxMin}
+            ref={refs.bmin}
           ></div>
         </div>
         <div className="col-span-1">
           <h1 className="text-center text-xl">LT support</h1>
           <div
             className="border rounded-lg border-solid border-gray-300 shadow-md"
-            ref={d3BoxLt}
+            ref={refs.bclt}
           ></div>
         </div>
         <div className="col-span-1">
           <h1 className="text-center text-xl">RT support</h1>
           <div
             className="border rounded-lg border-solid border-gray-300 shadow-md"
-            ref={d3BoxRt}
+            ref={refs.bcrt}
           ></div>
         </div>
         <div className="col-span-1">
           <h1 className="text-center text-xl">DB support</h1>
           <div
             className="border rounded-lg border-solid border-gray-300 shadow-md"
-            ref={d3BoxDb}
+            ref={refs.bcdb}
           ></div>
         </div>
         <div className="col-span-1 grid grid-rows-2 items-center justify-center">
           <button
             className="btn btn-outline"
             onClick={(_) => {
-              console.log(cycle);
-              console.log(ltCycle);
-              console.log(rtCycle);
+              console.log(cygt);
+              console.log(cylt);
+              console.log(cyrt);
             }}
           >
             Select Cycle
