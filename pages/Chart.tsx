@@ -135,6 +135,24 @@ function DrawChart(): ReactElement | null {
     let rtD = cycleDuration(c.rt)
     let dbD = cycleDuration(c.db)
 
+    /*
+     * updator.line({
+     *  data: {
+     *    x: 'x',
+     *    columns: [
+     *      ['x': d.map(d => d.x)],
+     *      ['y': d.map(d => d.y)]
+     *    ]
+     *  }
+     * })
+     * updator.bmax({
+     *  data: {
+     *    columns: [
+     *      ['data1': minD]
+     *    ]
+     *  }
+     * })
+     * */
     // input data to update fig
     updators.line(d, lineRange);
     updators.bmax(minD);

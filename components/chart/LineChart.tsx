@@ -4,8 +4,7 @@ import { RefObject } from "react";
 import { IData, layout } from ".";
 
 export function createLineChart(ref: RefObject<HTMLDivElement>) {
-  var svg = d3
-    // .select("#" + divSelector)
+  const svg = d3
     .select(ref.current)
     .append("svg") // global chart svg w/h
     .attr("preserveAspectRatio", "xMinYMin meet")
@@ -39,7 +38,7 @@ export function createLineChart(ref: RefObject<HTMLDivElement>) {
     .attr("width", layout.getWidth())
     .attr("height", layout.getLineHeight());
 
-  var tooltipGroup = svg
+  const tooltipGroup = svg
     .append("g")
     .attr("class", "tooltip__group")
     .style("display", "none");
@@ -72,7 +71,7 @@ export function createLineChart(ref: RefObject<HTMLDivElement>) {
     .attr("y", 18);
 
   const bisectX = d3.bisector((d: IData) => d.x).center;
-  var tooltipOverlay = svg
+  const tooltipOverlay = svg
     .append("rect")
     .attr("class", "overlay")
     .attr("fill", "none")
@@ -88,10 +87,11 @@ export function createLineChart(ref: RefObject<HTMLDivElement>) {
       tooltipGroup.style("display", "none");
     });
 
-  function update(data: IData[], range?: [number, number]) {
     // prepare scale
-    var xScale = d3.scaleLinear().range([0, layout.getWidth()]);
-    var yScale = d3.scaleLinear().range([layout.getLineHeight(), 0]);
+  const xScale = d3.scaleLinear().range([0, layout.getWidth()]);
+  const yScale = d3.scaleLinear().range([layout.getLineHeight(), 0]);
+
+  function update(data: IData[], range?: [number, number]) {
 
     if (range) {
       xScale.domain(range);
