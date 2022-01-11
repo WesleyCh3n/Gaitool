@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 import { RefObject } from "react";
 
-import { IData, ICycle, layout } from ".";
+import { IData, layout } from ".";
 
 export function createLineChart(ref: RefObject<HTMLDivElement>) {
   var svg = d3
@@ -88,12 +88,16 @@ export function createLineChart(ref: RefObject<HTMLDivElement>) {
       tooltipGroup.style("display", "none");
     });
 
-  function update(data: IData[], cycle: ICycle) {
+  function update(data: IData[], range?: [number, number]) {
     // prepare scale
     var xScale = d3.scaleLinear().range([0, layout.getWidth()]);
     var yScale = d3.scaleLinear().range([layout.getLineHeight(), 0]);
 
-    xScale.domain(cycle.sel.map((s) => cycle.step[s][0]));
+    if (range) {
+      xScale.domain(range);
+    } else {
+      xScale.domain(d3.extent(data, (d) => d.x).map((x) => x ?? 0));
+    }
     yScale.domain(d3.extent(data, (d) => d.y).map((y) => y ?? 0));
 
     // prepare axisGen

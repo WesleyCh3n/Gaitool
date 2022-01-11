@@ -18,7 +18,7 @@ import {
   IData,
 } from "../components/chart";
 
-import { cycleMaxIQR, cycleMinIQR, timeIQR } from "../utils/dataPreprocess";
+import { cycleMax, cycleMin, cycleDuration, selLineRange } from "../utils/dataPreprocess";
 import { Selector } from "../components/selector/Selector";
 import { Uploader } from "../components/upload/Uploader";
 
@@ -53,12 +53,9 @@ function DrawChart(): ReactElement | null {
   const [cylt, setCylt] = useState<ICycle>(cycleInit);
   const [cyrt, setCyrt] = useState<ICycle>(cycleInit);
   const [cydb, setCydb] = useState<ICycle>(cycleInit);
-  // const [cycle, setCycle] = useState<ICycleList>()
-
 
   // NOTE: updator(useEffect, updateApp)
-  const [updators, setUpdators] =
-    useState<{ [key: string]: Function }>({_: new Function});
+  const [updators] = useState<{ [key: string]: Function }>({_: new Function});
 
   const [selPos, setSelPos] = useState<string>(position[0]);
   const [selOpt, setSelOpt] = useState<string>(Object.keys(content)[0]);
@@ -104,13 +101,13 @@ function DrawChart(): ReactElement | null {
   }
 
   useEffect(() => {
-    // setup chart when component mount
+    // setup chart manually when component mount
     updators.line = createLineChart(refs.line)
-    updators.bmax = createBoxChart(refs.bmax, cycleMaxIQR)
-    updators.bmin = createBoxChart(refs.bmin, cycleMinIQR)
-    updators.bclt = createBoxChart(refs.bclt, timeIQR)
-    updators.bcrt = createBoxChart(refs.bcrt, timeIQR)
-    updators.bcdb = createBoxChart(refs.bcdb, timeIQR)
+    updators.bmax = createBoxChart(refs.bmax)
+    updators.bmin = createBoxChart(refs.bmin)
+    updators.bclt = createBoxChart(refs.bclt)
+    updators.bcrt = createBoxChart(refs.bcrt)
+    updators.bcdb = createBoxChart(refs.bcdb)
     updators.lnav = createGaitNav(refs.lnav)
 
     // DUBUG:
@@ -129,14 +126,22 @@ function DrawChart(): ReactElement | null {
   }, []);
 
   const updateLogic = (d: IData[], c: ICycleList) => {
-    // preprocess data -> boxplot
-    // filter cycle need to on top scope
-    updators.line(d, c.gait);
-    updators.bmax(d, c.gait);
-    updators.bmin(d, c.gait);
-    updators.bclt(d, c.lt);
-    updators.bcrt(d, c.rt);
-    updators.bcdb(d, c.db);
+    // preprocess/filter data
+    let lineD = selLineRange(d, c.gait)
+    let lineRange = (d3.extent(lineD, (d) => d.x).map((x) => x ?? 0))
+    let minD = cycleMin(d, c.gait)
+    let maxD = cycleMax(d, c.gait)
+    let ltD = cycleDuration(c.lt)
+    let rtD = cycleDuration(c.rt)
+    let dbD = cycleDuration(c.db)
+
+    // input data to update fig
+    updators.line(d, lineRange);
+    updators.bmax(minD);
+    updators.bmin(maxD);
+    updators.bclt(ltD);
+    updators.bcrt(rtD);
+    updators.bcdb(dbD);
   }
 
   const updateApp = (schema: IDatasetInfo, c: ICycleList) => {

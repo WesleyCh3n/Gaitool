@@ -1,7 +1,6 @@
 import * as d3 from "d3";
 import { RefObject } from "react";
-import { IData, ICycle, layout } from "./";
-import { findClosestIndex } from "../../utils/utils";
+import { IData, layout } from "./";
 import { ICycleList } from "./Chart";
 
 export function createGaitNav(ref: RefObject<HTMLDivElement>) {
