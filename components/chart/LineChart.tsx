@@ -70,6 +70,15 @@ export function createLineChart(ref: RefObject<HTMLDivElement>) {
     .attr("x", 18)
     .attr("y", 18);
 
+  tooltipGroup
+    .append("path") // create vertical line to follow mouse
+    .attr("class", "mouse-line")
+    .attr("d", `M 0 0 V ${layout.getLineHeight()}`)
+    .attr("stroke", "#303030")
+    .attr("stroke-width", 2)
+    .style("stroke-dasharray", "3, 3")
+    .attr("opacity", "0");
+
   const bisectX = d3.bisector((d: IData) => d.x).center;
   const tooltipOverlay = svg
     .append("rect")
@@ -87,12 +96,11 @@ export function createLineChart(ref: RefObject<HTMLDivElement>) {
       tooltipGroup.style("display", "none");
     });
 
-    // prepare scale
+  // prepare scale
   const xScale = d3.scaleLinear().range([0, layout.getWidth()]);
   const yScale = d3.scaleLinear().range([layout.getLineHeight(), 0]);
 
   function update(data: IData[], range?: [number, number]) {
-
     if (range) {
       xScale.domain(range);
     } else {
@@ -130,18 +138,23 @@ export function createLineChart(ref: RefObject<HTMLDivElement>) {
       );
 
     tooltipOverlay.on("mousemove", (event: any) => {
-      var x0 = xScale.invert(d3.pointer(event)[0]),
+      // find closest data coordinate
+      const x0 = xScale.invert(d3.pointer(event)[0]),
         i = bisectX(data, x0),
         d0 = data[i - 1],
         d1 = data[i];
       if (!d0 || !d1) return;
-      var d = x0 - d0.x > d1.x - x0 ? d1 : d0;
+      const closestCord = x0 - d0.x > d1.x - x0 ? d1 : d0;
       tooltipGroup.attr(
         "transform",
-        `translate(${xScale(d.x)}, ${yScale(d.y)})`
+        `translate(${xScale(closestCord.x)}, ${yScale(closestCord.y)})`
       );
-      tooltipGroup.select(".tooltip-x").text(`x: ${d.x}`);
-      tooltipGroup.select(".tooltip-y").text(`y: ${d.y.toFixed(3)}`);
+      tooltipGroup.select(".tooltip-x").text(`x: ${closestCord.x}`);
+      tooltipGroup.select(".tooltip-y").text(`y: ${closestCord.y.toFixed(3)}`);
+      tooltipGroup
+        .select(".mouse-line")
+        .attr("opacity", "1")
+        .attr("transform", `translate(0, ${-yScale(closestCord.y)})`);
     });
   }
   return update;

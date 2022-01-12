@@ -9,11 +9,11 @@ const Home: NextPage = () => {
         <DrawChart />
       </div>
       <div className="col-span-1"></div>
-      <div className="col-span-1"></div>
-      <div className="col-span-8 row-span-1">
-        <DrawChart />
-      </div>
-      <div className="col-span-1"></div>
+      {/* <div className="col-span-1"></div>
+        * <div className="col-span-8 row-span-1">
+        *   <DrawChart />
+        * </div>
+        * <div className="col-span-1"></div> */}
     </div>
   );
 };
