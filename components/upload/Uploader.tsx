@@ -24,10 +24,16 @@ export function Uploader(props: UploaderProps): ReactElement | null {
 
     if (!selectedFile) return;
     setIsLoading(true)
-    await props.handleFile(selectedFile[0]);
+    // await props.handleFile(selectedFile[0]);
+
+    const formData = new FormData();
+    formData.append("file", selectedFile[0]); // NOTE: append("key", value)
+    const res = await fetch("api/upload", { method: "POST", body: "hello" })
+          .then(res => res)
+    const result = await res.text()
+    console.log(result)
+
     setIsLoading(false)
-    // Array.from(selectedFile).forEach((file) => {
-    // });
   }
 
 
