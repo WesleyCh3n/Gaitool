@@ -18,9 +18,15 @@ import {
   IData,
 } from "../components/chart";
 
-import { cycleMaxIQR, cycleMinIQR, timeIQR } from "../utils/dataPreprocess";
+import {
+  cycleMax,
+  cycleMin,
+  cycleDuration,
+  selLineRange,
+} from "../utils/dataPreprocess";
 import { Selector } from "../components/selector/Selector";
 import { Uploader } from "../components/upload/Uploader";
+import { FilterdData } from "../api/filter";
 
 const position = ["Pelvis", "Upper spine", "Lower spine"];
 const content = {
@@ -41,11 +47,11 @@ function DrawChart(): ReactElement | null {
   const cycleInit: ICycle = { step: [[]], sel: [0, 0] };
 
   // NOTE: create references (2 places: useEffect, embeded)
-  const chartKey = ['line', 'bmax', 'bmin', 'lnav', 'bclt', 'bcrt', 'bcdb']
-  const refs: {[k:string]: RefObject<HTMLDivElement>} = {}
+  const chartKey = ["line", "bmax", "bmin", "lnav", "bclt", "bcrt", "bcdb"];
+  const refs: { [k: string]: RefObject<HTMLDivElement> } = {};
   chartKey.forEach((k) => {
-    refs[k] = useRef<HTMLDivElement>(null)
-  })
+    refs[k] = useRef<HTMLDivElement>(null);
+  });
 
   // NOTE: data(parse, sel update), cycles(sel update, export, updateApp)
   const [dataS, setDataS] = useState<IDataSPos>(dataSInit);
@@ -53,12 +59,11 @@ function DrawChart(): ReactElement | null {
   const [cylt, setCylt] = useState<ICycle>(cycleInit);
   const [cyrt, setCyrt] = useState<ICycle>(cycleInit);
   const [cydb, setCydb] = useState<ICycle>(cycleInit);
-  // const [cycle, setCycle] = useState<ICycleList>()
-
 
   // NOTE: updator(useEffect, updateApp)
-  const [updators, setUpdators] =
-    useState<{ [key: string]: Function }>({_: new Function});
+  const [updators] = useState<{ [key: string]: Function }>({
+    _: new Function(),
+  });
 
   const [selPos, setSelPos] = useState<string>(position[0]);
   const [selOpt, setSelOpt] = useState<string>(Object.keys(content)[0]);
@@ -72,79 +77,97 @@ function DrawChart(): ReactElement | null {
     "./2021-09-26-18-36_cycle_db_Dr Tsai_1.csv",
   ];
 
-  async function sendFile(f: File) {
-    const formData = new FormData();
-    formData.append("file", f); // NOTE: append("key", value)
-
-    return fetch("http://localhost:3001/api/upload", { method: "POST", body: formData })
-      .then((res) => res.json())
-      .then((jsonRslt) => {
-        Promise.all(
-          [
-            jsonRslt["rsltUrl"],
-            jsonRslt["cyclUrl"],
-            jsonRslt["cyltUrl"],
-            jsonRslt["cyrtUrl"],
-            jsonRslt["cydbUrl"],
-          ].map((file) => d3.csv(file))
-        ).then(
-          ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
-            setDataS(parseResult(csvResult, dataS));
-            updateApp(dataS[selPos][selOpt], {
-              gait: parseCycle(csvGaitCycle),
-              lt: parseCycle(csvLtCycle),
-              rt: parseCycle(csvRtCycle),
-              db: parseCycle(csvDbCycle),
-            });
-
-            setSelDisable(false);
-          }
-        );
+  async function createChart(res: FilterdData) {
+    // create chart when upload response
+    return Promise.all(
+      [
+        res["rsltUrl"],
+        res["cyclUrl"],
+        res["cyltUrl"],
+        res["cyrtUrl"],
+        res["cydbUrl"],
+      ].map((file) => d3.csv(file))
+    ).then(([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
+      setDataS(parseResult(csvResult, dataS));
+      updateApp(dataS[selPos][selOpt], {
+        gait: parseCycle(csvGaitCycle),
+        lt: parseCycle(csvLtCycle),
+        rt: parseCycle(csvRtCycle),
+        db: parseCycle(csvDbCycle),
       });
+
+      setSelDisable(false);
+    });
   }
 
   useEffect(() => {
-    // setup chart when component mount
-    updators.line = createLineChart(refs.line)
-    updators.bmax = createBoxChart(refs.bmax, cycleMaxIQR)
-    updators.bmin = createBoxChart(refs.bmin, cycleMinIQR)
-    updators.bclt = createBoxChart(refs.bclt, timeIQR)
-    updators.bcrt = createBoxChart(refs.bcrt, timeIQR)
-    updators.bcdb = createBoxChart(refs.bcdb, timeIQR)
-    updators.lnav = createGaitNav(refs.lnav)
+    // setup chart manually when component mount
+    updators.line = createLineChart(refs.line);
+    updators.bmax = createBoxChart(refs.bmax);
+    updators.bmin = createBoxChart(refs.bmin);
+    updators.bclt = createBoxChart(refs.bclt);
+    updators.bcrt = createBoxChart(refs.bcrt);
+    updators.bcdb = createBoxChart(refs.bcdb);
+    updators.lnav = createGaitNav(refs.lnav);
 
     // DUBUG:
-    // Promise.all(csvFiles.map((file) => d3.csv(file))).then(
-      // ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
-        // setDataS(parseResult(csvResult, dataS));
-        // updateApp(dataS[selPos][selOpt], {
-          // gait: parseCycle(csvGaitCycle),
-          // lt: parseCycle(csvLtCycle),
-          // rt: parseCycle(csvRtCycle),
-          // db: parseCycle(csvDbCycle),
-        // });
-        // setSelDisable(false);
-      // }
-    // );
+    Promise.all(csvFiles.map((file) => d3.csv(file))).then(
+      ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
+        setDataS(parseResult(csvResult, dataS));
+        updateApp(dataS[selPos][selOpt], {
+          gait: parseCycle(csvGaitCycle),
+          lt: parseCycle(csvLtCycle),
+          rt: parseCycle(csvRtCycle),
+          db: parseCycle(csvDbCycle),
+        });
+        setSelDisable(false);
+      }
+    );
   }, []);
 
   const updateLogic = (d: IData[], c: ICycleList) => {
-    // preprocess data -> boxplot
-    // filter cycle need to on top scope
-    updators.line(d, c.gait);
-    updators.bmax(d, c.gait);
-    updators.bmin(d, c.gait);
-    updators.bclt(d, c.lt);
-    updators.bcrt(d, c.rt);
-    updators.bcdb(d, c.db);
-  }
+    // preprocess/filter data
+    let lineD = selLineRange(d, c.gait);
+    let lineRange = d3.extent(lineD, (d) => d.x).map((x) => x ?? 0);
+    let minD = cycleMin(d, c.gait);
+    let maxD = cycleMax(d, c.gait);
+    let ltD = cycleDuration(c.lt);
+    let rtD = cycleDuration(c.rt);
+    let dbD = cycleDuration(c.db);
+
+    /*
+     * updator.line({
+     *  data: {
+     *    x: 'x',
+     *    columns: [
+     *      ['x': d.map(d => d.x)],
+     *      ['y': d.map(d => d.y)]
+     *    ]
+     *  }
+     * })
+     * updator.bmax({
+     *  data: {
+     *    columns: [
+     *      ['data1': minD]
+     *    ]
+     *  }
+     * })
+     * */
+    // input data to update fig
+    updators.line(d, lineRange);
+    updators.bmax(minD);
+    updators.bmin(maxD);
+    updators.bclt(ltD);
+    updators.bcrt(rtD);
+    updators.bcdb(dbD);
+  };
 
   const updateApp = (schema: IDatasetInfo, c: ICycleList) => {
     setCygt(c.gait);
     setCylt(c.lt);
     setCyrt(c.rt);
     setCydb(c.db);
-    updateLogic(schema.data, c)
+    updateLogic(schema.data, c);
     updators.lnav(updateLogic, schema.data, c);
   };
 
@@ -171,7 +194,7 @@ function DrawChart(): ReactElement | null {
   return (
     <div className="border rounded-lg border-solid border-gray-300">
       <div className="flex justify-center">
-        <Uploader handleFile={sendFile} />
+        <Uploader handleFile={createChart} />
       </div>
       <div className="grid grid-cols-7 gap-4 m-4">
         <div className="mt-[28px] row-span-2">

@@ -1,7 +1,6 @@
 import * as d3 from "d3";
 import { RefObject } from "react";
-import { IData, ICycle, layout } from "./";
-import { findClosestIndex } from "../../utils/utils";
+import { IData, layout } from "./";
 import { ICycleList } from "./Chart";
 
 export function createGaitNav(ref: RefObject<HTMLDivElement>) {
@@ -55,7 +54,7 @@ export function createGaitNav(ref: RefObject<HTMLDivElement>) {
           .attr("display", null)
           .attr(
             "transform",
-            (_, i) => `translate(${s[i]}, ${-layout.getNavTickHeight() / 4})`
+            (_, i) => `translate(${s[i]}, ${-layout.getNavTickHeight()})`
           );
       })
       .on("end", (event: any) => {
@@ -123,48 +122,47 @@ export function createGaitNav(ref: RefObject<HTMLDivElement>) {
       .attr("stroke", "#000")
       .attr("stroke-width", "1.5")
       .attr("cursor", "ew-resize")
-      .attr("d", brushHandlePath);
+      .attr("d", brushHandlePath)
+      .attr( "transform", `translate(0, ${-layout.getNavTickHeight()})`);
   }
-
-  // gBrush.call(brush.move, gaitCycle.slice(0, 2).map(xScaleNav));
   return update;
 }
 
 const brushHandlePath = (d: any) => {
   var e = +(d.type == "e"),
     x = e ? 1 : -1,
-    y = layout.getNavTickHeight() / 2;
+    y = layout.getNavTickHeight();
   return (
     "M" +
-    0.5 * x +
-    "," +
-    y +
-    "A6,6 0 0 " +
-    e +
-    " " +
-    6.5 * x +
-    "," +
-    (y + 6) +
-    "V" +
-    (2 * y - 6) +
-    "A6,6 0 0 " +
-    e +
-    " " +
-    0.5 * x +
-    "," +
-    2 * y +
-    "Z" +
-    "M" +
-    2.5 * x +
-    "," +
-    (y + 8) +
-    "V" +
-    (2 * y - 8) +
-    "M" +
-    4.5 * x +
-    "," +
-    (y + 8) +
-    "V" +
-    (2 * y - 8)
+      0.5 * x +
+      "," +
+      y +
+      "A6,6 0 0 " +
+      e +
+      " " +
+      6.5 * x +
+      "," +
+      (y + 6) +
+      "V" +
+      (2 * y - 6) +
+      "A6,6 0 0 " +
+      e +
+      " " +
+      0.5 * x +
+      "," +
+      2 * y +
+      "Z" +
+      "M" +
+      2.5 * x +
+      "," +
+      (y + 8) +
+      "V" +
+      (2 * y - 8) +
+      "M" +
+      4.5 * x +
+      "," +
+      (y + 8) +
+      "V" +
+      (2 * y - 8)
   );
 };

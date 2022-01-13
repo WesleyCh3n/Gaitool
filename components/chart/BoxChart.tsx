@@ -1,11 +1,8 @@
 import * as d3 from "d3";
 import { RefObject } from "react";
-import { IData, ICycle, IBoxResult, layout } from "./";
+import { IBoxResult, layout } from "./";
 
-export function createBoxChart(
-  ref: RefObject<HTMLDivElement>,
-  dataPreprocess: (data: IData[], cycle: ICycle) => IBoxResult
-) {
+export function createBoxChart(ref: RefObject<HTMLDivElement>) {
   var svg = d3
     .select(ref.current)
     .append("svg") // global chart svg w/h
@@ -38,16 +35,13 @@ export function createBoxChart(
   gOutlier.append("text").attr("class", "text__min");
   gOutlier.append("text").attr("class", "text__max");
 
-  svg.append("g").attr("class", "line_horz")
+  svg.append("g").attr("class", "line_horz");
 
   svg.append("g").attr("class", "text__left");
   svg.append("g").attr("class", "text__right");
 
-  function update(data: IData[], cycle: ICycle) {
-    var dataCopy = [...data]; // HACK: copy before sort
-
-    // process data
-    const result = dataPreprocess(dataCopy, cycle);
+  function update(data: number[]) {
+    const result = IQR(data);
 
     var minScale = result.min - result.IQR / 4;
     var maxScale = result.max + result.IQR / 4;
@@ -108,7 +102,7 @@ export function createBoxChart(
           enter
             .append("text")
             .attr("fill", "#000")
-            .attr("y", (d) => yScale(d)+3)
+            .attr("y", (d) => yScale(d) + 3)
             .text((d) => `${d.toFixed(2)}`),
         (update) =>
           update.attr("y", (d) => yScale(d)).text((d) => `${d.toFixed(2)}`)
@@ -136,3 +130,29 @@ export function createBoxChart(
   }
   return update;
 }
+
+const IQR = (array: number[]): IBoxResult => {
+  const sortedArray = [...array].sort((a, b) => d3.ascending(a, b));
+
+  const q1 = d3.quantile(sortedArray, 0.25) ?? 0;
+  const median = d3.quantile(sortedArray, 0.5) ?? 0;
+  const q3 = d3.quantile(sortedArray, 0.75) ?? 0;
+
+  const IQR = q3 - q1;
+
+  const lowerIQR = q1 - 1.5 * IQR;
+  const upperIQR = q3 + 1.5 * IQR;
+
+  return {
+    min: isFinite(Math.min(...sortedArray)) ? Math.min(...sortedArray) : 0,
+    max: isFinite(Math.max(...sortedArray)) ? Math.max(...sortedArray) : 0,
+
+    q1: q1,
+    median: median,
+    q3: q3,
+
+    IQR: IQR,
+    lowerIQR: lowerIQR,
+    upperIQR: upperIQR,
+  };
+};

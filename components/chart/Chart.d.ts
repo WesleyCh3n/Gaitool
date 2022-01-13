@@ -12,12 +12,6 @@ export interface IDatasetInfo {
 
 export interface IDataSchema {
   [key: string]: IDatasetInfo;
-  // aX: IDatasetInfo;
-  // aY: IDatasetInfo;
-  // aZ: IDatasetInfo;
-  // gX: IDatasetInfo,
-  // gY: IDatasetInfo,
-  // gZ: IDatasetInfo,
 }
 
 export interface IDataSPos {
@@ -36,17 +30,6 @@ export interface ICycleList {
   rt: ICycle
   db: ICycle
 }
-
-export type IUpdator = (
-data: IData[],
-cycle: ICycle
-) => void
-
-export type INavUpdator = (
-  updateLists: Function[],
-  data: IData[],
-  cycle: ICycle
-) => void;
 
 export interface IBoxResult  {
   [key: string]: number;
