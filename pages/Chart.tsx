@@ -26,7 +26,7 @@ import {
 } from "../utils/dataPreprocess";
 import { Selector } from "../components/selector/Selector";
 import { Uploader } from "../components/upload/Uploader";
-import { FilterdData } from "../api/filter"
+import { FilterdData } from "../api/filter";
 
 const position = ["Pelvis", "Upper spine", "Lower spine"];
 const content = {
@@ -77,28 +77,27 @@ function DrawChart(): ReactElement | null {
     "./2021-09-26-18-36_cycle_db_Dr Tsai_1.csv",
   ];
 
-  async function createChart(res: FilterdData) { // create chart when upload response
+  async function createChart(res: FilterdData) {
+    // create chart when upload response
     return Promise.all(
-          [
-            res["rsltUrl"],
-            res["cyclUrl"],
-            res["cyltUrl"],
-            res["cyrtUrl"],
-            res["cydbUrl"],
-          ].map((file) => d3.csv(file))
-        ).then(
-          ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
-            setDataS(parseResult(csvResult, dataS));
-            updateApp(dataS[selPos][selOpt], {
-              gait: parseCycle(csvGaitCycle),
-              lt: parseCycle(csvLtCycle),
-              rt: parseCycle(csvRtCycle),
-              db: parseCycle(csvDbCycle),
-            });
+      [
+        res["rsltUrl"],
+        res["cyclUrl"],
+        res["cyltUrl"],
+        res["cyrtUrl"],
+        res["cydbUrl"],
+      ].map((file) => d3.csv(file))
+    ).then(([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
+      setDataS(parseResult(csvResult, dataS));
+      updateApp(dataS[selPos][selOpt], {
+        gait: parseCycle(csvGaitCycle),
+        lt: parseCycle(csvLtCycle),
+        rt: parseCycle(csvRtCycle),
+        db: parseCycle(csvDbCycle),
+      });
 
-            setSelDisable(false);
-          }
-        )
+      setSelDisable(false);
+    });
   }
 
   useEffect(() => {
@@ -112,18 +111,18 @@ function DrawChart(): ReactElement | null {
     updators.lnav = createGaitNav(refs.lnav);
 
     // DUBUG:
-    // Promise.all(csvFiles.map((file) => d3.csv(file))).then(
-    // ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
-    // setDataS(parseResult(csvResult, dataS));
-    // updateApp(dataS[selPos][selOpt], {
-    // gait: parseCycle(csvGaitCycle),
-    // lt: parseCycle(csvLtCycle),
-    // rt: parseCycle(csvRtCycle),
-    // db: parseCycle(csvDbCycle),
-    // });
-    // setSelDisable(false);
-    // }
-    // );
+    Promise.all(csvFiles.map((file) => d3.csv(file))).then(
+      ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
+        setDataS(parseResult(csvResult, dataS));
+        updateApp(dataS[selPos][selOpt], {
+          gait: parseCycle(csvGaitCycle),
+          lt: parseCycle(csvLtCycle),
+          rt: parseCycle(csvRtCycle),
+          db: parseCycle(csvDbCycle),
+        });
+        setSelDisable(false);
+      }
+    );
   }, []);
 
   const updateLogic = (d: IData[], c: ICycleList) => {
