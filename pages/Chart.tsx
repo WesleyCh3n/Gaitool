@@ -196,8 +196,8 @@ function DrawChart(): ReactElement | null {
       <div className="flex justify-center">
         <Uploader handleFile={createChart} />
       </div>
-      <div className="grid grid-cols-7 gap-4 m-4">
-        <div className="mt-[28px] row-span-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4 m-4">
+        <div className="mt-[28px] md:col-span-2 lg:col-span-1 row-span-2">
           <div className="row-span-1 mb-4 text-sm">
             <Selector
               options={position}
@@ -215,7 +215,7 @@ function DrawChart(): ReactElement | null {
             />
           </div>
         </div>
-        <div className="col-span-6">
+        <div className="md:col-span-2 lg:col-span-6">
           <h1 className="text-center text-xl">Accelration</h1>
           <div
             className="border rounded-lg border-solid border-gray-300 shadow-md"
