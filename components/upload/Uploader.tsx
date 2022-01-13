@@ -41,7 +41,7 @@ export function Uploader(props: UploaderProps): ReactElement | null {
         onChange={selectOnChange}
         // multiple
       />
-      <div className="col-span-1 flex items-center">
+      <div className="col-span-1 flex items-center justify-center">
         <Button
           title={"Submit"}
           onClick={handleSelectList}
