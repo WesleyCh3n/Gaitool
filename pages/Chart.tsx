@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { ReactElement, ChangeEvent, RefObject } from "react";
 import * as d3 from "d3";
+import axios from "axios";
 
 import {
   // Interface
@@ -18,7 +19,12 @@ import {
   IData,
 } from "../components/chart";
 
-import { cycleMax, cycleMin, cycleDuration, selLineRange } from "../utils/dataPreprocess";
+import {
+  cycleMax,
+  cycleMin,
+  cycleDuration,
+  selLineRange,
+} from "../utils/dataPreprocess";
 import { Selector } from "../components/selector/Selector";
 import { Uploader } from "../components/upload/Uploader";
 
@@ -41,11 +47,11 @@ function DrawChart(): ReactElement | null {
   const cycleInit: ICycle = { step: [[]], sel: [0, 0] };
 
   // NOTE: create references (2 places: useEffect, embeded)
-  const chartKey = ['line', 'bmax', 'bmin', 'lnav', 'bclt', 'bcrt', 'bcdb']
-  const refs: {[k:string]: RefObject<HTMLDivElement>} = {}
+  const chartKey = ["line", "bmax", "bmin", "lnav", "bclt", "bcrt", "bcdb"];
+  const refs: { [k: string]: RefObject<HTMLDivElement> } = {};
   chartKey.forEach((k) => {
-    refs[k] = useRef<HTMLDivElement>(null)
-  })
+    refs[k] = useRef<HTMLDivElement>(null);
+  });
 
   // NOTE: data(parse, sel update), cycles(sel update, export, updateApp)
   const [dataS, setDataS] = useState<IDataSPos>(dataSInit);
@@ -55,7 +61,9 @@ function DrawChart(): ReactElement | null {
   const [cydb, setCydb] = useState<ICycle>(cycleInit);
 
   // NOTE: updator(useEffect, updateApp)
-  const [updators] = useState<{ [key: string]: Function }>({_: new Function});
+  const [updators] = useState<{ [key: string]: Function }>({
+    _: new Function(),
+  });
 
   const [selPos, setSelPos] = useState<string>(position[0]);
   const [selOpt, setSelOpt] = useState<string>(Object.keys(content)[0]);
@@ -72,17 +80,22 @@ function DrawChart(): ReactElement | null {
   async function sendFile(f: File) {
     const formData = new FormData();
     formData.append("file", f); // NOTE: append("key", value)
+    console.log(formData)
 
-    return fetch("http://localhost:3001/api/upload", { method: "POST", body: formData })
-      .then((res) => res.json())
-      .then((jsonRslt) => {
+    return axios
+      .post("http://localhost:3001/api/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((res) => {
         Promise.all(
           [
-            jsonRslt["data"]["rsltUrl"],
-            jsonRslt["data"]["cyclUrl"],
-            jsonRslt["data"]["cyltUrl"],
-            jsonRslt["data"]["cyrtUrl"],
-            jsonRslt["data"]["cydbUrl"],
+            res["data"]["data"]["rsltUrl"],
+            res["data"]["data"]["cyclUrl"],
+            res["data"]["data"]["cyltUrl"],
+            res["data"]["data"]["cyrtUrl"],
+            res["data"]["data"]["cydbUrl"],
           ].map((file) => d3.csv(file))
         ).then(
           ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
@@ -98,42 +111,67 @@ function DrawChart(): ReactElement | null {
           }
         );
       });
+    // return fetch("http://localhost:3001/api/upload", { method: "POST", body: formData })
+    // .then((res) => res.json())
+    // .then((jsonRslt) => {
+    // Promise.all(
+    // [
+    // jsonRslt["data"]["rsltUrl"],
+    // jsonRslt["data"]["cyclUrl"],
+    // jsonRslt["data"]["cyltUrl"],
+    // jsonRslt["data"]["cyrtUrl"],
+    // jsonRslt["data"]["cydbUrl"],
+    // ].map((file) => d3.csv(file))
+    // ).then(
+    // ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
+    // setDataS(parseResult(csvResult, dataS));
+    // updateApp(dataS[selPos][selOpt], {
+    // gait: parseCycle(csvGaitCycle),
+    // lt: parseCycle(csvLtCycle),
+    // rt: parseCycle(csvRtCycle),
+    // db: parseCycle(csvDbCycle),
+    // });
+
+    // setSelDisable(false);
+    // }
+    // );
+    // });
   }
 
   useEffect(() => {
     // setup chart manually when component mount
-    updators.line = createLineChart(refs.line)
-    updators.bmax = createBoxChart(refs.bmax)
-    updators.bmin = createBoxChart(refs.bmin)
-    updators.bclt = createBoxChart(refs.bclt)
-    updators.bcrt = createBoxChart(refs.bcrt)
-    updators.bcdb = createBoxChart(refs.bcdb)
-    updators.lnav = createGaitNav(refs.lnav)
+    updators.line = createLineChart(refs.line);
+    updators.bmax = createBoxChart(refs.bmax);
+    updators.bmin = createBoxChart(refs.bmin);
+    updators.bclt = createBoxChart(refs.bclt);
+    updators.bcrt = createBoxChart(refs.bcrt);
+    updators.bcdb = createBoxChart(refs.bcdb);
+    updators.lnav = createGaitNav(refs.lnav);
 
     // DUBUG:
     // Promise.all(csvFiles.map((file) => d3.csv(file))).then(
-      // ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
-        // setDataS(parseResult(csvResult, dataS));
-        // updateApp(dataS[selPos][selOpt], {
-          // gait: parseCycle(csvGaitCycle),
-          // lt: parseCycle(csvLtCycle),
-          // rt: parseCycle(csvRtCycle),
-          // db: parseCycle(csvDbCycle),
-        // });
-        // setSelDisable(false);
-      // }
+    // ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
+    // setDataS(parseResult(csvResult, dataS));
+    // updateApp(dataS[selPos][selOpt], {
+    // gait: parseCycle(csvGaitCycle),
+    // lt: parseCycle(csvLtCycle),
+    // rt: parseCycle(csvRtCycle),
+    // db: parseCycle(csvDbCycle),
+    // });
+    // setSelDisable(false);
+    // }
     // );
   }, []);
 
   const updateLogic = (d: IData[], c: ICycleList) => {
     // preprocess/filter data
-    let lineD = selLineRange(d, c.gait)
-    let lineRange = (d3.extent(lineD, (d) => d.x).map((x) => x ?? 0))
-    let minD = cycleMin(d, c.gait)
-    let maxD = cycleMax(d, c.gait)
-    let ltD = cycleDuration(c.lt)
-    let rtD = cycleDuration(c.rt)
-    let dbD = cycleDuration(c.db)
+    let lineD = selLineRange(d, c.gait);
+    let lineRange = d3.extent(lineD, (d) => d.x).map((x) => x ?? 0);
+    let minD = cycleMin(d, c.gait);
+    let maxD = cycleMax(d, c.gait);
+    let ltD = cycleDuration(c.lt);
+    let rtD = cycleDuration(c.rt);
+    let dbD = cycleDuration(c.db);
 
     /*
      * updator.line({
@@ -160,14 +198,14 @@ function DrawChart(): ReactElement | null {
     updators.bclt(ltD);
     updators.bcrt(rtD);
     updators.bcdb(dbD);
-  }
+  };
 
   const updateApp = (schema: IDatasetInfo, c: ICycleList) => {
     setCygt(c.gait);
     setCylt(c.lt);
     setCyrt(c.rt);
     setCydb(c.db);
-    updateLogic(schema.data, c)
+    updateLogic(schema.data, c);
     updators.lnav(updateLogic, schema.data, c);
   };
 
