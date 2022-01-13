@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { ReactElement, ChangeEvent, RefObject } from "react";
 import * as d3 from "d3";
-import axios from "axios";
 
 import {
   // Interface
@@ -27,6 +26,7 @@ import {
 } from "../utils/dataPreprocess";
 import { Selector } from "../components/selector/Selector";
 import { Uploader } from "../components/upload/Uploader";
+import { FilterdData } from "../api/filter"
 
 const position = ["Pelvis", "Upper spine", "Lower spine"];
 const content = {
@@ -77,25 +77,14 @@ function DrawChart(): ReactElement | null {
     "./2021-09-26-18-36_cycle_db_Dr Tsai_1.csv",
   ];
 
-  async function sendFile(f: File) {
-    const formData = new FormData();
-    formData.append("file", f); // NOTE: append("key", value)
-    console.log(formData)
-
-    return axios
-      .post("http://localhost:3001/api/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
-      .then((res) => {
-        Promise.all(
+  async function createChart(res: FilterdData) { // create chart when upload response
+    return Promise.all(
           [
-            res["data"]["data"]["rsltUrl"],
-            res["data"]["data"]["cyclUrl"],
-            res["data"]["data"]["cyltUrl"],
-            res["data"]["data"]["cyrtUrl"],
-            res["data"]["data"]["cydbUrl"],
+            res["rsltUrl"],
+            res["cyclUrl"],
+            res["cyltUrl"],
+            res["cyrtUrl"],
+            res["cydbUrl"],
           ].map((file) => d3.csv(file))
         ).then(
           ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
@@ -109,33 +98,7 @@ function DrawChart(): ReactElement | null {
 
             setSelDisable(false);
           }
-        );
-      });
-    // return fetch("http://localhost:3001/api/upload", { method: "POST", body: formData })
-    // .then((res) => res.json())
-    // .then((jsonRslt) => {
-    // Promise.all(
-    // [
-    // jsonRslt["data"]["rsltUrl"],
-    // jsonRslt["data"]["cyclUrl"],
-    // jsonRslt["data"]["cyltUrl"],
-    // jsonRslt["data"]["cyrtUrl"],
-    // jsonRslt["data"]["cydbUrl"],
-    // ].map((file) => d3.csv(file))
-    // ).then(
-    // ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
-    // setDataS(parseResult(csvResult, dataS));
-    // updateApp(dataS[selPos][selOpt], {
-    // gait: parseCycle(csvGaitCycle),
-    // lt: parseCycle(csvLtCycle),
-    // rt: parseCycle(csvRtCycle),
-    // db: parseCycle(csvDbCycle),
-    // });
-
-    // setSelDisable(false);
-    // }
-    // );
-    // });
+        )
   }
 
   useEffect(() => {
@@ -232,7 +195,7 @@ function DrawChart(): ReactElement | null {
   return (
     <div className="border rounded-lg border-solid border-gray-300">
       <div className="flex justify-center">
-        <Uploader handleFile={sendFile} />
+        <Uploader handleFile={createChart} />
       </div>
       <div className="grid grid-cols-7 gap-4 m-4">
         <div className="mt-[28px] row-span-2">
