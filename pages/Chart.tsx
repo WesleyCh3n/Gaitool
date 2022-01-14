@@ -26,7 +26,7 @@ import {
 } from "../utils/dataPreprocess";
 import { Selector } from "../components/selector/Selector";
 import { Uploader } from "../components/upload/Uploader";
-import { Table, IExportTable } from "../components/table/Table";
+import { Table, IRow } from "../components/table/Table";
 import { FilterdData } from "../api/filter";
 
 const position = ["Pelvis", "Upper spine", "Lower spine"];
@@ -48,7 +48,7 @@ function DrawChart(): ReactElement | null {
   const cycleInit: ICycle = { step: [[]], sel: [0, 0] };
 
   // NOTE: create references (2 places: useEffect, embeded)
-  const chartKey = ["line", "bmax", "bmin", "lnav", "bclt", "bcrt", "bcdb"];
+  const chartKey = ["line", "bmax", "bmin", "lnav", "bclt", "bcrt", "bcdb", "bcgt"];
   const refs: { [k: string]: RefObject<HTMLDivElement> } = {};
   chartKey.forEach((k) => {
     refs[k] = useRef<HTMLDivElement>(null);
@@ -69,7 +69,7 @@ function DrawChart(): ReactElement | null {
   const [selPos, setSelPos] = useState<string>(position[0]);
   const [selOpt, setSelOpt] = useState<string>(Object.keys(content)[0]);
   const [selDisable, setSelDisable] = useState<boolean>(true);
-  const [trContent, setTrContent] = useState<IExportTable[]>([]);
+  const [trContent, setTrContent] = useState<IRow[]>([]);
 
   const csvFiles = [
     "./2021-09-26-18-36_result_Dr Tsai_1.csv",
@@ -107,6 +107,7 @@ function DrawChart(): ReactElement | null {
     updators.line = createLineChart(refs.line);
     updators.bmax = createBoxChart(refs.bmax);
     updators.bmin = createBoxChart(refs.bmin);
+    updators.bcgt = createBoxChart(refs.bcgt);
     updators.bclt = createBoxChart(refs.bclt);
     updators.bcrt = createBoxChart(refs.bcrt);
     updators.bcdb = createBoxChart(refs.bcdb);
@@ -133,6 +134,7 @@ function DrawChart(): ReactElement | null {
     let lineRange = d3.extent(lineD, (d) => d.x).map((x) => x ?? 0);
     let minD = cycleMin(d, c.gait);
     let maxD = cycleMax(d, c.gait);
+    let gtD = cycleDuration(c.gait);
     let ltD = cycleDuration(c.lt);
     let rtD = cycleDuration(c.rt);
     let dbD = cycleDuration(c.db);
@@ -157,8 +159,9 @@ function DrawChart(): ReactElement | null {
      * */
     // input data to update fig
     updators.line(d, lineRange);
-    updators.bmax(minD);
-    updators.bmin(maxD);
+    updators.bmax(maxD);
+    updators.bmin(minD);
+    updators.bcgt(gtD);
     updators.bclt(ltD);
     updators.bcrt(rtD);
     updators.bcdb(dbD);
@@ -171,7 +174,6 @@ function DrawChart(): ReactElement | null {
     setCylt(c.lt);
     setCyrt(c.rt);
     setCydb(c.db);
-    console.log(c);
   };
 
   const selOptChange = (e: ChangeEvent<HTMLSelectElement>) => {
@@ -201,18 +203,23 @@ function DrawChart(): ReactElement | null {
     setTrContent([
       ...trContent,
       {
-        Start: cygt.step[cygt.sel[0]][0],
-        End: cygt.step[cygt.sel[1]][0],
-        Max: 3,
-        Min: 4,
+        range: cygt.sel.map(i => cygt.step[i][0].toFixed(2)).join('-'),
+        gait: d3.median(cycleDuration(cygt))?.toFixed(2) ?? 0,
+        lt: d3.median(cycleDuration(cylt))?.toFixed(2) ?? 0,
+        rt: d3.median(cycleDuration(cyrt))?.toFixed(2) ?? 0,
+        db: d3.median(cycleDuration(cydb))?.toFixed(2) ?? 0,
         id: `${cygt.sel}`,
       },
     ]);
   };
 
   const removeTrNode = (id: string) => {
-    setTrContent(trContent.filter((d) => d.id !== id))
-  }
+    setTrContent(trContent.filter((d) => d.id !== id));
+  };
+
+  const removeAllTrNode = () => {
+    setTrContent([]);
+  };
 
   return (
     <div className="border rounded-lg border-solid border-gray-300">
@@ -249,49 +256,34 @@ function DrawChart(): ReactElement | null {
             ref={refs.lnav}
           ></div>
         </div>
-        <div className="col-span-1">
-          <h1 className="text-center text-xl">Max</h1>
-          <div
-            className="border rounded-lg border-solid border-gray-300 shadow-md"
-            ref={refs.bmax}
-          ></div>
-        </div>
-        <div className="col-span-1">
-          <h1 className="text-center text-xl">Min</h1>
-          <div
-            className="border rounded-lg border-solid border-gray-300 shadow-md"
-            ref={refs.bmin}
-          ></div>
-        </div>
-        <div className="col-span-1">
-          <h1 className="text-center text-xl">LT support</h1>
-          <div
-            className="border rounded-lg border-solid border-gray-300 shadow-md"
-            ref={refs.bclt}
-          ></div>
-        </div>
-        <div className="col-span-1">
-          <h1 className="text-center text-xl">RT support</h1>
-          <div
-            className="border rounded-lg border-solid border-gray-300 shadow-md"
-            ref={refs.bcrt}
-          ></div>
-        </div>
-        <div className="col-span-1">
-          <h1 className="text-center text-xl">DB support</h1>
-          <div
-            className="border rounded-lg border-solid border-gray-300 shadow-md"
-            ref={refs.bcdb}
-          ></div>
-        </div>
-        <div className="col-span-1 grid grid-rows-2 items-center justify-center">
+        {[
+          { title: "Max", ref: refs.bmax },
+          { title: "Min", ref: refs.bmin },
+          { title: "GAIT", ref: refs.bcgt },
+          { title: "LT support", ref: refs.bclt },
+          { title: "RT support", ref: refs.bcrt },
+          { title: "DB support", ref: refs.bcdb },
+        ].map((d) => (
+          <div className="col-span-1" key={d.title}>
+            <h1 className="text-center text-xl">{d.title}</h1>
+            <div
+              className="border rounded-lg border-solid border-gray-300 shadow-md"
+              ref={d.ref}
+            ></div>
+          </div>
+        ))}
+        <div className="col-span-2 md:col-span-4 lg:col-span-7 flex justify-center space-x-4">
           <button className="btn btn-outline" onClick={addTrNode}>
             Select Cycle
           </button>
           <button className="btn btn-outline">Export</button>
         </div>
         <div className="col-span-2 md:col-span-4 lg:col-span-7">
-          <Table content={trContent} removeNode={removeTrNode}/>
+          <Table
+            content={trContent}
+            removeNode={removeTrNode}
+            removeAll={removeAllTrNode}
+          />
         </div>
       </div>
     </div>
