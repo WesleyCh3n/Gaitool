@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 export interface IRow {
   [k: string]: number | string;
   range: string;
-  gait: number | string;
+  gt: number | string;
   lt: number | string;
   rt: number | string;
   db: number | string;
@@ -41,7 +41,7 @@ export function Table(props: TableProps): ReactElement | null {
           return (
             <tr key={row.id}>
               <td>{row.range}</td>
-              <td>{row.gait}</td>
+              <td>{row.gt}</td>
               <td>{row.lt}</td>
               <td>{row.rt}</td>
               <td>{row.db}</td>

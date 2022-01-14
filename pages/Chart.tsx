@@ -72,8 +72,8 @@ function DrawChart(): ReactElement | null {
     "./2021-09-26-18-36_cycle_db_Dr Tsai_1.csv",
   ];
 
+  // create chart when upload response
   async function createChart(res: FilterdData) {
-    // create chart when upload response
     return Promise.all(
       [
         res["rsltUrl"],
@@ -106,19 +106,20 @@ function DrawChart(): ReactElement | null {
     updators.bcdb = createBoxChart(refs.bcdb);
     updators.lnav = createGaitNav(refs.lnav);
 
-    // DUBUG:
-    Promise.all(csvFiles.map((file) => d3.csv(file))).then(
-      ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
-        setDataS(parseResult(csvResult, dataS));
-        updateApp(dataS[selPos][selOpt], {
-          gait: parseCycle(csvGaitCycle),
-          lt: parseCycle(csvLtCycle),
-          rt: parseCycle(csvRtCycle),
-          db: parseCycle(csvDbCycle),
-        });
-        setSelDisable(false);
-      }
-    );
+    if (1) { // DEBUG:
+      Promise.all(csvFiles.map((file) => d3.csv(file))).then(
+        ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
+          setDataS(parseResult(csvResult, dataS));
+          updateApp(dataS[selPos][selOpt], {
+            gait: parseCycle(csvGaitCycle),
+            lt: parseCycle(csvLtCycle),
+            rt: parseCycle(csvRtCycle),
+            db: parseCycle(csvDbCycle),
+          });
+          setSelDisable(false);
+        }
+      );
+    }
   }, []);
 
   const updateLogic = (d: IData[], c: ICycleList) => {
@@ -168,7 +169,7 @@ function DrawChart(): ReactElement | null {
         range: cyS.gait.sel
           .map((i) => cyS.gait.step[i][0].toFixed(2))
           .join("-"),
-        gait: d3.median(cycleDuration(cyS.gait))?.toFixed(2) ?? 0,
+        gt: d3.median(cycleDuration(cyS.gait))?.toFixed(2) ?? 0,
         lt: d3.median(cycleDuration(cyS.lt))?.toFixed(2) ?? 0,
         rt: d3.median(cycleDuration(cyS.rt))?.toFixed(2) ?? 0,
         db: d3.median(cycleDuration(cyS.db))?.toFixed(2) ?? 0,
