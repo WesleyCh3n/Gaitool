@@ -5,7 +5,6 @@ import * as d3 from "d3";
 import {
   // Interface
   IDatasetInfo,
-  ICycle,
   ICycleList,
   // Create chart
   createLineChart,
@@ -38,30 +37,24 @@ const content = {
   "Gyro Y": { data: [], csvX: "time", csvY: "Gyro_Y" },
   "Gyro Z": { data: [], csvX: "time", csvY: "Gyro_Z" },
 };
+const refKey = ["line", "bmax", "bmin", "lnav", "bclt", "bcrt", "bcdb", "bcgt"];
 
 function DrawChart(): ReactElement | null {
   const dataSInit: IDataSPos = {};
   position.forEach((p) => {
     dataSInit[p] = JSON.parse(JSON.stringify(content)); // HACK: deep copy
   });
-
-  const cycleInit: ICycle = { step: [[]], sel: [0, 0] };
-
-  // NOTE: create references (2 places: useEffect, embeded)
-  const chartKey = ["line", "bmax", "bmin", "lnav", "bclt", "bcrt", "bcdb", "bcgt"];
   const refs: { [k: string]: RefObject<HTMLDivElement> } = {};
-  chartKey.forEach((k) => {
+  refKey.forEach((k) => {
     refs[k] = useRef<HTMLDivElement>(null);
   });
-
-  // NOTE: data(parse, sel update), cycles(sel update, export, updateApp)
   const [dataS, setDataS] = useState<IDataSPos>(dataSInit);
-  const [cygt, setCygt] = useState<ICycle>(cycleInit);
-  const [cylt, setCylt] = useState<ICycle>(cycleInit);
-  const [cyrt, setCyrt] = useState<ICycle>(cycleInit);
-  const [cydb, setCydb] = useState<ICycle>(cycleInit);
-
-  // NOTE: updator(useEffect, updateApp)
+  const [cyS, setCyS] = useState<ICycleList>({
+    gait: { step: [[]], sel: [0, 0] },
+    lt: { step: [[]], sel: [0, 0] },
+    rt: { step: [[]], sel: [0, 0] },
+    db: { step: [[]], sel: [0, 0] },
+  });
   const [updators] = useState<{ [key: string]: Function }>({
     _: new Function(),
   });
@@ -139,24 +132,6 @@ function DrawChart(): ReactElement | null {
     let rtD = cycleDuration(c.rt);
     let dbD = cycleDuration(c.db);
 
-    /*
-     * updator.line({
-     *  data: {
-     *    x: 'x',
-     *    columns: [
-     *      ['x': d.map(d => d.x)],
-     *      ['y': d.map(d => d.y)]
-     *    ]
-     *  }
-     * })
-     * updator.bmax({
-     *  data: {
-     *    columns: [
-     *      ['data1': minD]
-     *    ]
-     *  }
-     * })
-     * */
     // input data to update fig
     updators.line(d, lineRange);
     updators.bmax(maxD);
@@ -170,45 +145,34 @@ function DrawChart(): ReactElement | null {
   const updateApp = (schema: IDatasetInfo, c: ICycleList) => {
     updateLogic(schema.data, c);
     updators.lnav(updateLogic, schema.data, c);
-    setCygt(c.gait);
-    setCylt(c.lt);
-    setCyrt(c.rt);
-    setCydb(c.db);
+    setCyS(c);
   };
 
   const selOptChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    updateApp(dataS[selPos][e.target.value], {
-      gait: cygt,
-      lt: cylt,
-      rt: cyrt,
-      db: cydb,
-    });
+    updateApp(dataS[selPos][e.target.value], cyS);
     setSelOpt(e.target.value);
   };
 
   const selPosChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    updateApp(dataS[e.target.value][selOpt], {
-      gait: cygt,
-      lt: cylt,
-      rt: cyrt,
-      db: cydb,
-    });
+    updateApp(dataS[e.target.value][selOpt], cyS);
     setSelPos(e.target.value);
   };
 
   const addTrNode = () => {
     // check if id exist
-    let result = trContent.filter((d) => d.id === `${cygt.sel}`);
+    let result = trContent.filter((d) => d.id === `${cyS.gait.sel}`);
     if (result.length > 0) return;
     setTrContent([
       ...trContent,
       {
-        range: cygt.sel.map(i => cygt.step[i][0].toFixed(2)).join('-'),
-        gait: d3.median(cycleDuration(cygt))?.toFixed(2) ?? 0,
-        lt: d3.median(cycleDuration(cylt))?.toFixed(2) ?? 0,
-        rt: d3.median(cycleDuration(cyrt))?.toFixed(2) ?? 0,
-        db: d3.median(cycleDuration(cydb))?.toFixed(2) ?? 0,
-        id: `${cygt.sel}`,
+        range: cyS.gait.sel
+          .map((i) => cyS.gait.step[i][0].toFixed(2))
+          .join("-"),
+        gait: d3.median(cycleDuration(cyS.gait))?.toFixed(2) ?? 0,
+        lt: d3.median(cycleDuration(cyS.lt))?.toFixed(2) ?? 0,
+        rt: d3.median(cycleDuration(cyS.rt))?.toFixed(2) ?? 0,
+        db: d3.median(cycleDuration(cyS.db))?.toFixed(2) ?? 0,
+        id: `${cyS.gait.sel}`,
       },
     ]);
   };
