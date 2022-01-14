@@ -39,7 +39,7 @@ const content = {
 };
 const refKey = ["line", "bmax", "bmin", "lnav", "bclt", "bcrt", "bcdb", "bcgt"];
 
-function DrawChart(): ReactElement | null {
+function Chart(): ReactElement | null {
   const dataSInit: IDataSPos = {};
   position.forEach((p) => {
     dataSInit[p] = JSON.parse(JSON.stringify(content)); // HACK: deep copy
@@ -64,16 +64,8 @@ function DrawChart(): ReactElement | null {
   const [selDisable, setSelDisable] = useState<boolean>(true);
   const [trContent, setTrContent] = useState<IRow[]>([]);
 
-  const csvFiles = [
-    "./2021-09-26-18-36_result_Dr Tsai_1.csv",
-    "./2021-09-26-18-36_cycle_Dr Tsai_1.csv",
-    "./2021-09-26-18-36_cycle_lt_Dr Tsai_1.csv",
-    "./2021-09-26-18-36_cycle_rt_Dr Tsai_1.csv",
-    "./2021-09-26-18-36_cycle_db_Dr Tsai_1.csv",
-  ];
-
   // create chart when upload response
-  async function createChart(res: FilterdData) {
+  async function initChart(res: FilterdData) {
     return Promise.all(
       [
         res["rsltUrl"],
@@ -107,7 +99,14 @@ function DrawChart(): ReactElement | null {
     updators.lnav = createGaitNav(refs.lnav);
 
     if (1) { // DEBUG:
-      Promise.all(csvFiles.map((file) => d3.csv(file))).then(
+      const csvs = [
+        "./result.csv",
+        "./cygt.csv",
+        "./cylt.csv",
+        "./cyrt.csv",
+        "./cydb.csv",
+      ];
+      Promise.all(csvs.map((file) => d3.csv(file))).then(
         ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
           setDataS(parseResult(csvResult, dataS));
           updateApp(dataS[selPos][selOpt], {
@@ -126,21 +125,15 @@ function DrawChart(): ReactElement | null {
     // preprocess/filter data
     let lineD = selLineRange(d, c.gait);
     let lineRange = d3.extent(lineD, (d) => d.x).map((x) => x ?? 0);
-    let minD = cycleMin(d, c.gait);
-    let maxD = cycleMax(d, c.gait);
-    let gtD = cycleDuration(c.gait);
-    let ltD = cycleDuration(c.lt);
-    let rtD = cycleDuration(c.rt);
-    let dbD = cycleDuration(c.db);
 
     // input data to update fig
     updators.line(d, lineRange);
-    updators.bmax(maxD);
-    updators.bmin(minD);
-    updators.bcgt(gtD);
-    updators.bclt(ltD);
-    updators.bcrt(rtD);
-    updators.bcdb(dbD);
+    updators.bmax(cycleMax(d, c.gait));
+    updators.bmin(cycleMin(d, c.gait));
+    updators.bcgt(cycleDuration(c.gait));
+    updators.bclt(cycleDuration(c.lt));
+    updators.bcrt(cycleDuration(c.rt));
+    updators.bcdb(cycleDuration(c.db));
   };
 
   const updateApp = (schema: IDatasetInfo, c: ICycleList) => {
@@ -189,7 +182,7 @@ function DrawChart(): ReactElement | null {
   return (
     <div className="border rounded-lg border-solid border-gray-300">
       <div className="flex justify-center">
-        <Uploader handleFile={createChart} />
+        <Uploader handleFile={initChart} />
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 m-4">
         <div className="lg:mt-[28px] col-span-2 md:col-span-4 lg:col-span-1 row-span-2">
@@ -208,6 +201,12 @@ function DrawChart(): ReactElement | null {
               onChange={selOptChange}
               disable={selDisable}
             />
+          </div>
+          <div className="">
+            <button className="btn btn-outline" onClick={addTrNode}>
+              Select Cycle
+            </button>
+            <button className="btn btn-outline">Export</button>
           </div>
         </div>
         <div className="col-span-2 md:col-span-4 lg:col-span-6">
@@ -237,12 +236,6 @@ function DrawChart(): ReactElement | null {
             ></div>
           </div>
         ))}
-        <div className="col-span-2 md:col-span-4 lg:col-span-7 flex justify-center space-x-4">
-          <button className="btn btn-outline" onClick={addTrNode}>
-            Select Cycle
-          </button>
-          <button className="btn btn-outline">Export</button>
-        </div>
         <div className="col-span-2 md:col-span-4 lg:col-span-7">
           <Table
             content={trContent}
@@ -255,4 +248,4 @@ function DrawChart(): ReactElement | null {
   );
 }
 
-export default DrawChart;
+export default Chart;
