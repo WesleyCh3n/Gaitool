@@ -26,6 +26,7 @@ import {
 } from "../utils/dataPreprocess";
 import { Selector } from "../components/selector/Selector";
 import { Uploader } from "../components/upload/Uploader";
+import { Table, IExportTable } from "../components/table/Table";
 import { FilterdData } from "../api/filter";
 
 const position = ["Pelvis", "Upper spine", "Lower spine"];
@@ -68,6 +69,7 @@ function DrawChart(): ReactElement | null {
   const [selPos, setSelPos] = useState<string>(position[0]);
   const [selOpt, setSelOpt] = useState<string>(Object.keys(content)[0]);
   const [selDisable, setSelDisable] = useState<boolean>(true);
+  const [trContent, setTrContent] = useState<IExportTable[]>([]);
 
   const csvFiles = [
     "./2021-09-26-18-36_result_Dr Tsai_1.csv",
@@ -163,12 +165,13 @@ function DrawChart(): ReactElement | null {
   };
 
   const updateApp = (schema: IDatasetInfo, c: ICycleList) => {
+    updateLogic(schema.data, c);
+    updators.lnav(updateLogic, schema.data, c);
     setCygt(c.gait);
     setCylt(c.lt);
     setCyrt(c.rt);
     setCydb(c.db);
-    updateLogic(schema.data, c);
-    updators.lnav(updateLogic, schema.data, c);
+    console.log(c);
   };
 
   const selOptChange = (e: ChangeEvent<HTMLSelectElement>) => {
@@ -190,6 +193,26 @@ function DrawChart(): ReactElement | null {
     });
     setSelPos(e.target.value);
   };
+
+  const addTrNode = () => {
+    // check if id exist
+    let result = trContent.filter((d) => d.id === `${cygt.sel}`);
+    if (result.length > 0) return;
+    setTrContent([
+      ...trContent,
+      {
+        Start: cygt.step[cygt.sel[0]][0],
+        End: cygt.step[cygt.sel[1]][0],
+        Max: 3,
+        Min: 4,
+        id: `${cygt.sel}`,
+      },
+    ]);
+  };
+
+  const removeTrNode = (id: string) => {
+    setTrContent(trContent.filter((d) => d.id !== id))
+  }
 
   return (
     <div className="border rounded-lg border-solid border-gray-300">
@@ -262,17 +285,13 @@ function DrawChart(): ReactElement | null {
           ></div>
         </div>
         <div className="col-span-1 grid grid-rows-2 items-center justify-center">
-          <button
-            className="btn btn-outline"
-            onClick={(_) => {
-              console.log(cygt);
-              console.log(cylt);
-              console.log(cyrt);
-            }}
-          >
+          <button className="btn btn-outline" onClick={addTrNode}>
             Select Cycle
           </button>
           <button className="btn btn-outline">Export</button>
+        </div>
+        <div className="col-span-2 md:col-span-4 lg:col-span-7">
+          <Table content={trContent} removeNode={removeTrNode}/>
         </div>
       </div>
     </div>
