@@ -3,6 +3,10 @@
 @tailwind utilities;
 
 @layer components {
+  .baseSize {
+    /*  */
+    @apply text-sm
+  }
   .selectBox {
     @apply overflow-y-auto appearance-none block px-3 py-1.5
     text-sm font-normal text-gray-500 bg-gray-200 bg-clip-padding bg-no-repeat
@@ -15,7 +19,7 @@
   }
   .smallBtn {
     /*  */
-    @apply btn btn-xs whitespace-nowrap btn-outline
+    @apply btn btn-sm whitespace-nowrap btn-outline
   }
 }
 
@@ -23,5 +27,9 @@
   h1 {
     /*  */
     @apply text-center text-xs whitespace-nowrap
+  }
+  button {
+    /*  */
+    @apply btn btn-sm whitespace-nowrap
   }
 }

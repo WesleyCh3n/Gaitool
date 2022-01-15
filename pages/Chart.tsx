@@ -182,43 +182,12 @@ function Chart(): ReactElement | null {
   };
 
   return (
-    <div className="normalBox">
+    <div className="normalBox w-full">
       <div className="flex justify-center m-2">
         <Uploader handleFile={initChart} />
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2 m-4">
-        <div className="lg:mt-5 w-full row-span-2 col-span-2 md:col-span-4 lg:col-span-1">
-          <div className="space-y-4">
-            <Selector
-              options={position}
-              selectedOption={selPos}
-              onChange={selPosChange}
-              disable={selDisable}
-            />
-            <Selector
-              options={Object.keys(content)}
-              selectedOption={selOpt}
-              onChange={selOptChange}
-              disable={selDisable}
-            />
-            <button
-              className="smallBtn w-full"
-              onClick={addTrNode}
-            >
-              Select
-            </button>
-            <button className="smallBtn w-full">
-              Export
-            </button>
-          </div>
-        </div>
-
-        <div className="normalBox col-span-2 md:col-span-4 lg:col-span-6">
-          <h1>Accelration</h1>
-          <div ref={refs.line}></div>
-          <div className="mt-4" ref={refs.lnav}></div>
-        </div>
+      <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 m-4">
         {[
           { title: "Max", ref: refs.bmax },
           { title: "Min", ref: refs.bmin },
@@ -232,7 +201,43 @@ function Chart(): ReactElement | null {
             <div ref={d.ref}></div>
           </div>
         ))}
-        <div className="col-span-2 md:col-span-4 lg:col-span-7">
+        <div className="normalBox col-span-2 md:col-span-3 lg:col-span-6">
+          <h1>Accelration</h1>
+          <div ref={refs.line}></div>
+          <div className="mt-4" ref={refs.lnav}></div>
+        </div>
+
+        <div className="col-span-2 md:col-span-3 lg:col-span-2">
+            <Selector
+              options={position}
+              selectedOption={selPos}
+              onChange={selPosChange}
+              disable={selDisable}
+            />
+        </div>
+        <div className="col-span-2 md:col-span-3 lg:col-span-2">
+            <Selector
+              options={Object.keys(content)}
+              selectedOption={selOpt}
+              onChange={selOptChange}
+              disable={selDisable}
+            />
+        </div>
+        <div className="col-span-2 md:col-span-3 lg:col-span-1">
+            <button
+              className="btn-outline w-full"
+              onClick={addTrNode}
+            >
+              Select
+            </button>
+        </div>
+        <div className="col-span-2 md:col-span-3 lg:col-span-1">
+            <button className="btn-outline w-full">
+              Export
+            </button>
+        </div>
+
+        <div className="col-span-2 md:col-span-3 lg:col-span-6">
           <Table
             content={trContent}
             removeNode={removeTrNode}

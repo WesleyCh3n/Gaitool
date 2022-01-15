@@ -3,7 +3,7 @@ import Chart from "./Chart";
 
 const Home: NextPage = () => {
   return (
-    <div className="m-4 flex justify-center">
+    <div className="m-4 flex justify-center space-x-2">
         <Chart />
         <Chart />
     </div>
