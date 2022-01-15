@@ -28,10 +28,10 @@ export function Uploader(props: UploaderProps): ReactElement | null {
   }
 
   return (
-    <div className="grid lg:grid-cols-7 m-4 gap-4 content-center">
+    <div className="grid lg:grid-cols-7 gap-4 content-center">
       <input
         className="lg:col-span-6
-          form-control block p-2 text-base font-normal
+          form-control block p-1 text-xs font-normal
           text-gray-700 bg-white bg-clip-padding border border-solid
           border-gray-300 rounded-lg transition ease-in-out hover:text-gray-700
           hover:bg-white hover:border-blue-600 hover:outline-none shadow-md"

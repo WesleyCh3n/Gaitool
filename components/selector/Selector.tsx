@@ -10,14 +10,14 @@ export interface SelectorProps {
 export function Selector(props: SelectorProps): ReactElement | null {
   return (
     <select
-      className="w-full h-full selectBox"
-      size={props.options.length}
+      className="select select-bordered select-xs w-full max-w-xs"
+      // size={props.options.length}
       defaultValue={props.selectedOption}
       onChange={props.onChange}
       disabled={props.disable}
     >
       {props.options.map((opt) => (
-        <option key={opt} value={opt} className="text-xl">
+        <option key={opt} value={opt} className="text-xs">
           {opt}
         </option>
       ))}

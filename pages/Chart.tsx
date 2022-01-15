@@ -98,7 +98,8 @@ function Chart(): ReactElement | null {
     updators.bcdb = createBoxChart(refs.bcdb);
     updators.lnav = createGaitNav(refs.lnav);
 
-    if (1) { // DEBUG:
+    if (1) {
+      // DEBUG:
       const csvs = [
         "./result.csv",
         "./cygt.csv",
@@ -166,6 +167,7 @@ function Chart(): ReactElement | null {
         lt: d3.median(cycleDuration(cyS.lt))?.toFixed(2) ?? 0,
         rt: d3.median(cycleDuration(cyS.rt))?.toFixed(2) ?? 0,
         db: d3.median(cycleDuration(cyS.db))?.toFixed(2) ?? 0,
+        cycle: cyS,
         id: `${cyS.gait.sel}`,
       },
     ]);
@@ -180,45 +182,42 @@ function Chart(): ReactElement | null {
   };
 
   return (
-    <div className="border rounded-lg border-solid border-gray-300">
-      <div className="flex justify-center">
+    <div className="normalBox">
+      <div className="flex justify-center m-2">
         <Uploader handleFile={initChart} />
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 m-4">
-        <div className="lg:mt-[28px] col-span-2 md:col-span-4 lg:col-span-1 row-span-2">
-          <div className="row-span-1 mb-4 text-sm">
+
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2 m-4">
+        <div className="lg:mt-5 w-full row-span-2 col-span-2 md:col-span-4 lg:col-span-1">
+          <div className="space-y-4">
             <Selector
               options={position}
               selectedOption={selPos}
               onChange={selPosChange}
               disable={selDisable}
             />
-          </div>
-          <div className="h-max">
             <Selector
               options={Object.keys(content)}
               selectedOption={selOpt}
               onChange={selOptChange}
               disable={selDisable}
             />
-          </div>
-          <div className="">
-            <button className="btn btn-outline" onClick={addTrNode}>
-              Select Cycle
+            <button
+              className="smallBtn w-full"
+              onClick={addTrNode}
+            >
+              Select
             </button>
-            <button className="btn btn-outline">Export</button>
+            <button className="smallBtn w-full">
+              Export
+            </button>
           </div>
         </div>
-        <div className="col-span-2 md:col-span-4 lg:col-span-6">
-          <h1 className="text-center text-xl">Accelration</h1>
-          <div
-            className="border rounded-lg border-solid border-gray-300 shadow-md"
-            ref={refs.line}
-          ></div>
-          <div
-            className="mt-4 border rounded-lg border-solid border-gray-300 shadow-lg"
-            ref={refs.lnav}
-          ></div>
+
+        <div className="normalBox col-span-2 md:col-span-4 lg:col-span-6">
+          <h1>Accelration</h1>
+          <div ref={refs.line}></div>
+          <div className="mt-4" ref={refs.lnav}></div>
         </div>
         {[
           { title: "Max", ref: refs.bmax },
@@ -228,12 +227,9 @@ function Chart(): ReactElement | null {
           { title: "RT support", ref: refs.bcrt },
           { title: "DB support", ref: refs.bcdb },
         ].map((d) => (
-          <div className="col-span-1" key={d.title}>
-            <h1 className="text-center text-xl">{d.title}</h1>
-            <div
-              className="border rounded-lg border-solid border-gray-300 shadow-md"
-              ref={d.ref}
-            ></div>
+          <div className="col-span-1 normalBox" key={d.title}>
+            <h1>{d.title}</h1>
+            <div ref={d.ref}></div>
           </div>
         ))}
         <div className="col-span-2 md:col-span-4 lg:col-span-7">
@@ -241,6 +237,7 @@ function Chart(): ReactElement | null {
             content={trContent}
             removeNode={removeTrNode}
             removeAll={removeAllTrNode}
+            updateView={{ f: updateApp, d: dataS[selPos][selOpt] }}
           />
         </div>
       </div>

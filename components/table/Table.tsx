@@ -1,12 +1,14 @@
 import type { ReactElement } from "react";
+import { ICycleList, IDatasetInfo } from "../chart";
 
 export interface IRow {
-  [k: string]: number | string;
+  [k: string]: number | string | any;
   range: string;
   gt: number | string;
   lt: number | string;
   rt: number | string;
   db: number | string;
+  cycle: ICycleList;
   id: string;
 }
 
@@ -14,6 +16,10 @@ export interface TableProps {
   content: IRow[];
   removeNode: (id: string) => void;
   removeAll: () => void;
+  updateView: {
+    f: Function;
+    d: IDatasetInfo;
+  };
 }
 
 export function Table(props: TableProps): ReactElement | null {
@@ -26,6 +32,7 @@ export function Table(props: TableProps): ReactElement | null {
           <th>LT</th>
           <th>RT</th>
           <th>DB</th>
+          <th>Show</th>
           <th>
             <button
               onClick={() => props.removeAll()}
@@ -45,6 +52,14 @@ export function Table(props: TableProps): ReactElement | null {
               <td>{row.lt}</td>
               <td>{row.rt}</td>
               <td>{row.db}</td>
+              <th>
+                <button
+                  onClick={() => props.updateView.f(props.updateView.d, row.cycle)}
+                  className="btn btn-ghost btn-outline btn-xs"
+                >
+                  Show
+                </button>
+              </th>
               <th>
                 <button
                   onClick={() => props.removeNode(row.id)}

@@ -10,7 +10,7 @@ export interface ButtonProps {
 export function Button(props: ButtonProps): ReactElement | null {
   return (
     <button
-      className={`btn btn-md btn-primary shadow-lg whitespace-nowrap ${
+      className={`btn btn-xs btn-primary shadow-lg whitespace-nowrap ${
         props.isLoading ? "loading" : ""
       }`}
       onClick={props.onClick}

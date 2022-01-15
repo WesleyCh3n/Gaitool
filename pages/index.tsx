@@ -5,6 +5,7 @@ const Home: NextPage = () => {
   return (
     <div className="m-4 flex justify-center">
         <Chart />
+        <Chart />
     </div>
   );
 };

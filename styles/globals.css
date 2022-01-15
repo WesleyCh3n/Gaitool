@@ -9,4 +9,19 @@
     border border-solid border-gray-300 rounded transition ease-in-out
     hover:text-gray-700 hover:bg-white hover:border-blue-600 hover:outline-none;
   }
+  .normalBox {
+    /*  */
+    @apply border rounded-md border-solid border-gray-300 shadow-md;
+  }
+  .smallBtn {
+    /*  */
+    @apply btn btn-xs whitespace-nowrap btn-outline
+  }
+}
+
+@layer base {
+  h1 {
+    /*  */
+    @apply text-center text-xs whitespace-nowrap
+  }
 }
