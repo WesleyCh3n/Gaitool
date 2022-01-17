@@ -98,8 +98,7 @@ function Chart(): ReactElement | null {
     updators.bcdb = createBoxChart(refs.bcdb);
     updators.lnav = createGaitNav(refs.lnav);
 
-    if (1) {
-      // DEBUG:
+    if (1) { // DEBUG:
       const csvs = [
         "./result.csv",
         "./cygt.csv",
@@ -160,14 +159,12 @@ function Chart(): ReactElement | null {
     setTrContent([
       ...trContent,
       {
-        range: cyS.gait.sel
-          .map((i) => cyS.gait.step[i][0].toFixed(2))
-          .join("-"),
+        range: cyS.gait.sel,
         gt: d3.median(cycleDuration(cyS.gait))?.toFixed(2) ?? 0,
         lt: d3.median(cycleDuration(cyS.lt))?.toFixed(2) ?? 0,
         rt: d3.median(cycleDuration(cyS.rt))?.toFixed(2) ?? 0,
         db: d3.median(cycleDuration(cyS.db))?.toFixed(2) ?? 0,
-        cycle: cyS,
+        cycle: {...cyS},
         id: `${cyS.gait.sel}`,
       },
     ]);
@@ -181,13 +178,21 @@ function Chart(): ReactElement | null {
     setTrContent([]);
   };
 
+  const showSel = (schema: IDatasetInfo, c: ICycleList) => {
+    // console.log(c);
+    // updateLogic(schema.data, c);
+  }
+
   return (
     <div className="normalBox w-full">
       <div className="flex justify-center m-2">
         <Uploader handleFile={initChart} />
       </div>
 
-      <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 m-4">
+      <div
+        className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6
+        gap-1 space-y-1 m-2"
+      >
         {[
           { title: "Max", ref: refs.bmax },
           { title: "Min", ref: refs.bmin },
@@ -196,7 +201,7 @@ function Chart(): ReactElement | null {
           { title: "RT support", ref: refs.bcrt },
           { title: "DB support", ref: refs.bcdb },
         ].map((d) => (
-          <div className="col-span-1 normalBox" key={d.title}>
+          <div className="col-span-1 lg:col-span-1 normalBox" key={d.title}>
             <h1>{d.title}</h1>
             <div ref={d.ref}></div>
           </div>
@@ -208,33 +213,35 @@ function Chart(): ReactElement | null {
         </div>
 
         <div className="col-span-2 md:col-span-3 lg:col-span-2">
-            <Selector
-              options={position}
-              selectedOption={selPos}
-              onChange={selPosChange}
-              disable={selDisable}
-            />
+          <Selector
+            options={position}
+            selectedOption={selPos}
+            onChange={selPosChange}
+            disable={selDisable}
+          />
         </div>
         <div className="col-span-2 md:col-span-3 lg:col-span-2">
-            <Selector
-              options={Object.keys(content)}
-              selectedOption={selOpt}
-              onChange={selOptChange}
-              disable={selDisable}
-            />
+          <Selector
+            options={Object.keys(content)}
+            selectedOption={selOpt}
+            onChange={selOptChange}
+            disable={selDisable}
+          />
         </div>
         <div className="col-span-2 md:col-span-3 lg:col-span-1">
-            <button
-              className="btn-outline w-full"
-              onClick={addTrNode}
-            >
-              Select
-            </button>
+          <button
+            className={`btn-outline w-full ${selDisable ? "btn-disabled" : ""}`}
+            onClick={addTrNode}
+          >
+            Select
+          </button>
         </div>
         <div className="col-span-2 md:col-span-3 lg:col-span-1">
-            <button className="btn-outline w-full">
-              Export
-            </button>
+          <button
+            className={`btn-outline w-full ${selDisable ? "btn-disabled" : ""}`}
+          >
+            Export
+          </button>
         </div>
 
         <div className="col-span-2 md:col-span-3 lg:col-span-6">
@@ -242,7 +249,7 @@ function Chart(): ReactElement | null {
             content={trContent}
             removeNode={removeTrNode}
             removeAll={removeAllTrNode}
-            updateView={{ f: updateApp, d: dataS[selPos][selOpt] }}
+            updateView={{ f: showSel, d: dataS[selPos][selOpt] }}
           />
         </div>
       </div>

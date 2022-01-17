@@ -43,7 +43,7 @@ export function Uploader(props: UploaderProps): ReactElement | null {
       />
       <div className="col-span-1 flex items-center justify-center">
         <Button
-          title={"Submit"}
+          title={"Upload"}
           onClick={handleSelectList}
           isLoading={isLoading}
         />
