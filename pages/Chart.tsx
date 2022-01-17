@@ -27,6 +27,7 @@ import { Selector } from "../components/selector/Selector";
 import { Uploader } from "../components/upload/Uploader";
 import { Table, IRow } from "../components/table/Table";
 import { FilterdData } from "../api/filter";
+import axios from "axios";
 
 const position = ["Pelvis", "Upper spine", "Lower spine"];
 const content = {
@@ -64,29 +65,6 @@ function Chart(): ReactElement | null {
   const [selDisable, setSelDisable] = useState<boolean>(true);
   const [trContent, setTrContent] = useState<IRow[]>([]);
 
-  // create chart when upload response
-  async function initChart(res: FilterdData) {
-    return Promise.all(
-      [
-        res["rsltUrl"],
-        res["cyclUrl"],
-        res["cyltUrl"],
-        res["cyrtUrl"],
-        res["cydbUrl"],
-      ].map((file) => d3.csv(file))
-    ).then(([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
-      setDataS(parseResult(csvResult, dataS));
-      updateApp(dataS[selPos][selOpt], {
-        gait: parseCycle(csvGaitCycle),
-        lt: parseCycle(csvLtCycle),
-        rt: parseCycle(csvRtCycle),
-        db: parseCycle(csvDbCycle),
-      });
-
-      setSelDisable(false);
-    });
-  }
-
   useEffect(() => {
     // setup chart manually when component mount
     updators.line = createLineChart(refs.line);
@@ -98,8 +76,8 @@ function Chart(): ReactElement | null {
     updators.bcdb = createBoxChart(refs.bcdb);
     updators.lnav = createGaitNav(refs.lnav);
 
+    // DEBUG:
     if (1) {
-      // DEBUG:
       const csvs = [
         "./result.csv",
         "./cygt.csv",
@@ -122,6 +100,30 @@ function Chart(): ReactElement | null {
     }
   }, []);
 
+  /* Create chart when upload api response FilterdData*/
+  async function initChart(res: FilterdData) {
+    return Promise.all(
+      [
+        res["rsltUrl"],
+        res["cyclUrl"],
+        res["cyltUrl"],
+        res["cyrtUrl"],
+        res["cydbUrl"],
+      ].map((file) => d3.csv(file))
+    ).then(([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
+      setDataS(parseResult(csvResult, dataS));
+      updateApp(dataS[selPos][selOpt], {
+        gait: parseCycle(csvGaitCycle),
+        lt: parseCycle(csvLtCycle),
+        rt: parseCycle(csvRtCycle),
+        db: parseCycle(csvDbCycle),
+      });
+
+      setSelDisable(false);
+    });
+  }
+
+  /* Update all chart logic */
   const updateLogic = (d: IData[], c: ICycleList) => {
     // preprocess/filter data
     let lineD = selLineRange(d, c.gait);
@@ -137,22 +139,24 @@ function Chart(): ReactElement | null {
     updators.bcdb(cycleDuration(c.db));
   };
 
+  /* Update App include navigator */
   const updateApp = (schema: IDatasetInfo, c: ICycleList) => {
     updateLogic(schema.data, c);
     updators.lnav(updateLogic, schema.data, c);
     setCyS(c);
   };
 
+  /* Selected option chanage */
   const selOptChange = (e: ChangeEvent<HTMLSelectElement>) => {
     updateApp(dataS[selPos][e.target.value], cyS);
     setSelOpt(e.target.value);
   };
-
   const selPosChange = (e: ChangeEvent<HTMLSelectElement>) => {
     updateApp(dataS[e.target.value][selOpt], cyS);
     setSelPos(e.target.value);
   };
 
+  /* Add tabel row */
   const addTrNode = () => {
     // check if id exist
     let result = trContent.filter((d) => d.id === `${cyS.gait.sel}`);
@@ -171,16 +175,26 @@ function Chart(): ReactElement | null {
     ]);
   };
 
+  /* Remove a tabel row */
   const removeTrNode = (id: string) => {
     setTrContent(trContent.filter((d) => d.id !== id));
   };
 
+  /* Remove all tabel rows */
   const removeAllTrNode = () => {
     setTrContent([]);
   };
 
+  /* Show selected row view */
   const showSel = (range: [number, number]) => {
     updators.lnav(updateLogic, dataS[selPos][selOpt].data, cyS, range);
+  };
+
+  const exportResult = () => {
+    axios.post("http://localhost:3001/api/export", {
+      RawFile: "eeee",
+      Ranges: [{Start: 1, End: 2}, {Start: 2, End: 3}]
+    })
   };
 
   return (
@@ -239,6 +253,7 @@ function Chart(): ReactElement | null {
         <div className="col-span-2 md:col-span-3 lg:col-span-1">
           <button
             className={`btn-outline w-full ${selDisable ? "btn-disabled" : ""}`}
+            onClick={() => exportResult()}
           >
             Export
           </button>
