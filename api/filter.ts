@@ -2,6 +2,7 @@ import axios from "axios";
 
 export type FilterdData = {
   [k: string]: string;
+  Raw: string;
   Result: string;
   CyGt: string;
   CyLt: string;

@@ -56,6 +56,7 @@ function Chart(): ReactElement | null {
     rt: { step: [[]], sel: [0, 0] },
     db: { step: [[]], sel: [0, 0] },
   });
+  const [resFilterD, SetResFilterD] = useState<FilterdData>();
   const [updators] = useState<{ [key: string]: Function }>({
     _: new Function(),
   });
@@ -77,7 +78,7 @@ function Chart(): ReactElement | null {
     updators.lnav = createGaitNav(refs.lnav);
 
     // DEBUG:
-    if (1) {
+    if (0) {
       const csvs = [
         "./result.csv",
         "./cygt.csv",
@@ -102,13 +103,21 @@ function Chart(): ReactElement | null {
 
   /* Create chart when upload api response FilterdData*/
   async function initChart(res: FilterdData) {
+    SetResFilterD({
+      Raw: res["UploadFile"],
+      Result: res["rsltFile"],
+      CyGt: res["cyclFile"],
+      CyLt: res["cyltFile"],
+      CyRt: res["cyrtFile"],
+      CyDb: res["cydbFile"],
+    });
     return Promise.all(
       [
-        res["rsltUrl"],
-        res["cyclUrl"],
-        res["cyltUrl"],
-        res["cyrtUrl"],
-        res["cydbUrl"],
+        res["Prefix"] + res["rsltFile"],
+        res["Prefix"] + res["cyclFile"],
+        res["Prefix"] + res["cyltFile"],
+        res["Prefix"] + res["cyrtFile"],
+        res["Prefix"] + res["cydbFile"],
       ].map((file) => d3.csv(file))
     ).then(([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
       setDataS(parseResult(csvResult, dataS));
@@ -191,10 +200,16 @@ function Chart(): ReactElement | null {
   };
 
   const exportResult = () => {
+    let ranges = trContent.map((row) => {
+      return { Start: row.range[0], End: row.range[1] };
+    });
+    if (ranges.length == 0) return;
     axios.post("http://localhost:3001/api/export", {
-      RawFile: "eeee",
-      Ranges: [{Start: 1, End: 2}, {Start: 2, End: 3}]
-    })
+      RawFile: resFilterD?.Raw,
+      ResultFile: resFilterD?.Result,
+      GaitFile: resFilterD?.CyGt,
+      Ranges: ranges,
+    });
   };
 
   return (
