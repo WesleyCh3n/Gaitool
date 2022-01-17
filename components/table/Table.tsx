@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import { ICycleList, IDatasetInfo } from "../chart";
+import { ICycleList } from "../chart";
 
 export interface IRow {
   [k: string]: number | string | any;
@@ -16,10 +16,7 @@ export interface TableProps {
   content: IRow[];
   removeNode: (id: string) => void;
   removeAll: () => void;
-  updateView: {
-    f: Function;
-    d: IDatasetInfo;
-  };
+  updateView: (r: [number, number]) => void;
 }
 
 export function Table(props: TableProps): ReactElement | null {
@@ -70,10 +67,7 @@ export function Table(props: TableProps): ReactElement | null {
               <td>{row.db}</td>
               <th>
                 <button
-                  onClick={() => {
-                    // props.updateView.f(props.updateView.d, row.cycle)
-                    console.log(row.range);
-                  }}
+                  onClick={() => props.updateView(row.range)}
                   className="btn btn-ghost btn-outline btn-xs"
                 >
                   Show
@@ -82,7 +76,6 @@ export function Table(props: TableProps): ReactElement | null {
               <th>
                 <button
                   onClick={() => props.removeNode(row.id)}
-                  // className="btn btn-ghost btn-xs text-red-600"
                   className="btn btn-circle btn-outline btn-xs text-red-600"
                 >
                   <svg

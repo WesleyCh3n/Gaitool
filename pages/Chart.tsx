@@ -6,6 +6,8 @@ import {
   // Interface
   IDatasetInfo,
   ICycleList,
+  IDataSPos,
+  IData,
   // Create chart
   createLineChart,
   createGaitNav,
@@ -13,8 +15,6 @@ import {
   // Utility
   parseResult,
   parseCycle,
-  IDataSPos,
-  IData,
 } from "../components/chart";
 
 import {
@@ -98,7 +98,8 @@ function Chart(): ReactElement | null {
     updators.bcdb = createBoxChart(refs.bcdb);
     updators.lnav = createGaitNav(refs.lnav);
 
-    if (1) { // DEBUG:
+    if (1) {
+      // DEBUG:
       const csvs = [
         "./result.csv",
         "./cygt.csv",
@@ -164,7 +165,7 @@ function Chart(): ReactElement | null {
         lt: d3.median(cycleDuration(cyS.lt))?.toFixed(2) ?? 0,
         rt: d3.median(cycleDuration(cyS.rt))?.toFixed(2) ?? 0,
         db: d3.median(cycleDuration(cyS.db))?.toFixed(2) ?? 0,
-        cycle: {...cyS},
+        cycle: { ...cyS },
         id: `${cyS.gait.sel}`,
       },
     ]);
@@ -178,10 +179,9 @@ function Chart(): ReactElement | null {
     setTrContent([]);
   };
 
-  const showSel = (schema: IDatasetInfo, c: ICycleList) => {
-    // console.log(c);
-    // updateLogic(schema.data, c);
-  }
+  const showSel = (range: [number, number]) => {
+    updators.lnav(updateLogic, dataS[selPos][selOpt].data, cyS, range);
+  };
 
   return (
     <div className="normalBox w-full">
@@ -249,7 +249,7 @@ function Chart(): ReactElement | null {
             content={trContent}
             removeNode={removeTrNode}
             removeAll={removeAllTrNode}
-            updateView={{ f: showSel, d: dataS[selPos][selOpt] }}
+            updateView={showSel}
           />
         </div>
       </div>
