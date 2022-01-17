@@ -199,12 +199,12 @@ function Chart(): ReactElement | null {
     updators.lnav(updateLogic, dataS[selPos][selOpt].data, cyS, range);
   };
 
-  const exportResult = () => {
+  const exportResult = async () => {
     let ranges = trContent.map((row) => {
       return { Start: row.range[0], End: row.range[1] };
     });
     if (ranges.length == 0) return;
-    axios.post("http://localhost:3001/api/export", {
+    await axios.post("http://localhost:3001/api/export", {
       RawFile: resFilterD?.Raw,
       ResultFile: resFilterD?.Result,
       GaitFile: resFilterD?.CyGt,
@@ -241,7 +241,7 @@ function Chart(): ReactElement | null {
           <div className="mt-4" ref={refs.lnav}></div>
         </div>
 
-        <div className="col-span-2 md:col-span-3 lg:col-span-2">
+        <div className="col-span-2 flex justify-center md:col-span-3 lg:col-span-2">
           <Selector
             options={position}
             selectedOption={selPos}
@@ -249,7 +249,7 @@ function Chart(): ReactElement | null {
             disable={selDisable}
           />
         </div>
-        <div className="col-span-2 md:col-span-3 lg:col-span-2">
+        <div className="col-span-2 flex justify-center md:col-span-3 lg:col-span-2">
           <Selector
             options={Object.keys(content)}
             selectedOption={selOpt}
@@ -274,7 +274,7 @@ function Chart(): ReactElement | null {
           </button>
         </div>
 
-        <div className="col-span-2 md:col-span-3 lg:col-span-6">
+        <div className="col-span-2 overflow-x-auto no-scrollbar md:col-span-3 lg:col-span-6">
           <Table
             content={trContent}
             removeNode={removeTrNode}
