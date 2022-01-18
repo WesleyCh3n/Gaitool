@@ -1,13 +1,7 @@
 import axios from "axios";
 
 export type FilterdData = {
-  [k: string]: string;
-  Raw: string;
-  Result: string;
-  CyGt: string;
-  CyLt: string;
-  CyRt: string;
-  CyDb: string;
+  [k: string]: any;
 };
 
 export async function sendFile(f: File) {
@@ -17,5 +11,5 @@ export async function sendFile(f: File) {
     headers: {
       "Content-Type": "multipart/form-data",
     },
-  })
+  }).then(res => res["data"]["data"])
 }

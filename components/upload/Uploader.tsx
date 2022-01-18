@@ -23,7 +23,7 @@ export function Uploader(props: UploaderProps): ReactElement | null {
     setIsLoading(true);
 
     const result = await sendFile(selectedFile[0])
-    await props.handleFile(result["data"]["data"]);
+    await props.handleFile(result);
     setIsLoading(false);
   }
 
