@@ -5,8 +5,9 @@ import * as d3 from "d3";
 import {
   // Interface
   IDatasetInfo,
-  ICycle,
   ICycleList,
+  IDataSPos,
+  IData,
   // Create chart
   createLineChart,
   createGaitNav,
@@ -14,8 +15,6 @@ import {
   // Utility
   parseResult,
   parseCycle,
-  IDataSPos,
-  IData,
 } from "../components/chart";
 
 import {
@@ -28,6 +27,7 @@ import { Selector } from "../components/selector/Selector";
 import { Uploader } from "../components/upload/Uploader";
 import { Table, IRow } from "../components/table/Table";
 import { FilterdData } from "../api/filter";
+import axios from "axios";
 
 const position = ["Pelvis", "Upper spine", "Lower spine"];
 const content = {
@@ -38,30 +38,25 @@ const content = {
   "Gyro Y": { data: [], csvX: "time", csvY: "Gyro_Y" },
   "Gyro Z": { data: [], csvX: "time", csvY: "Gyro_Z" },
 };
+const refKey = ["line", "bmax", "bmin", "lnav", "bclt", "bcrt", "bcdb", "bcgt"];
 
-function DrawChart(): ReactElement | null {
+function Chart(): ReactElement | null {
   const dataSInit: IDataSPos = {};
   position.forEach((p) => {
     dataSInit[p] = JSON.parse(JSON.stringify(content)); // HACK: deep copy
   });
-
-  const cycleInit: ICycle = { step: [[]], sel: [0, 0] };
-
-  // NOTE: create references (2 places: useEffect, embeded)
-  const chartKey = ["line", "bmax", "bmin", "lnav", "bclt", "bcrt", "bcdb", "bcgt"];
   const refs: { [k: string]: RefObject<HTMLDivElement> } = {};
-  chartKey.forEach((k) => {
+  refKey.forEach((k) => {
     refs[k] = useRef<HTMLDivElement>(null);
   });
-
-  // NOTE: data(parse, sel update), cycles(sel update, export, updateApp)
   const [dataS, setDataS] = useState<IDataSPos>(dataSInit);
-  const [cygt, setCygt] = useState<ICycle>(cycleInit);
-  const [cylt, setCylt] = useState<ICycle>(cycleInit);
-  const [cyrt, setCyrt] = useState<ICycle>(cycleInit);
-  const [cydb, setCydb] = useState<ICycle>(cycleInit);
-
-  // NOTE: updator(useEffect, updateApp)
+  const [cyS, setCyS] = useState<ICycleList>({
+    gait: { step: [[]], sel: [0, 0] },
+    lt: { step: [[]], sel: [0, 0] },
+    rt: { step: [[]], sel: [0, 0] },
+    db: { step: [[]], sel: [0, 0] },
+  });
+  const [resFilterD, SetResFilterD] = useState<FilterdData>();
   const [updators] = useState<{ [key: string]: Function }>({
     _: new Function(),
   });
@@ -71,23 +66,58 @@ function DrawChart(): ReactElement | null {
   const [selDisable, setSelDisable] = useState<boolean>(true);
   const [trContent, setTrContent] = useState<IRow[]>([]);
 
-  const csvFiles = [
-    "./2021-09-26-18-36_result_Dr Tsai_1.csv",
-    "./2021-09-26-18-36_cycle_Dr Tsai_1.csv",
-    "./2021-09-26-18-36_cycle_lt_Dr Tsai_1.csv",
-    "./2021-09-26-18-36_cycle_rt_Dr Tsai_1.csv",
-    "./2021-09-26-18-36_cycle_db_Dr Tsai_1.csv",
-  ];
+  useEffect(() => {
+    // setup chart manually when component mount
+    updators.line = createLineChart(refs.line);
+    updators.bmax = createBoxChart(refs.bmax);
+    updators.bmin = createBoxChart(refs.bmin);
+    updators.bcgt = createBoxChart(refs.bcgt);
+    updators.bclt = createBoxChart(refs.bclt);
+    updators.bcrt = createBoxChart(refs.bcrt);
+    updators.bcdb = createBoxChart(refs.bcdb);
+    updators.lnav = createGaitNav(refs.lnav);
 
-  async function createChart(res: FilterdData) {
-    // create chart when upload response
+    // DEBUG:
+    if (0) {
+      const csvs = [
+        "./result.csv",
+        "./cygt.csv",
+        "./cylt.csv",
+        "./cyrt.csv",
+        "./cydb.csv",
+      ];
+      Promise.all(csvs.map((file) => d3.csv(file))).then(
+        ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
+          setDataS(parseResult(csvResult, dataS));
+          updateApp(dataS[selPos][selOpt], {
+            gait: parseCycle(csvGaitCycle),
+            lt: parseCycle(csvLtCycle),
+            rt: parseCycle(csvRtCycle),
+            db: parseCycle(csvDbCycle),
+          });
+          setSelDisable(false);
+        }
+      );
+    }
+  }, []);
+
+  /* Create chart when upload api response FilterdData*/
+  async function initChart(res: FilterdData) {
+    SetResFilterD({
+      Raw: res["UploadFile"],
+      Result: res["rsltFile"],
+      CyGt: res["cyclFile"],
+      CyLt: res["cyltFile"],
+      CyRt: res["cyrtFile"],
+      CyDb: res["cydbFile"],
+    });
     return Promise.all(
       [
-        res["rsltUrl"],
-        res["cyclUrl"],
-        res["cyltUrl"],
-        res["cyrtUrl"],
-        res["cydbUrl"],
+        res["Prefix"] + res["rsltFile"],
+        res["Prefix"] + res["cyclFile"],
+        res["Prefix"] + res["cyltFile"],
+        res["Prefix"] + res["cyrtFile"],
+        res["Prefix"] + res["cydbFile"],
       ].map((file) => d3.csv(file))
     ).then(([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
       setDataS(parseResult(csvResult, dataS));
@@ -102,160 +132,96 @@ function DrawChart(): ReactElement | null {
     });
   }
 
-  useEffect(() => {
-    // setup chart manually when component mount
-    updators.line = createLineChart(refs.line);
-    updators.bmax = createBoxChart(refs.bmax);
-    updators.bmin = createBoxChart(refs.bmin);
-    updators.bcgt = createBoxChart(refs.bcgt);
-    updators.bclt = createBoxChart(refs.bclt);
-    updators.bcrt = createBoxChart(refs.bcrt);
-    updators.bcdb = createBoxChart(refs.bcdb);
-    updators.lnav = createGaitNav(refs.lnav);
-
-    // DUBUG:
-    Promise.all(csvFiles.map((file) => d3.csv(file))).then(
-      ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
-        setDataS(parseResult(csvResult, dataS));
-        updateApp(dataS[selPos][selOpt], {
-          gait: parseCycle(csvGaitCycle),
-          lt: parseCycle(csvLtCycle),
-          rt: parseCycle(csvRtCycle),
-          db: parseCycle(csvDbCycle),
-        });
-        setSelDisable(false);
-      }
-    );
-  }, []);
-
+  /* Update all chart logic */
   const updateLogic = (d: IData[], c: ICycleList) => {
     // preprocess/filter data
     let lineD = selLineRange(d, c.gait);
     let lineRange = d3.extent(lineD, (d) => d.x).map((x) => x ?? 0);
-    let minD = cycleMin(d, c.gait);
-    let maxD = cycleMax(d, c.gait);
-    let gtD = cycleDuration(c.gait);
-    let ltD = cycleDuration(c.lt);
-    let rtD = cycleDuration(c.rt);
-    let dbD = cycleDuration(c.db);
 
-    /*
-     * updator.line({
-     *  data: {
-     *    x: 'x',
-     *    columns: [
-     *      ['x': d.map(d => d.x)],
-     *      ['y': d.map(d => d.y)]
-     *    ]
-     *  }
-     * })
-     * updator.bmax({
-     *  data: {
-     *    columns: [
-     *      ['data1': minD]
-     *    ]
-     *  }
-     * })
-     * */
     // input data to update fig
     updators.line(d, lineRange);
-    updators.bmax(maxD);
-    updators.bmin(minD);
-    updators.bcgt(gtD);
-    updators.bclt(ltD);
-    updators.bcrt(rtD);
-    updators.bcdb(dbD);
+    updators.bmax(cycleMax(d, c.gait));
+    updators.bmin(cycleMin(d, c.gait));
+    updators.bcgt(cycleDuration(c.gait));
+    updators.bclt(cycleDuration(c.lt));
+    updators.bcrt(cycleDuration(c.rt));
+    updators.bcdb(cycleDuration(c.db));
   };
 
+  /* Update App include navigator */
   const updateApp = (schema: IDatasetInfo, c: ICycleList) => {
     updateLogic(schema.data, c);
     updators.lnav(updateLogic, schema.data, c);
-    setCygt(c.gait);
-    setCylt(c.lt);
-    setCyrt(c.rt);
-    setCydb(c.db);
+    setCyS(c);
   };
 
+  /* Selected option chanage */
   const selOptChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    updateApp(dataS[selPos][e.target.value], {
-      gait: cygt,
-      lt: cylt,
-      rt: cyrt,
-      db: cydb,
-    });
+    updateApp(dataS[selPos][e.target.value], cyS);
     setSelOpt(e.target.value);
   };
-
   const selPosChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    updateApp(dataS[e.target.value][selOpt], {
-      gait: cygt,
-      lt: cylt,
-      rt: cyrt,
-      db: cydb,
-    });
+    updateApp(dataS[e.target.value][selOpt], cyS);
     setSelPos(e.target.value);
   };
 
+  /* Add tabel row */
   const addTrNode = () => {
     // check if id exist
-    let result = trContent.filter((d) => d.id === `${cygt.sel}`);
+    let result = trContent.filter((d) => d.id === `${cyS.gait.sel}`);
     if (result.length > 0) return;
     setTrContent([
       ...trContent,
       {
-        range: cygt.sel.map(i => cygt.step[i][0].toFixed(2)).join('-'),
-        gait: d3.median(cycleDuration(cygt))?.toFixed(2) ?? 0,
-        lt: d3.median(cycleDuration(cylt))?.toFixed(2) ?? 0,
-        rt: d3.median(cycleDuration(cyrt))?.toFixed(2) ?? 0,
-        db: d3.median(cycleDuration(cydb))?.toFixed(2) ?? 0,
-        id: `${cygt.sel}`,
+        range: cyS.gait.sel,
+        gt: d3.median(cycleDuration(cyS.gait))?.toFixed(2) ?? 0,
+        lt: d3.median(cycleDuration(cyS.lt))?.toFixed(2) ?? 0,
+        rt: d3.median(cycleDuration(cyS.rt))?.toFixed(2) ?? 0,
+        db: d3.median(cycleDuration(cyS.db))?.toFixed(2) ?? 0,
+        cycle: { ...cyS },
+        id: `${cyS.gait.sel}`,
       },
     ]);
   };
 
+  /* Remove a tabel row */
   const removeTrNode = (id: string) => {
     setTrContent(trContent.filter((d) => d.id !== id));
   };
 
+  /* Remove all tabel rows */
   const removeAllTrNode = () => {
     setTrContent([]);
   };
 
+  /* Show selected row view */
+  const showSel = (range: [number, number]) => {
+    updators.lnav(updateLogic, dataS[selPos][selOpt].data, cyS, range);
+  };
+
+  const exportResult = async () => {
+    let ranges = trContent.map((row) => {
+      return { Start: row.range[0], End: row.range[1] };
+    });
+    if (ranges.length == 0) return;
+    await axios.post("http://localhost:3001/api/export", {
+      RawFile: resFilterD?.Raw,
+      ResultFile: resFilterD?.Result,
+      GaitFile: resFilterD?.CyGt,
+      Ranges: ranges,
+    });
+  };
+
   return (
-    <div className="border rounded-lg border-solid border-gray-300">
-      <div className="flex justify-center">
-        <Uploader handleFile={createChart} />
+    <div className="normalBox w-full">
+      <div className="flex justify-center m-2">
+        <Uploader handleFile={initChart} />
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 m-4">
-        <div className="lg:mt-[28px] col-span-2 md:col-span-4 lg:col-span-1 row-span-2">
-          <div className="row-span-1 mb-4 text-sm">
-            <Selector
-              options={position}
-              selectedOption={selPos}
-              onChange={selPosChange}
-              disable={selDisable}
-            />
-          </div>
-          <div className="h-max">
-            <Selector
-              options={Object.keys(content)}
-              selectedOption={selOpt}
-              onChange={selOptChange}
-              disable={selDisable}
-            />
-          </div>
-        </div>
-        <div className="col-span-2 md:col-span-4 lg:col-span-6">
-          <h1 className="text-center text-xl">Accelration</h1>
-          <div
-            className="border rounded-lg border-solid border-gray-300 shadow-md"
-            ref={refs.line}
-          ></div>
-          <div
-            className="mt-4 border rounded-lg border-solid border-gray-300 shadow-lg"
-            ref={refs.lnav}
-          ></div>
-        </div>
+
+      <div
+        className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6
+        gap-1 space-y-1 m-2"
+      >
         {[
           { title: "Max", ref: refs.bmax },
           { title: "Min", ref: refs.bmin },
@@ -264,25 +230,56 @@ function DrawChart(): ReactElement | null {
           { title: "RT support", ref: refs.bcrt },
           { title: "DB support", ref: refs.bcdb },
         ].map((d) => (
-          <div className="col-span-1" key={d.title}>
-            <h1 className="text-center text-xl">{d.title}</h1>
-            <div
-              className="border rounded-lg border-solid border-gray-300 shadow-md"
-              ref={d.ref}
-            ></div>
+          <div className="col-span-1 lg:col-span-1 normalBox" key={d.title}>
+            <h1>{d.title}</h1>
+            <div ref={d.ref}></div>
           </div>
         ))}
-        <div className="col-span-2 md:col-span-4 lg:col-span-7 flex justify-center space-x-4">
-          <button className="btn btn-outline" onClick={addTrNode}>
-            Select Cycle
-          </button>
-          <button className="btn btn-outline">Export</button>
+        <div className="normalBox col-span-2 md:col-span-3 lg:col-span-6">
+          <h1>Accelration</h1>
+          <div ref={refs.line}></div>
+          <div className="mt-4" ref={refs.lnav}></div>
         </div>
-        <div className="col-span-2 md:col-span-4 lg:col-span-7">
+
+        <div className="col-span-2 flex justify-center md:col-span-3 lg:col-span-2">
+          <Selector
+            options={position}
+            selectedOption={selPos}
+            onChange={selPosChange}
+            disable={selDisable}
+          />
+        </div>
+        <div className="col-span-2 flex justify-center md:col-span-3 lg:col-span-2">
+          <Selector
+            options={Object.keys(content)}
+            selectedOption={selOpt}
+            onChange={selOptChange}
+            disable={selDisable}
+          />
+        </div>
+        <div className="col-span-2 md:col-span-3 lg:col-span-1">
+          <button
+            className={`btn-outline w-full ${selDisable ? "btn-disabled" : ""}`}
+            onClick={addTrNode}
+          >
+            Select
+          </button>
+        </div>
+        <div className="col-span-2 md:col-span-3 lg:col-span-1">
+          <button
+            className={`btn-outline w-full ${selDisable ? "btn-disabled" : ""}`}
+            onClick={() => exportResult()}
+          >
+            Export
+          </button>
+        </div>
+
+        <div className="col-span-2 overflow-x-auto no-scrollbar md:col-span-3 lg:col-span-6">
           <Table
             content={trContent}
             removeNode={removeTrNode}
             removeAll={removeAllTrNode}
+            updateView={showSel}
           />
         </div>
       </div>
@@ -290,4 +287,4 @@ function DrawChart(): ReactElement | null {
   );
 }
 
-export default DrawChart;
+export default Chart;

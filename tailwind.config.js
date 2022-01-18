@@ -14,7 +14,7 @@ module.exports = {
   ],
   daisyui: {
     themes: [
-      'emerald'
+      'dark'
     ],
     },
 }

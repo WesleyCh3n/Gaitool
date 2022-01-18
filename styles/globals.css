@@ -3,10 +3,45 @@
 @tailwind utilities;
 
 @layer components {
+  .baseSize {
+    /*  */
+    @apply text-sm
+  }
   .selectBox {
     @apply overflow-y-auto appearance-none block px-3 py-1.5
     text-sm font-normal text-gray-500 bg-gray-200 bg-clip-padding bg-no-repeat
     border border-solid border-gray-300 rounded transition ease-in-out
     hover:text-gray-700 hover:bg-white hover:border-blue-600 hover:outline-none;
   }
+  .normalBox {
+    /*  */
+    @apply border rounded-md border-solid border-gray-300 shadow-md;
+  }
+  .smallBtn {
+    /*  */
+    @apply btn btn-sm whitespace-nowrap btn-outline
+  }
+}
+
+@layer base {
+  h1 {
+    /*  */
+    @apply text-center text-xs whitespace-nowrap
+  }
+  button {
+    /*  */
+    @apply btn btn-sm whitespace-nowrap
+  }
+}
+
+@layer utilities {
+    /* Chrome, Safari and Opera */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .no-scrollbar {
+      -ms-overflow-style: none; /* IE and Edge */
+      scrollbar-width: none; /* Firefox */
+    }
 }
