@@ -1,21 +1,25 @@
 import axios from "axios";
+import { FilterdData } from "./filter"
 
-type FilterdData = {
-  [k: string]: any;
-};
-
-export async function saveExport(resFilterD: FilterdData, ranges: {}) {
-  let resExport = await axios
+export async function postRange(d: FilterdData, ranges: {}) {
+  return await axios
     .post("http://localhost:3001/api/export", {
-      RawFile: resFilterD.Raw,
-      ResultFile: resFilterD.Rslt,
-      GaitFile: resFilterD.CyGt,
+      RawFile: d.Raw,
+      ResultFile: d.Rslt,
+      GaitFile: d.CyGt,
       Ranges: ranges,
     })
     .then((res) => res["data"]["data"]);
-  console.log(resExport);
+}
+
+export async function saveExport(filteredURL: FilterdData, ranges: {}) {
+  let resExport = await postRange(filteredURL, ranges);
   let exportFileURL =
-    resExport["prefix"] + "/" + resExport["python"]["ExportFile"];
+    resExport["serverRoot"] +
+    "/" +
+    resExport["saveDir"] +
+    "/" +
+    resExport["python"]["ExportFile"];
   let exportFileName = resExport["python"]["ExportFile"];
   await axios
     .get(exportFileURL, {

@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import type { ReactElement, ChangeEvent, RefObject } from "react";
+import { forwardRef, useEffect, useRef, useState, useImperativeHandle } from "react";
+import type { ChangeEvent, RefObject } from "react";
 import * as d3 from "d3";
 
 import {
@@ -27,7 +27,7 @@ import { Selector } from "../components/selector/Selector";
 import { Uploader } from "../components/upload/Uploader";
 import { Table, IRow } from "../components/table/Table";
 import { FilterdData } from "../api/filter";
-import { saveExport } from "../api/exporter";
+import { postRange, saveExport } from "../api/exporter";
 
 const position = ["Pelvis", "Upper spine", "Lower spine"];
 const content = {
@@ -40,7 +40,10 @@ const content = {
 };
 const refKey = ["line", "bmax", "bmin", "lnav", "bclt", "bcrt", "bcdb", "bcgt"];
 
-function Chart(): ReactElement | null {
+export interface ChartProps {
+}
+
+const Chart = forwardRef((_props: ChartProps, ref) => {
   const dataSInit: IDataSPos = {};
   position.forEach((p) => {
     dataSInit[p] = JSON.parse(JSON.stringify(content)); // HACK: deep copy
@@ -56,7 +59,7 @@ function Chart(): ReactElement | null {
     rt: { step: [[]], sel: [0, 0] },
     db: { step: [[]], sel: [0, 0] },
   });
-  const [resFilterD, SetResFilterD] = useState<FilterdData>();
+  const [filteredURL, setFilteredURL] = useState<FilterdData>();
   const [updators] = useState<{ [key: string]: Function }>({
     _: new Function(),
   });
@@ -103,21 +106,22 @@ function Chart(): ReactElement | null {
 
   /* Create chart when upload api response FilterdData*/
   async function initChart(res: FilterdData) {
-    SetResFilterD({
+    setFilteredURL({
       Raw: res["uploadFile"],
-      Rslt: res["python"]["RsltCSV"],
-      CyGt: res["python"]["CyGtCSV"],
-      CyLt: res["python"]["CyLtCSV"],
-      CyRt: res["python"]["CyRtCSV"],
-      CyDb: res["python"]["CyDbCSV"],
+      Rslt: res["saveDir"] + "/" + res["python"]["RsltCSV"],
+      CyGt: res["saveDir"] + "/" + res["python"]["CyGtCSV"],
+      CyLt: res["saveDir"] + "/" + res["python"]["CyLtCSV"],
+      CyRt: res["saveDir"] + "/" + res["python"]["CyRtCSV"],
+      CyDb: res["saveDir"] + "/" + res["python"]["CyDbCSV"],
     });
+    console.log(res)
     return Promise.all(
       [
-        res["prefix"] + "/" + res["python"]["RsltCSV"],
-        res["prefix"] + "/" + res["python"]["CyGtCSV"],
-        res["prefix"] + "/" + res["python"]["CyLtCSV"],
-        res["prefix"] + "/" + res["python"]["CyRtCSV"],
-        res["prefix"] + "/" + res["python"]["CyDbCSV"],
+        `${res["serverRoot"]}/${res["saveDir"]}/${res["python"]["RsltCSV"]}`,
+        `${res["serverRoot"]}/${res["saveDir"]}/${res["python"]["CyGtCSV"]}`,
+        `${res["serverRoot"]}/${res["saveDir"]}/${res["python"]["CyLtCSV"]}`,
+        `${res["serverRoot"]}/${res["saveDir"]}/${res["python"]["CyRtCSV"]}`,
+        `${res["serverRoot"]}/${res["saveDir"]}/${res["python"]["CyDbCSV"]}`,
       ].map((file) => d3.csv(file))
     ).then(([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
       setDataS(parseResult(csvResult, dataS));
@@ -199,13 +203,29 @@ function Chart(): ReactElement | null {
     updators.lnav(updateLogic, dataS[selPos][selOpt].data, cyS, range);
   };
 
+  /* Export result */
   const exportResult = async () => {
     let ranges = trContent.map((row) => {
       return { Start: row.range[0], End: row.range[1] };
     });
-    if (ranges.length == 0 || !resFilterD) return;
-    await saveExport(resFilterD, ranges)
+    if (ranges.length == 0 || !filteredURL) return;
+    await saveExport(filteredURL, ranges)
   };
+
+  /**
+   * HACK: pass function upward to parent
+   */
+  useImperativeHandle(ref, () => ({
+    async getExportCSV() {
+      let ranges = trContent.map((row) => {
+        return { Start: row.range[0], End: row.range[1] };
+      });
+      if (ranges.length == 0 || !filteredURL) return;
+      let res = await postRange(filteredURL, ranges)
+      return res
+    }
+  }));
+
 
   return (
     <div className="normalBox w-full">
@@ -280,6 +300,6 @@ function Chart(): ReactElement | null {
       </div>
     </div>
   );
-}
+})
 
 export default Chart;
