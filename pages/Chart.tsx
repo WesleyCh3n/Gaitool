@@ -78,7 +78,7 @@ function Chart(): ReactElement | null {
     updators.lnav = createGaitNav(refs.lnav);
 
     // DEBUG:
-    if (0) {
+    if (1) {
       const csvs = [
         "./result.csv",
         "./cygt.csv",
