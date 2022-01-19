@@ -131,6 +131,11 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
         db: parseCycle(csvDbCycle),
       });
 
+      // ranges = res["python"]["Range"].map(d => {
+        // Start: findIndex(d.Start),
+        // End: findIndex(d.End)
+      // })
+
       setSelDisable(false);
     });
   }
