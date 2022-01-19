@@ -106,22 +106,21 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
 
   /* Create chart when upload api response FilterdData*/
   async function initChart(res: FilterdData) {
-    setFilteredURL({
-      Raw: res["uploadFile"],
-      Rslt: res["saveDir"] + "/" + res["python"]["RsltCSV"],
-      CyGt: res["saveDir"] + "/" + res["python"]["CyGtCSV"],
-      CyLt: res["saveDir"] + "/" + res["python"]["CyLtCSV"],
-      CyRt: res["saveDir"] + "/" + res["python"]["CyRtCSV"],
-      CyDb: res["saveDir"] + "/" + res["python"]["CyDbCSV"],
-    });
     console.log(res)
+    setFilteredURL({
+      rslt: res["saveDir"] + "/" + res["python"]["rslt"],
+      cyGt: res["saveDir"] + "/" + res["python"]["cyGt"],
+      cyLt: res["saveDir"] + "/" + res["python"]["cyLt"],
+      cyRt: res["saveDir"] + "/" + res["python"]["cyRt"],
+      cyDb: res["saveDir"] + "/" + res["python"]["cyDb"],
+    });
     return Promise.all(
       [
-        `${res["serverRoot"]}/${res["saveDir"]}/${res["python"]["RsltCSV"]}`,
-        `${res["serverRoot"]}/${res["saveDir"]}/${res["python"]["CyGtCSV"]}`,
-        `${res["serverRoot"]}/${res["saveDir"]}/${res["python"]["CyLtCSV"]}`,
-        `${res["serverRoot"]}/${res["saveDir"]}/${res["python"]["CyRtCSV"]}`,
-        `${res["serverRoot"]}/${res["saveDir"]}/${res["python"]["CyDbCSV"]}`,
+        `${res["serverRoot"]}/${res["saveDir"]}/${res["python"]["rslt"]}`,
+        `${res["serverRoot"]}/${res["saveDir"]}/${res["python"]["cyGt"]}`,
+        `${res["serverRoot"]}/${res["saveDir"]}/${res["python"]["cyLt"]}`,
+        `${res["serverRoot"]}/${res["saveDir"]}/${res["python"]["cyRt"]}`,
+        `${res["serverRoot"]}/${res["saveDir"]}/${res["python"]["cyDb"]}`,
       ].map((file) => d3.csv(file))
     ).then(([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
       setDataS(parseResult(csvResult, dataS));
