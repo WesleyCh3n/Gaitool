@@ -1,4 +1,10 @@
-import { forwardRef, useEffect, useRef, useState, useImperativeHandle } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useRef,
+  useState,
+  useImperativeHandle,
+} from "react";
 import type { ChangeEvent, RefObject } from "react";
 import * as d3 from "d3";
 
@@ -28,6 +34,7 @@ import { Uploader } from "../components/upload/Uploader";
 import { Table, IRow } from "../components/table/Table";
 import { FilterdData } from "../api/filter";
 import { postRange, saveExport } from "../api/exporter";
+import { findIndex } from "../utils/utils";
 
 const position = ["Pelvis", "Upper spine", "Lower spine"];
 const content = {
@@ -40,8 +47,7 @@ const content = {
 };
 const refKey = ["line", "bmax", "bmin", "lnav", "bclt", "bcrt", "bcdb", "bcgt"];
 
-export interface ChartProps {
-}
+export interface ChartProps {}
 
 const Chart = forwardRef((_props: ChartProps, ref) => {
   const dataSInit: IDataSPos = {};
@@ -106,36 +112,30 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
 
   /* Create chart when upload api response FilterdData*/
   async function initChart(res: FilterdData) {
-    console.log(res)
+    console.log(res);
     setFilteredURL({
-      rslt: res["saveDir"] + "/" + res["python"]["rslt"],
-      cyGt: res["saveDir"] + "/" + res["python"]["cyGt"],
-      cyLt: res["saveDir"] + "/" + res["python"]["cyLt"],
-      cyRt: res["saveDir"] + "/" + res["python"]["cyRt"],
-      cyDb: res["saveDir"] + "/" + res["python"]["cyDb"],
+      rslt: res["saveDir"] + "/" + res["python"]["FltrFile"]["rslt"],
+      cyGt: res["saveDir"] + "/" + res["python"]["FltrFile"]["cyGt"],
+      cyLt: res["saveDir"] + "/" + res["python"]["FltrFile"]["cyLt"],
+      cyRt: res["saveDir"] + "/" + res["python"]["FltrFile"]["cyRt"],
+      cyDb: res["saveDir"] + "/" + res["python"]["FltrFile"]["cyDb"],
     });
     return Promise.all(
       [
-        `${res["serverRoot"]}/${res["saveDir"]}/${res["python"]["rslt"]}`,
-        `${res["serverRoot"]}/${res["saveDir"]}/${res["python"]["cyGt"]}`,
-        `${res["serverRoot"]}/${res["saveDir"]}/${res["python"]["cyLt"]}`,
-        `${res["serverRoot"]}/${res["saveDir"]}/${res["python"]["cyRt"]}`,
-        `${res["serverRoot"]}/${res["saveDir"]}/${res["python"]["cyDb"]}`,
+        `${res["serverRoot"]}/${res["saveDir"]}/${res["python"]["FltrFile"]["rslt"]}`,
+        `${res["serverRoot"]}/${res["saveDir"]}/${res["python"]["FltrFile"]["cyGt"]}`,
+        `${res["serverRoot"]}/${res["saveDir"]}/${res["python"]["FltrFile"]["cyLt"]}`,
+        `${res["serverRoot"]}/${res["saveDir"]}/${res["python"]["FltrFile"]["cyRt"]}`,
+        `${res["serverRoot"]}/${res["saveDir"]}/${res["python"]["FltrFile"]["cyDb"]}`,
       ].map((file) => d3.csv(file))
     ).then(([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
       setDataS(parseResult(csvResult, dataS));
-      updateApp(dataS[selPos][selOpt], {
-        gait: parseCycle(csvGaitCycle),
-        lt: parseCycle(csvLtCycle),
-        rt: parseCycle(csvRtCycle),
-        db: parseCycle(csvDbCycle),
-      });
-
-      // ranges = res["python"]["Range"].map(d => {
-        // Start: findIndex(d.Start),
-        // End: findIndex(d.End)
-      // })
-
+      cyS.gait = parseCycle(csvGaitCycle);
+      cyS.lt = parseCycle(csvLtCycle);
+      cyS.rt = parseCycle(csvRtCycle);
+      cyS.db = parseCycle(csvDbCycle);
+      updateApp(dataS[selPos][selOpt], cyS);
+      trInit(res["python"]["Range"])
       setSelDisable(false);
     });
   }
@@ -171,6 +171,49 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
   const selPosChange = (e: ChangeEvent<HTMLSelectElement>) => {
     updateApp(dataS[e.target.value][selOpt], cyS);
     setSelPos(e.target.value);
+  };
+
+  const trInit = (ranges: any) => {
+    let trRows: IRow[] = [];
+    for (let range of ranges) {
+      let cycle = {
+        gait: [0, 0] as [number, number],
+        lt: [0, 0] as [number, number],
+        rt: [0, 0] as [number, number],
+        db: [0, 0] as [number, number],
+      };
+      let selValue = Object.values(range) as number[];
+      ["gait", "lt", "rt", "db"].forEach((k) => {
+        (cycle as any)[k] = selValue.map((x) =>
+          findIndex(
+            cyS[k].step.map((s) => s[0]),
+            x
+          )
+        );
+      });
+      trRows.push({
+        range: cycle.gait,
+        gt:
+          d3
+            .median(cycleDuration({ step: cyS.gait.step, sel: cycle.gait }))
+            ?.toFixed(2) ?? 0,
+        lt:
+          d3
+            .median(cycleDuration({ step: cyS.lt.step, sel: cycle.lt }))
+            ?.toFixed(2) ?? 0,
+        rt:
+          d3
+            .median(cycleDuration({ step: cyS.rt.step, sel: cycle.rt }))
+            ?.toFixed(2) ?? 0,
+        db:
+          d3
+            .median(cycleDuration({ step: cyS.db.step, sel: cycle.db }))
+            ?.toFixed(2) ?? 0,
+        cycle: { ...cyS },
+        id: `${cycle.gait}`,
+      });
+    }
+    setTrContent(trRows);
   };
 
   /* Add tabel row */
@@ -213,7 +256,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
       return { Start: row.range[0], End: row.range[1] };
     });
     if (ranges.length == 0 || !filteredURL) return;
-    await saveExport(filteredURL, ranges)
+    await saveExport(filteredURL, ranges);
   };
 
   /**
@@ -225,11 +268,10 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
         return { Start: row.range[0], End: row.range[1] };
       });
       if (ranges.length == 0 || !filteredURL) return;
-      let res = await postRange(filteredURL, ranges)
-      return res
-    }
+      let res = await postRange(filteredURL, ranges);
+      return res;
+    },
   }));
-
 
   return (
     <div className="normalBox w-full">
@@ -301,9 +343,17 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
             updateView={showSel}
           />
         </div>
+        <div className="flex justify-end col-span-2 md:col-span-3 lg:col-span-6">
+          <button
+            className={`btn-outline w-full lg:w-fit ${selDisable ? "btn-disabled" : ""}`}
+            onClick={() => {}}
+          >
+            Save
+          </button>
+        </div>
       </div>
     </div>
   );
-})
+});
 
 export default Chart;
