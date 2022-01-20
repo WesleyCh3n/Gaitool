@@ -1,5 +1,5 @@
 import axios from "axios";
-import { FilterdData } from "./filter"
+import { FilterdData } from "./filter";
 
 export async function postRange(f: FilterdData, ranges: {}[]) {
   return await axios
@@ -32,3 +32,12 @@ export async function saveExport(fltrFile: FilterdData, ranges: {}[]) {
       link.click();
     });
 }
+
+export const saveRange = async (file: string, ranges: string) => {
+  return axios
+    .patch("http://localhost:3001/api/save", {
+      uploadFile: file,
+      Range: ranges,
+    })
+    .then((res) => res["data"]["data"]);
+};

@@ -33,7 +33,7 @@ import { Selector } from "../components/selector/Selector";
 import { Uploader } from "../components/upload/Uploader";
 import { Table, IRow } from "../components/table/Table";
 import { FilterdData } from "../api/filter";
-import { postRange, saveExport } from "../api/exporter";
+import { postRange, saveExport, saveRange } from "../api/exporter";
 import { findIndex } from "../utils/utils";
 
 const position = ["Pelvis", "Upper spine", "Lower spine"];
@@ -119,6 +119,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
       cyLt: res["saveDir"] + "/" + res["python"]["FltrFile"]["cyLt"],
       cyRt: res["saveDir"] + "/" + res["python"]["FltrFile"]["cyRt"],
       cyDb: res["saveDir"] + "/" + res["python"]["FltrFile"]["cyDb"],
+      upload: "file/raw/" + res["uploadFile"],
     });
     return Promise.all(
       [
@@ -135,7 +136,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
       cyS.rt = parseCycle(csvRtCycle);
       cyS.db = parseCycle(csvDbCycle);
       updateApp(dataS[selPos][selOpt], cyS);
-      trInit(res["python"]["Range"])
+      trInit(res["python"]["Range"]);
       setSelDisable(false);
     });
   }
@@ -259,10 +260,23 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
     await saveExport(filteredURL, ranges);
   };
 
+  const saveSelection = async () => {
+    let ranges_value = trContent
+      .map((row) => {
+        return row.range.map((i) => cyS.gait.step[i][0]).join("-");
+      })
+      .join(" ");
+    if (!filteredURL) return;
+    await saveRange(filteredURL.upload, ranges_value);
+  };
+
   /**
    * HACK: pass function upward to parent
    */
   useImperativeHandle(ref, () => ({
+    isSel() {
+      return trContent.length !== 0;
+    },
     async getExportCSV() {
       let ranges = trContent.map((row) => {
         return { Start: row.range[0], End: row.range[1] };
@@ -345,8 +359,10 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
         </div>
         <div className="flex justify-end col-span-2 md:col-span-3 lg:col-span-6">
           <button
-            className={`btn-outline w-full lg:w-fit ${selDisable ? "btn-disabled" : ""}`}
-            onClick={() => {}}
+            className={`btn-outline w-full lg:w-fit ${
+              selDisable ? "btn-disabled" : ""
+            }`}
+            onClick={() => saveSelection()}
           >
             Save
           </button>
