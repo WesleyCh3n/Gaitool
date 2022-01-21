@@ -112,7 +112,6 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
 
   /* Create chart when upload api response FilterdData*/
   async function initChart(res: ResUpload) {
-    console.log(res);
     setResUpld(res);
     return Promise.all(
       [
