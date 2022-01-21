@@ -89,11 +89,11 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
     // DEBUG:
     if (1) {
       const csvs = [
-        "http://localhost:3000/result.csv",
-        "http://localhost:3000/cygt.csv",
-        "http://localhost:3000/cylt.csv",
-        "http://localhost:3000/cyrt.csv",
-        "http://localhost:3000/cydb.csv",
+        "./result.csv",
+        "./cygt.csv",
+        "./cylt.csv",
+        "./cyrt.csv",
+        "./cydb.csv",
       ];
       Promise.all(csvs.map((file) => d3.csv(file))).then(
         ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
