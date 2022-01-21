@@ -1,5 +1,11 @@
-import { useEffect, useRef, useState } from "react";
-import type { ReactElement, ChangeEvent, RefObject } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useRef,
+  useState,
+  useImperativeHandle,
+} from "react";
+import type { ChangeEvent, RefObject } from "react";
 import * as d3 from "d3";
 
 import {
@@ -26,8 +32,9 @@ import {
 import { Selector } from "../components/selector/Selector";
 import { Uploader } from "../components/upload/Uploader";
 import { Table, IRow } from "../components/table/Table";
-import { FilterdData } from "../api/filter";
-import axios from "axios";
+import { postRange, saveExport, saveRange } from "../api/exporter";
+import { findIndex } from "../utils/utils";
+import { ResUpload } from "../models/response_models";
 
 const position = ["Pelvis", "Upper spine", "Lower spine"];
 const content = {
@@ -40,7 +47,9 @@ const content = {
 };
 const refKey = ["line", "bmax", "bmin", "lnav", "bclt", "bcrt", "bcdb", "bcgt"];
 
-function Chart(): ReactElement | null {
+export interface ChartProps {}
+
+const Chart = forwardRef((_props: ChartProps, ref) => {
   const dataSInit: IDataSPos = {};
   position.forEach((p) => {
     dataSInit[p] = JSON.parse(JSON.stringify(content)); // HACK: deep copy
@@ -56,7 +65,7 @@ function Chart(): ReactElement | null {
     rt: { step: [[]], sel: [0, 0] },
     db: { step: [[]], sel: [0, 0] },
   });
-  const [resFilterD, SetResFilterD] = useState<FilterdData>();
+  const [resUpld, setResUpld] = useState<ResUpload>();
   const [updators] = useState<{ [key: string]: Function }>({
     _: new Function(),
   });
@@ -78,13 +87,13 @@ function Chart(): ReactElement | null {
     updators.lnav = createGaitNav(refs.lnav);
 
     // DEBUG:
-    if (1) {
+    if (0) {
       const csvs = [
-        "./result.csv",
-        "./cygt.csv",
-        "./cylt.csv",
-        "./cyrt.csv",
-        "./cydb.csv",
+        "http://localhost:3000/result.csv",
+        "http://localhost:3000/cygt.csv",
+        "http://localhost:3000/cylt.csv",
+        "http://localhost:3000/cyrt.csv",
+        "http://localhost:3000/cydb.csv",
       ];
       Promise.all(csvs.map((file) => d3.csv(file))).then(
         ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
@@ -102,32 +111,24 @@ function Chart(): ReactElement | null {
   }, []);
 
   /* Create chart when upload api response FilterdData*/
-  async function initChart(res: FilterdData) {
-    SetResFilterD({
-      Raw: res["UploadFile"],
-      Result: res["rsltFile"],
-      CyGt: res["cyclFile"],
-      CyLt: res["cyltFile"],
-      CyRt: res["cyrtFile"],
-      CyDb: res["cydbFile"],
-    });
+  async function initChart(res: ResUpload) {
+    setResUpld(res);
     return Promise.all(
       [
-        res["Prefix"] + res["rsltFile"],
-        res["Prefix"] + res["cyclFile"],
-        res["Prefix"] + res["cyltFile"],
-        res["Prefix"] + res["cyrtFile"],
-        res["Prefix"] + res["cydbFile"],
+        `${res.serverRoot}/${res.saveDir}/${res.python.FltrFile.rslt}`,
+        `${res.serverRoot}/${res.saveDir}/${res.python.FltrFile.cyGt}`,
+        `${res.serverRoot}/${res.saveDir}/${res.python.FltrFile.cyLt}`,
+        `${res.serverRoot}/${res.saveDir}/${res.python.FltrFile.cyRt}`,
+        `${res.serverRoot}/${res.saveDir}/${res.python.FltrFile.cyDb}`,
       ].map((file) => d3.csv(file))
     ).then(([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
       setDataS(parseResult(csvResult, dataS));
-      updateApp(dataS[selPos][selOpt], {
-        gait: parseCycle(csvGaitCycle),
-        lt: parseCycle(csvLtCycle),
-        rt: parseCycle(csvRtCycle),
-        db: parseCycle(csvDbCycle),
-      });
-
+      cyS.gait = parseCycle(csvGaitCycle);
+      cyS.lt = parseCycle(csvLtCycle);
+      cyS.rt = parseCycle(csvRtCycle);
+      cyS.db = parseCycle(csvDbCycle);
+      updateApp(dataS[selPos][selOpt], cyS);
+      trInit(res["python"]["Range"]);
       setSelDisable(false);
     });
   }
@@ -165,6 +166,49 @@ function Chart(): ReactElement | null {
     setSelPos(e.target.value);
   };
 
+  const trInit = (ranges: any) => {
+    let trRows: IRow[] = [];
+    for (let range of ranges) {
+      let cycle = {
+        gait: [0, 0] as [number, number],
+        lt: [0, 0] as [number, number],
+        rt: [0, 0] as [number, number],
+        db: [0, 0] as [number, number],
+      };
+      let selValue = Object.values(range) as number[];
+      ["gait", "lt", "rt", "db"].forEach((k) => {
+        (cycle as any)[k] = selValue.map((x) =>
+          findIndex(
+            cyS[k].step.map((s) => s[0]),
+            x
+          )
+        );
+      });
+      trRows.push({
+        range: cycle.gait,
+        gt:
+          d3
+            .median(cycleDuration({ step: cyS.gait.step, sel: cycle.gait }))
+            ?.toFixed(2) ?? 0,
+        lt:
+          d3
+            .median(cycleDuration({ step: cyS.lt.step, sel: cycle.lt }))
+            ?.toFixed(2) ?? 0,
+        rt:
+          d3
+            .median(cycleDuration({ step: cyS.rt.step, sel: cycle.rt }))
+            ?.toFixed(2) ?? 0,
+        db:
+          d3
+            .median(cycleDuration({ step: cyS.db.step, sel: cycle.db }))
+            ?.toFixed(2) ?? 0,
+        cycle: { ...cyS },
+        id: `${cycle.gait}`,
+      });
+    }
+    setTrContent(trRows);
+  };
+
   /* Add tabel row */
   const addTrNode = () => {
     // check if id exist
@@ -199,18 +243,41 @@ function Chart(): ReactElement | null {
     updators.lnav(updateLogic, dataS[selPos][selOpt].data, cyS, range);
   };
 
+  /* Export result */
   const exportResult = async () => {
     let ranges = trContent.map((row) => {
       return { Start: row.range[0], End: row.range[1] };
     });
-    if (ranges.length == 0) return;
-    await axios.post("http://localhost:3001/api/export", {
-      RawFile: resFilterD?.Raw,
-      ResultFile: resFilterD?.Result,
-      GaitFile: resFilterD?.CyGt,
-      Ranges: ranges,
-    });
+    if (ranges.length == 0 || !resUpld) return;
+    await saveExport(resUpld, ranges);
   };
+
+  const saveSelection = async () => {
+    let ranges_value = trContent
+      .map((row) => {
+        return row.range.map((i) => cyS.gait.step[i][0]).join("-");
+      })
+      .join(" ");
+    if (!resUpld) return;
+    await saveRange(resUpld.uploadFile, ranges_value);
+  };
+
+  /**
+   * HACK: pass function upward to parent
+   */
+  useImperativeHandle(ref, () => ({
+    isSel() {
+      return trContent.length !== 0;
+    },
+    async getExportCSV() {
+      let ranges = trContent.map((row) => {
+        return { Start: row.range[0], End: row.range[1] };
+      });
+      if (ranges.length == 0 || !resUpld) return;
+      let res = await postRange(resUpld.python.FltrFile, ranges);
+      return res;
+    },
+  }));
 
   return (
     <div className="normalBox w-full">
@@ -282,9 +349,29 @@ function Chart(): ReactElement | null {
             updateView={showSel}
           />
         </div>
+        <div className="flex justify-end col-span-2 md:col-span-3 lg:col-span-6">
+          <a
+            href="#save-modal"
+            className={`btn btn-sm w-full lg:w-fit ${
+              selDisable ? "btn-disabled" : ""
+            }`}
+            onClick={() => saveSelection()}
+          >
+            Save
+          </a>
+        </div>
+      </div>
+
+      <div id="save-modal" className="modal">
+        <div className="modal-box">
+          <p>Selection Saved</p>
+          <div className="modal-action">
+            <a href="#" className="btn btn-sm">OK</a>
+          </div>
+        </div>
       </div>
     </div>
   );
-}
+});
 
 export default Chart;

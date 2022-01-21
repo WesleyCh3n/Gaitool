@@ -2,10 +2,11 @@ import type { ReactElement } from "react";
 import { useState } from "react";
 
 import { Button } from "../button/Button";
-import { FilterdData, sendFile } from "../../api/filter"
+import { sendFile } from "../../api/filter"
+import { ResData } from "../../models/response_models";
 
 export interface UploaderProps {
-  handleFile: (res: FilterdData) => Promise<void>;
+  handleFile: (res: ResData) => Promise<void>;
 }
 
 export function Uploader(props: UploaderProps): ReactElement | null {
@@ -23,7 +24,7 @@ export function Uploader(props: UploaderProps): ReactElement | null {
     setIsLoading(true);
 
     const result = await sendFile(selectedFile[0])
-    await props.handleFile(result["data"]["data"]);
+    await props.handleFile(result);
     setIsLoading(false);
   }
 
