@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export async function postCSVs(files: [string, string]) {
-  const res = await axios.post("http://localhost:3001/api/concat", {
+  const res = await axios.put("http://localhost:3001/api/concat", {
     files: files,
   });
   return res["data"]["data"];

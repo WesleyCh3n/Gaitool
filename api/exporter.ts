@@ -1,36 +1,30 @@
 import axios from "axios";
-import { FilterdData } from "./filter";
+import { FltrFile } from "../models/file_models";
+import { ResData, ResUpload } from "../models/response_models";
 
-export async function postRange(f: FilterdData, ranges: {}[]) {
+export async function postRange(
+  f: FltrFile,
+  rangeIndexes: {}[]
+): Promise<ResData> {
+  let req = {
+    FltrFile: f,
+    RangeIndex: rangeIndexes,
+  };
   return await axios
-    .post("http://localhost:3001/api/export", {
-      FltrFile: f,
-      Range: ranges,
-    })
+    .put("http://localhost:3001/api/export", req)
     .then((res) => res["data"]["data"]);
 }
 
-export async function saveExport(fltrFile: FilterdData, ranges: {}[]) {
-  let resExport = await postRange(fltrFile, ranges);
+export async function saveExport(r: ResUpload, rangeIndexes: {}[]) {
+  let resExport = await postRange(r.python.FltrFile, rangeIndexes);
   let exportFileURL =
-    resExport["serverRoot"] +
+    resExport.serverRoot +
     "/" +
-    resExport["saveDir"] +
+    resExport.saveDir +
     "/" +
-    resExport["python"]["ExportFile"];
-  let exportFileName = resExport["python"]["ExportFile"];
-  await axios
-    .get(exportFileURL, {
-      responseType: "blob",
-    })
-    .then((res) => {
-      const url = window.URL.createObjectURL(new Blob([res.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", exportFileName);
-      document.body.appendChild(link);
-      link.click();
-    });
+    resExport.python["ExportFile"];
+  let exportFileName = resExport.python["ExportFile"];
+  await donwloadFile(exportFileURL, exportFileName);
 }
 
 export const saveRange = async (file: string, ranges: string) => {
@@ -39,5 +33,20 @@ export const saveRange = async (file: string, ranges: string) => {
       uploadFile: file,
       Range: ranges,
     })
-    .then((res) => res["data"]["data"]);
+    .catch((err) => console.log(err.response.data.msg));
+};
+
+export const donwloadFile = async (fileURL: string, filename: string) => {
+  return await axios
+    .get(fileURL, {
+      responseType: "blob",
+    })
+    .then((res) => {
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+    });
 };

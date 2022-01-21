@@ -32,9 +32,9 @@ import {
 import { Selector } from "../components/selector/Selector";
 import { Uploader } from "../components/upload/Uploader";
 import { Table, IRow } from "../components/table/Table";
-import { FilterdData } from "../api/filter";
 import { postRange, saveExport, saveRange } from "../api/exporter";
 import { findIndex } from "../utils/utils";
+import { ResUpload } from "../models/response_models";
 
 const position = ["Pelvis", "Upper spine", "Lower spine"];
 const content = {
@@ -65,7 +65,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
     rt: { step: [[]], sel: [0, 0] },
     db: { step: [[]], sel: [0, 0] },
   });
-  const [filteredURL, setFilteredURL] = useState<FilterdData>();
+  const [resUpld, setResUpld] = useState<ResUpload>();
   const [updators] = useState<{ [key: string]: Function }>({
     _: new Function(),
   });
@@ -111,23 +111,16 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
   }, []);
 
   /* Create chart when upload api response FilterdData*/
-  async function initChart(res: FilterdData) {
+  async function initChart(res: ResUpload) {
     console.log(res);
-    setFilteredURL({
-      rslt: res["saveDir"] + "/" + res["python"]["FltrFile"]["rslt"],
-      cyGt: res["saveDir"] + "/" + res["python"]["FltrFile"]["cyGt"],
-      cyLt: res["saveDir"] + "/" + res["python"]["FltrFile"]["cyLt"],
-      cyRt: res["saveDir"] + "/" + res["python"]["FltrFile"]["cyRt"],
-      cyDb: res["saveDir"] + "/" + res["python"]["FltrFile"]["cyDb"],
-      upload: "file/raw/" + res["uploadFile"],
-    });
+    setResUpld(res);
     return Promise.all(
       [
-        `${res["serverRoot"]}/${res["saveDir"]}/${res["python"]["FltrFile"]["rslt"]}`,
-        `${res["serverRoot"]}/${res["saveDir"]}/${res["python"]["FltrFile"]["cyGt"]}`,
-        `${res["serverRoot"]}/${res["saveDir"]}/${res["python"]["FltrFile"]["cyLt"]}`,
-        `${res["serverRoot"]}/${res["saveDir"]}/${res["python"]["FltrFile"]["cyRt"]}`,
-        `${res["serverRoot"]}/${res["saveDir"]}/${res["python"]["FltrFile"]["cyDb"]}`,
+        `${res.serverRoot}/${res.saveDir}/${res.python.FltrFile.rslt}`,
+        `${res.serverRoot}/${res.saveDir}/${res.python.FltrFile.cyGt}`,
+        `${res.serverRoot}/${res.saveDir}/${res.python.FltrFile.cyLt}`,
+        `${res.serverRoot}/${res.saveDir}/${res.python.FltrFile.cyRt}`,
+        `${res.serverRoot}/${res.saveDir}/${res.python.FltrFile.cyDb}`,
       ].map((file) => d3.csv(file))
     ).then(([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
       setDataS(parseResult(csvResult, dataS));
@@ -256,8 +249,8 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
     let ranges = trContent.map((row) => {
       return { Start: row.range[0], End: row.range[1] };
     });
-    if (ranges.length == 0 || !filteredURL) return;
-    await saveExport(filteredURL, ranges);
+    if (ranges.length == 0 || !resUpld) return;
+    await saveExport(resUpld, ranges);
   };
 
   const saveSelection = async () => {
@@ -266,8 +259,8 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
         return row.range.map((i) => cyS.gait.step[i][0]).join("-");
       })
       .join(" ");
-    if (!filteredURL) return;
-    await saveRange(filteredURL.upload, ranges_value);
+    if (!resUpld) return;
+    await saveRange(resUpld.uploadFile, ranges_value);
   };
 
   /**
@@ -281,8 +274,8 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
       let ranges = trContent.map((row) => {
         return { Start: row.range[0], End: row.range[1] };
       });
-      if (ranges.length == 0 || !filteredURL) return;
-      let res = await postRange(filteredURL, ranges);
+      if (ranges.length == 0 || !resUpld) return;
+      let res = await postRange(resUpld.python.FltrFile, ranges);
       return res;
     },
   }));
@@ -358,14 +351,24 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
           />
         </div>
         <div className="flex justify-end col-span-2 md:col-span-3 lg:col-span-6">
-          <button
-            className={`btn-outline w-full lg:w-fit ${
+          <a
+            href="#save-modal"
+            className={`btn btn-sm w-full lg:w-fit ${
               selDisable ? "btn-disabled" : ""
             }`}
             onClick={() => saveSelection()}
           >
             Save
-          </button>
+          </a>
+        </div>
+      </div>
+
+      <div id="save-modal" className="modal">
+        <div className="modal-box">
+          <p>Selection Saved</p>
+          <div className="modal-action">
+            <a href="#" className="btn btn-sm">OK</a>
+          </div>
         </div>
       </div>
     </div>
