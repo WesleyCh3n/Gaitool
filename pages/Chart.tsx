@@ -87,7 +87,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
     updators.lnav = createGaitNav(refs.lnav);
 
     // DEBUG:
-    if (0) {
+    if (1) {
       const csvs = [
         "http://localhost:3000/result.csv",
         "http://localhost:3000/cygt.csv",
@@ -98,12 +98,17 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
       Promise.all(csvs.map((file) => d3.csv(file))).then(
         ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
           setDataS(parseResult(csvResult, dataS));
-          updateApp(dataS[selPos][selOpt], {
-            gait: parseCycle(csvGaitCycle),
-            lt: parseCycle(csvLtCycle),
-            rt: parseCycle(csvRtCycle),
-            db: parseCycle(csvDbCycle),
-          });
+          cyS.gait = parseCycle(csvGaitCycle);
+          cyS.lt = parseCycle(csvLtCycle);
+          cyS.rt = parseCycle(csvRtCycle);
+          cyS.db = parseCycle(csvDbCycle);
+          updateApp(dataS[selPos][selOpt], cyS);
+          trInit([
+            { Start: 3.99, End: 8.545 },
+            { Start: 10.21, End: 14.645 },
+            { Start: 20.905, End: 25.29 },
+            { Start: 28.525, End: 32.825 },
+          ]);
           setSelDisable(false);
         }
       );
@@ -366,7 +371,9 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
         <div className="modal-box">
           <p>Selection Saved</p>
           <div className="modal-action">
-            <a href="#" className="btn btn-sm">OK</a>
+            <a href="#" className="btn btn-sm">
+              OK
+            </a>
           </div>
         </div>
       </div>
