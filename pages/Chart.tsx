@@ -87,7 +87,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
     updators.lnav = createGaitNav(refs.lnav);
 
     // DEBUG:
-    if (1) {
+    if (0) {
       const csvs = [
         "./result.csv",
         "./cygt.csv",
