@@ -1,5 +1,7 @@
 {
   "name": "next.d3.ts",
+  "version": "1.0.0",
+  "author": "WesleyCh3n",
   "private": true,
   "scripts": {
     "dev": "next dev",
