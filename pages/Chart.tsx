@@ -36,7 +36,7 @@ import { postRange, saveExport, saveRange } from "../api/exporter";
 import { findIndex } from "../utils/utils";
 import { ResUpload } from "../models/response_models";
 
-const position = ["Pelvis", "Upper spine", "Lower spine"];
+const position = ["Pelvis", "Upper spine", "Lower spine", "Head"];
 const content = {
   "Accel X": { data: [], csvX: "time", csvY: "A_X" },
   "Accel Y": { data: [], csvX: "time", csvY: "A_Y" },
