@@ -28,12 +28,17 @@ export async function saveExport(r: ResUpload, rangeIndexes: {}[]) {
 }
 
 export const saveRange = async (file: string, ranges: string) => {
-  return axios
+  let response = await axios
     .patch("http://localhost:3001/api/save", {
       uploadFile: file,
       Range: ranges,
     })
+    .then((res) => res["data"]["data"])
     .catch((err) => console.log(err.response.data.msg));
+  let exportFileURL = response.ServerRoot +
+    "/file/cleaning/" +
+    response.clean_file;
+  await donwloadFile(exportFileURL, response.clean_file);
 };
 
 export const donwloadFile = async (fileURL: string, filename: string) => {

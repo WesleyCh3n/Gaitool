@@ -356,7 +356,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
         </div>
         <div className="flex justify-end col-span-2 md:col-span-3 lg:col-span-6">
           <a
-            href="#save-modal"
+            // href="#save-modal"
             className={`btn btn-sm w-full lg:w-fit ${
               selDisable ? "btn-disabled" : ""
             }`}
