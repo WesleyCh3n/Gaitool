@@ -35,10 +35,13 @@ export const saveRange = async (file: string, ranges: string) => {
     })
     .then((res) => res["data"]["data"])
     .catch((err) => console.log(err.response.data.msg));
-  let exportFileURL = response.ServerRoot +
-    "/file/cleaning/" +
-    response.clean_file;
-  await donwloadFile(exportFileURL, response.clean_file);
+  console.log(response)
+  let exportFileURL = response.serverRoot +
+    "/" +
+    response.saveDir +
+    "/" +
+    response.python["CleanFile"];
+  await donwloadFile(exportFileURL, response.python["CleanFile"]);
 };
 
 export const donwloadFile = async (fileURL: string, filename: string) => {
