@@ -35,7 +35,6 @@ export const saveRange = async (file: string, ranges: string) => {
     })
     .then((res) => res["data"]["data"])
     .catch((err) => console.log(err.response.data.msg));
-  console.log(response)
   let exportFileURL = response.serverRoot +
     "/" +
     response.saveDir +
