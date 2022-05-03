@@ -35,8 +35,9 @@ import { Table, IRow } from "../components/table/Table";
 import { postRange, saveExport, saveRange } from "../api/exporter";
 import { findIndex } from "../utils/utils";
 import { ResUpload } from "../models/response_models";
+import { col_schema } from "../api/column_schema"
 
-const position = ["Pelvis", "Upper spine", "Lower spine", "Head"];
+const position = ["L", "T", "Scapular LT", "Scapular RT"];
 const content = {
   "Accel X": { data: [], csvX: "time", csvY: "A_X" },
   "Accel Y": { data: [], csvX: "time", csvY: "A_Y" },
@@ -52,7 +53,7 @@ export interface ChartProps {}
 const Chart = forwardRef((_props: ChartProps, ref) => {
   const dataSInit: IDataSPos = {};
   position.forEach((p) => {
-    dataSInit[p] = JSON.parse(JSON.stringify(content)); // HACK: deep copy
+    dataSInit[p] = JSON.parse(JSON.stringify((col_schema as any)[p])); // HACK: deep copy
   });
   const refs: { [k: string]: RefObject<HTMLDivElement> } = {};
   refKey.forEach((k) => {

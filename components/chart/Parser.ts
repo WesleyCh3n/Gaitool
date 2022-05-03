@@ -12,7 +12,8 @@ export function parseResult(
       files.forEach((row) => {
         data.push({
           x: +(row[dataSchema[pos][key].csvX] ?? 0),
-          y: +(row[`${pos}_${dataSchema[pos][key].csvY}`] ?? 0),
+          // y: +(row[`${pos}_${dataSchema[pos][key].csvY}`] ?? 0),
+          y: +(row[dataSchema[pos][key].csvY] ?? 0),
         });
       });
       dataSchema[pos][key].data = data; // HACK: modify parent
