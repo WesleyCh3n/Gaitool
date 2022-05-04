@@ -24,6 +24,7 @@ jobs:
           yarn install
       - name: export web
         run: |
+          rm public/*.csv
           yarn export
           mv out/ front/
       - name: compress things up
