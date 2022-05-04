@@ -1,10 +1,10 @@
 ---
-name: "Continuous Integration"
+name: "Continuous Deployment"
 
 on:
   push:
-    branches:
-      - "main"
+    tags:
+      - "v*"
 
 jobs:
   build:
@@ -43,8 +43,7 @@ jobs:
       - uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          automatic_release_tag: "latest"
-          prerelease: true
+          prerelease: false
           title: "Development Build"
           files: |
             ${{ steps.get_repository_name.outputs.REPO_NAME }}-static.tar.gz
