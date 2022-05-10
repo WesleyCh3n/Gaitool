@@ -35,7 +35,7 @@ import { Table, IRow } from "../components/table/Table";
 import { postRange, saveExport, saveRange } from "../api/exporter";
 import { findIndex } from "../utils/utils";
 import { ResUpload } from "../models/response_models";
-import { col_schema } from "../api/column_schema"
+import { col_schema } from "../api/column_schema";
 
 const position = ["L", "T", "Scapular LT", "Scapular RT"];
 const content = {
@@ -133,7 +133,10 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
       cyS.lt = parseCycle(csvLtCycle);
       cyS.rt = parseCycle(csvRtCycle);
       cyS.db = parseCycle(csvDbCycle);
-      updateApp(dataS[selPos][selOpt], cyS);
+      updateApp(dataS[selPos][selOpt], cyS, [
+        0,
+        cyS["gait"]["step"].length - 1,
+      ]);
       trInit(res["python"]["Range"]);
       setSelDisable(false);
     });
@@ -156,9 +159,13 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
   };
 
   /* Update App include navigator */
-  const updateApp = (schema: IDatasetInfo, c: ICycleList) => {
+  const updateApp = (
+    schema: IDatasetInfo,
+    c: ICycleList,
+    sel_range?: [number, number]
+  ) => {
     updateLogic(schema.data, c);
-    updators.lnav(updateLogic, schema.data, c);
+    updators.lnav(updateLogic, schema.data, c, sel_range);
     setCyS(c);
   };
 
