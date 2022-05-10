@@ -24,8 +24,12 @@ export function parseResult(
 }
 
 export function parseCycle(files: d3.DSVRowArray<string>): ICycle {
+  let step = files.map((row) => [+(row.start ?? 0), +(row.end ?? 0)]);
+  let last_step = [+(files[files.length - 1].end ?? 0), 0];
+  step.push(last_step);
+
   return {
-    step: files.map((row) => [+(row.start ?? 0), +(row.end ?? 0)]),
-    sel: [0, files.map((row) => row).length - 1],
+    step: step,
+    sel: [0, files.map((row) => row).length],
   };
 }
