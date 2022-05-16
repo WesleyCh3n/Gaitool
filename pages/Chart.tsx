@@ -35,7 +35,7 @@ import { Table, IRow } from "../components/table/Table";
 import { postRange, saveExport, saveRange } from "../api/exporter";
 import { findIndex } from "../utils/utils";
 import { ResUpload } from "../models/response_models";
-import { col_schema } from "../api/column_schema";
+import { col_schema } from "../models/column_schema";
 
 const position = ["L", "T", "Scapular LT", "Scapular RT"];
 const content = {
@@ -55,6 +55,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
   position.forEach((p) => {
     dataSInit[p] = JSON.parse(JSON.stringify((col_schema as any)[p])); // HACK: deep copy
   });
+
   const refs: { [k: string]: RefObject<HTMLDivElement> } = {};
   refKey.forEach((k) => {
     refs[k] = useRef<HTMLDivElement>(null);
