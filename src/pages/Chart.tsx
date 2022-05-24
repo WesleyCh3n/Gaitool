@@ -35,7 +35,7 @@ import { Table, IRow } from "../components/table/Table";
 import { postRange, saveExport, saveRange } from "../api/exporter";
 import { findIndex } from "../utils/utils";
 import { ResUpload } from "../models/response_models";
-import { col_schema } from "../api/column_schema";
+import { col_schema } from "../models/column_schema";
 
 const position = ["L", "T", "Scapular LT", "Scapular RT"];
 const content = {
@@ -55,9 +55,10 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
   position.forEach((p) => {
     dataSInit[p] = JSON.parse(JSON.stringify((col_schema as any)[p])); // HACK: deep copy
   });
-  const refs: { [k: string]: RefObject<HTMLDivElement> } = {};
+
+  const refs: { [k: string]: RefObject<SVGSVGElement> } = {};
   refKey.forEach((k) => {
-    refs[k] = useRef<HTMLDivElement>(null);
+    refs[k] = useRef<SVGSVGElement>(null);
   });
   const [dataS, setDataS] = useState<IDataSPos>(dataSInit);
   const [cyS, setCyS] = useState<ICycleList>({
@@ -88,7 +89,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
     updators.lnav = createGaitNav(refs.lnav);
 
     // DEBUG:
-    if (0) {
+    if (1) {
       const csvs = [
         "./result.csv",
         "./cygt.csv",
@@ -312,13 +313,13 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
         ].map((d) => (
           <div className="col-span-1 lg:col-span-1 normalBox" key={d.title}>
             <h1>{d.title}</h1>
-            <div ref={d.ref}></div>
+            <svg ref={d.ref}></svg>
           </div>
         ))}
         <div className="normalBox col-span-2 md:col-span-3 lg:col-span-6">
           <h1>Accelration</h1>
-          <div ref={refs.line}></div>
-          <div className="mt-4" ref={refs.lnav}></div>
+          <svg ref={refs.line}></svg>
+          <svg className="mt-4" ref={refs.lnav}></svg>
         </div>
 
         <div className="col-span-2 flex justify-center md:col-span-3 lg:col-span-2">

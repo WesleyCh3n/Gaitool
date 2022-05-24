@@ -1,9 +1,8 @@
-import type { NextPage } from "next";
 import { useRef } from "react";
-import Chart from "./Chart";
 import { saveConcat } from "../api/concater";
+import Chart from "./Chart"
 
-const Home: NextPage = () => {
+const DualChart = () => {
   const chartRef1 = useRef<any>(null);
   const chartRef2 = useRef<any>(null);
 
@@ -36,4 +35,5 @@ const Home: NextPage = () => {
   );
 };
 
-export default Home;
+export default DualChart;
+

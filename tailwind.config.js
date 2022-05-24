@@ -1,8 +1,8 @@
 module.exports = {
   mode: 'jit',
   content: [
-    "./pages/**/*.{js,ts,jsx,tsx}",
-    "./components/**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{html,js,jsx,ts,tsx}",
+    "*.{html,tsx}"
   ],
   darkMode: 'class',
   theme: {
@@ -10,11 +10,9 @@ module.exports = {
   },
   plugins: [
     require('@tailwindcss/typography'),
-    require('daisyui'),
+    require('daisyui')
   ],
   daisyui: {
-    themes: [
-      'emerald'
-    ],
-    },
+    themes: ['emerald'],
+  },
 }

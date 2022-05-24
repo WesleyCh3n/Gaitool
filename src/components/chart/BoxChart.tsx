@@ -2,10 +2,9 @@ import * as d3 from "d3";
 import { RefObject } from "react";
 import { IBoxResult, layout } from "./";
 
-export function createBoxChart(ref: RefObject<HTMLDivElement>) {
+export function createBoxChart(ref: RefObject<SVGSVGElement>) {
   var svg = d3
     .select(ref.current)
-    .append("svg") // global chart svg w/h
     .attr("preserveAspectRatio", "xMinYMin meet")
     .attr("viewBox", `0 0 ${layout.boxWidth} ${layout.boxHeight}`)
     .append("g") // workground group
@@ -51,11 +50,12 @@ export function createBoxChart(ref: RefObject<HTMLDivElement>) {
       .domain([minScale, maxScale])
       .range([layout.getBoxHeight(), 0]);
 
+    // axis text
     svg
       .transition()
       .call(d3.axisLeft(yScale))
       .selectAll(".tick text")
-      .attr("font-size", "15px");
+      .attr("font-size", "18px");
 
     // a few features for the box
     var boxCenter = 80;
@@ -109,8 +109,9 @@ export function createBoxChart(ref: RefObject<HTMLDivElement>) {
       )
       .attr("x", boxCenter + boxWidth * 0.7)
       .attr("text-anchor", "start")
-      .attr("font-size", "16px");
+      .attr("font-size", "22px");
 
+    // the left texts
     svg
       .select(".text__left")
       .selectAll("text")
@@ -126,7 +127,7 @@ export function createBoxChart(ref: RefObject<HTMLDivElement>) {
           update.attr("y", (d) => yScale(d)).text((d) => `${d.toFixed(2)}`)
       )
       .attr("x", boxCenter - boxWidth * 0.7)
-      .attr("font-size", "16px");
+      .attr("font-size", "22px");
   }
   return update;
 }
