@@ -2,10 +2,9 @@ import * as d3 from "d3";
 import { RefObject } from "react";
 import { IBoxResult, layout } from "./";
 
-export function createBoxChart(ref: RefObject<HTMLDivElement>) {
+export function createBoxChart(ref: RefObject<SVGSVGElement>) {
   var svg = d3
     .select(ref.current)
-    .append("svg") // global chart svg w/h
     .attr("preserveAspectRatio", "xMinYMin meet")
     .attr("viewBox", `0 0 ${layout.boxWidth} ${layout.boxHeight}`)
     .append("g") // workground group
