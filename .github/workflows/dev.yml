@@ -37,14 +37,14 @@ jobs:
           rm -rf public/
           yarn build
           mv dist/ front/
-      # - name: compress things up
-      #   run: |
-      #     tar -cvf ${{ steps.get_repository_name.outputs.REPO_NAME }}-static.tar.gz front/
-      # - uses: marvinpinto/action-automatic-releases@latest
-      #   with:
-      #     repo_token: ${{ secrets.GITHUB_TOKEN }}
-      #     automatic_release_tag: "latest"
-      #     prerelease: true
-      #     title: "Development Build"
-      #     files: |
-      #       ${{ steps.get_repository_name.outputs.REPO_NAME }}-static.tar.gz
+      - name: compress things up
+        run: |
+          tar -cvf ${{ steps.get_repository_name.outputs.REPO_NAME }}-static.tar.gz front/
+      - uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "Development Build"
+          files: |
+            ${{ steps.get_repository_name.outputs.REPO_NAME }}-static.tar.gz
