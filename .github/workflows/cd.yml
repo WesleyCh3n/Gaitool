@@ -34,9 +34,9 @@ jobs:
           yarn install
       - name: export web
         run: |
-          rm public/*.csv
-          yarn export
-          mv out/ front/
+          rm -rf public/
+          yarn build
+          mv dist/ front/
       - name: compress things up
         run: |
           tar -cvf ${{ steps.get_repository_name.outputs.REPO_NAME }}-static.tar.gz front/
