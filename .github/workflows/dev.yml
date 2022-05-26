@@ -1,10 +1,10 @@
 ---
-name: "Continuous Integration"
+name: "CI from dev"
 
 on:
   push:
     branches:
-      - "main"
+      - "vite-main"
 
 jobs:
   build:

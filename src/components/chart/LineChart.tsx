@@ -3,10 +3,9 @@ import { RefObject } from "react";
 
 import { IData, layout } from ".";
 
-export function createLineChart(ref: RefObject<HTMLDivElement>) {
+export function createLineChart(ref: RefObject<SVGSVGElement>) {
   const svg = d3
     .select(ref.current)
-    .append("svg") // global chart svg w/h
     .attr("preserveAspectRatio", "xMinYMin meet")
     .attr("viewBox", `0 0 ${layout.width} ${layout.lineHeight}`)
     .append("g") // workground group

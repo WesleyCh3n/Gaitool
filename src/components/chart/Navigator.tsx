@@ -3,10 +3,9 @@ import { RefObject } from "react";
 import { IData, layout } from "./";
 import { ICycleList } from "./Chart";
 
-export function createGaitNav(ref: RefObject<HTMLDivElement>) {
+export function createGaitNav(ref: RefObject<SVGSVGElement>) {
   const navSvg = d3
     .select(ref.current)
-    .append("svg") // global chart svg w/h
     .attr("preserveAspectRatio", "xMinYMin meet")
     .attr("viewBox", `0 0 ${layout.width} ${layout.navHeight}`)
     .append("g") // workground group
