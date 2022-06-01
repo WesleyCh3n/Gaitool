@@ -37,6 +37,9 @@ import { findIndex } from "../utils/utils";
 import { ResUpload } from "../models/response_models";
 import { col_schema } from "../models/column_schema";
 
+import { invoke } from "@tauri-apps/api/tauri";
+import { createDir } from "@tauri-apps/api/fs";
+
 const position = ["L", "T", "Scapular LT", "Scapular RT"];
 const content = {
   "Accel X": { data: [], csvX: "time", csvY: "A_X" },
@@ -48,7 +51,7 @@ const content = {
 };
 const refKey = ["line", "bmax", "bmin", "lnav", "bclt", "bcrt", "bcdb", "bcgt"];
 
-export interface ChartProps {}
+export interface ChartProps { }
 
 const Chart = forwardRef((_props: ChartProps, ref) => {
   const dataSInit: IDataSPos = {};
@@ -116,6 +119,13 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
       );
     }
   }, []);
+
+  async function initChartTest(file: string) {
+    var saveDir = "saved"
+    invoke("filter_csv", { file, saveDir }).then(() => {
+      console.log("Succedd");
+    })
+  }
 
   /* Create chart when upload api response FilterdData*/
   async function initChart(res: ResUpload) {
@@ -296,7 +306,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
   return (
     <div className="normalBox w-full">
       <div className="flex justify-center m-2">
-        <Uploader handleFile={initChart} />
+        <Uploader handleFile={initChartTest} />
       </div>
 
       <div
@@ -366,9 +376,8 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
         <div className="flex justify-end col-span-2 md:col-span-3 lg:col-span-6">
           <a
             // href="#save-modal"
-            className={`btn btn-sm w-full lg:w-fit ${
-              selDisable ? "btn-disabled" : ""
-            }`}
+            className={`btn btn-sm w-full lg:w-fit ${selDisable ? "btn-disabled" : ""
+              }`}
             onClick={() => saveSelection()}
           >
             Save
