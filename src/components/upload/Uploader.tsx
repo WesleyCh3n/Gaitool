@@ -2,13 +2,11 @@ import type { ReactElement } from "react";
 import { useState } from "react";
 
 import { Button } from "../button/Button";
-import { sendFile } from "../../api/filter"
-import { ResData } from "../../models/response_models";
 import { open } from "@tauri-apps/api/dialog";
 
 export interface UploaderProps {
   // handleFile: (res: ResData) => Promise<void>;
-  handleFile: (file: string) => void;
+  handleFile: (file: string) => Promise<void>;
 }
 
 export function Uploader(props: UploaderProps): ReactElement | null {
@@ -41,11 +39,10 @@ export function Uploader(props: UploaderProps): ReactElement | null {
 
   async function handleSelectList() {
     // if (!selectedFile) return;
-    console.log(file);
     if (!file) return;
     setIsLoading(true);
 
-    props.handleFile(file);
+    await props.handleFile(file);
 
     // const result = await sendFile(selectedFile[0])
     // await props.handleFile(result);

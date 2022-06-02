@@ -6,10 +6,18 @@
 use std::path::PathBuf;
 
 use analyze_rs::core::filter::filter;
+use serde_json::{json, Value};
 
 #[tauri::command]
-fn filter_csv(file: PathBuf, save_dir: PathBuf) {
-    filter(file, save_dir).unwrap_or_else(|e| panic!("{}", e));
+fn filter_csv(file: PathBuf, save_dir: PathBuf) -> Value {
+    let result = if let Ok(resp) = filter(file, save_dir) {
+        resp
+    } else {
+        json!({
+            "Status": "Faild"
+        })
+    };
+    result
 }
 
 fn main() {

@@ -38,7 +38,8 @@ import { ResUpload } from "../models/response_models";
 import { col_schema } from "../models/column_schema";
 
 import { invoke } from "@tauri-apps/api/tauri";
-import { createDir } from "@tauri-apps/api/fs";
+import { readTextFile } from "@tauri-apps/api/fs";
+import { join, appDir } from "@tauri-apps/api/path";
 
 const position = ["L", "T", "Scapular LT", "Scapular RT"];
 const content = {
@@ -120,37 +121,39 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
     }
   }, []);
 
-  async function initChartTest(file: string) {
-    var saveDir = "saved"
-    invoke("filter_csv", { file, saveDir }).then(() => {
-      console.log("Succedd");
-    })
-  }
-
   /* Create chart when upload api response FilterdData*/
-  async function initChart(res: ResUpload) {
-    setResUpld(res);
-    return Promise.all(
-      [
-        `${res.serverRoot}/${res.saveDir}/${res.python.FltrFile.rslt}`,
-        `${res.serverRoot}/${res.saveDir}/${res.python.FltrFile.cyGt}`,
-        `${res.serverRoot}/${res.saveDir}/${res.python.FltrFile.cyLt}`,
-        `${res.serverRoot}/${res.saveDir}/${res.python.FltrFile.cyRt}`,
-        `${res.serverRoot}/${res.saveDir}/${res.python.FltrFile.cyDb}`,
-      ].map((file) => d3.csv(file))
-    ).then(([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
-      setDataS(parseResult(csvResult, dataS));
-      cyS.gait = parseCycle(csvGaitCycle);
-      cyS.lt = parseCycle(csvLtCycle);
-      cyS.rt = parseCycle(csvRtCycle);
-      cyS.db = parseCycle(csvDbCycle);
+  async function initChartTest(file: string) {
+    var saveDir = await join(await appDir(), "data", "filter")
+    const result = await invoke("filter_csv", { file, saveDir }) as any
+
+    console.log(result);
+    setResUpld(result); // TODO: what is this for?
+
+    const result_path = await join(saveDir, result["FltrFile"]["rslt"])
+    const gt_path = await join(saveDir, result["FltrFile"]["cyGt"])
+    const lt_path = await join(saveDir, result["FltrFile"]["cyLt"])
+    const rt_path = await join(saveDir, result["FltrFile"]["cyRt"])
+    const db_path = await join(saveDir, result["FltrFile"]["cyDb"])
+
+    return Promise.all([
+      readTextFile(result_path),
+      readTextFile(gt_path),
+      readTextFile(lt_path),
+      readTextFile(rt_path),
+      readTextFile(db_path),
+    ]).then(([resultRawStr, gtRawStr, ltRawStr, rtRawStr, dbRawStr]) => {
+      setDataS(parseResult(d3.csvParse(resultRawStr), dataS));
+      cyS.gait = parseCycle(d3.csvParse(gtRawStr));
+      cyS.lt = parseCycle(d3.csvParse(ltRawStr));
+      cyS.rt = parseCycle(d3.csvParse(rtRawStr));
+      cyS.db = parseCycle(d3.csvParse(dbRawStr));
       updateApp(dataS[selPos][selOpt], cyS, [
         0,
         cyS["gait"]["step"].length - 1,
       ]);
-      trInit(res["python"]["Range"]);
+      trInit(result["Range"]);
       setSelDisable(false);
-    });
+    })
   }
 
   /* Update all chart logic */
