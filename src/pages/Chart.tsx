@@ -32,27 +32,27 @@ import {
 import { Selector } from "../components/selector/Selector";
 import { Uploader } from "../components/upload/Uploader";
 import { Table, IRow } from "../components/table/Table";
-import { postRange, saveExport, saveRange } from "../api/exporter";
+import { postRange } from "../api/exporter";
 import { findIndex } from "../utils/utils";
 import { ResUpload } from "../models/response_models";
 import { col_schema } from "../models/column_schema";
 
 import { invoke } from "@tauri-apps/api/tauri";
-import { readTextFile } from "@tauri-apps/api/fs";
-import { join, appDir } from "@tauri-apps/api/path";
+import { copyFile, readTextFile, removeFile } from "@tauri-apps/api/fs";
+import { join, appDir, homeDir } from "@tauri-apps/api/path";
+import { save, message } from "@tauri-apps/api/dialog";
 
-const position = ["L", "T", "Scapular LT", "Scapular RT"];
-const content = {
-  "Accel X": { data: [], csvX: "time", csvY: "A_X" },
-  "Accel Y": { data: [], csvX: "time", csvY: "A_Y" },
-  "Accel Z": { data: [], csvX: "time", csvY: "A_Z" },
-  "Gyro X": { data: [], csvX: "time", csvY: "Gyro_X" },
-  "Gyro Y": { data: [], csvX: "time", csvY: "Gyro_Y" },
-  "Gyro Z": { data: [], csvX: "time", csvY: "Gyro_Z" },
-};
+const position = Object.keys(col_schema);
+const content = ["Accel X", "Accel Y", "Accel Z", "Gyro X", "Gyro Y", "Gyro Z"];
 const refKey = ["line", "bmax", "bmin", "lnav", "bclt", "bcrt", "bcdb", "bcgt"];
 
-export interface ChartProps { }
+const AppDir = await appDir();
+const DataDir = "data";
+const FilterDir = "filter";
+const ExportDir = "export";
+const SwriteDir = "swrite";
+
+export interface ChartProps {}
 
 const Chart = forwardRef((_props: ChartProps, ref) => {
   const dataSInit: IDataSPos = {};
@@ -77,9 +77,10 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
   });
 
   const [selPos, setSelPos] = useState<string>(position[0]);
-  const [selOpt, setSelOpt] = useState<string>(Object.keys(content)[0]);
+  const [selOpt, setSelOpt] = useState<string>(content[0]);
   const [selDisable, setSelDisable] = useState<boolean>(true);
   const [trContent, setTrContent] = useState<IRow[]>([]);
+  const [inputFile, setInputFile] = useState<string>("");
 
   useEffect(() => {
     // setup chart manually when component mount
@@ -122,18 +123,18 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
   }, []);
 
   /* Create chart when upload api response FilterdData*/
-  async function initChartTest(file: string) {
-    var saveDir = await join(await appDir(), "data", "filter")
-    const result = await invoke("filter_csv", { file, saveDir }) as any
+  async function initChart(file: string) {
+    var saveDir = await join(AppDir, DataDir, FilterDir);
+    const result = (await invoke("filter_csv", { file, saveDir })) as any;
 
     console.log(result);
     setResUpld(result); // TODO: what is this for?
 
-    const result_path = await join(saveDir, result["FltrFile"]["rslt"])
-    const gt_path = await join(saveDir, result["FltrFile"]["cyGt"])
-    const lt_path = await join(saveDir, result["FltrFile"]["cyLt"])
-    const rt_path = await join(saveDir, result["FltrFile"]["cyRt"])
-    const db_path = await join(saveDir, result["FltrFile"]["cyDb"])
+    const result_path = await join(saveDir, result["FltrFile"]["rslt"]);
+    const gt_path = await join(saveDir, result["FltrFile"]["cyGt"]);
+    const lt_path = await join(saveDir, result["FltrFile"]["cyLt"]);
+    const rt_path = await join(saveDir, result["FltrFile"]["cyRt"]);
+    const db_path = await join(saveDir, result["FltrFile"]["cyDb"]);
 
     return Promise.all([
       readTextFile(result_path),
@@ -153,8 +154,68 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
       ]);
       trInit(result["Range"]);
       setSelDisable(false);
-    })
+    });
   }
+
+  /* Export result */
+  const exportResult = async () => {
+    let ranges = trContent.map((row) => {
+      return [row.range[0], row.range[1]];
+    });
+    if (ranges.length == 0 || !resUpld) return;
+
+    const saveDir = await join(AppDir, DataDir, ExportDir);
+    const file = await join(
+      AppDir,
+      DataDir,
+      FilterDir,
+      resUpld["FltrFile"]["rslt"]
+    );
+    const result = (await invoke("export_csv", {
+      file,
+      saveDir,
+      ranges,
+    })) as any;
+    const tmp = await join(saveDir, result["ExportFile"]);
+    const output = await join(await homeDir(), result["ExportFile"]);
+    save({ title: "Save Export File", defaultPath: output }).then(
+      async (path) => {
+        if (Array.isArray(path) || !path) {
+          return;
+        }
+        await copyFile(tmp, path);
+        await removeFile(tmp);
+        await message("Done!");
+      }
+    );
+  };
+
+  const saveSelection = async () => {
+    let rangesValue = trContent
+      .map((row) => {
+        return row.range.map((i) => cyS.gait.step[i][0]).join("-");
+      })
+      .join(" ");
+    if (!resUpld) return;
+    const saveDir = await join(AppDir, DataDir, SwriteDir);
+    const file = inputFile;
+    const result = (await invoke("swrite_csv", {
+      file,
+      saveDir,
+      rangesValue,
+    })) as any;
+    const tmp = await join(saveDir, result["CleanFile"]);
+    const output = await join(await homeDir(), result["CleanFile"]);
+    save({ title: "Save Swrite File", defaultPath: output }).then(
+      async (path) => {
+        if (Array.isArray(path) || !path) {
+          return;
+        }
+        await copyFile(tmp, path);
+        await removeFile(tmp);
+      }
+    );
+  };
 
   /* Update all chart logic */
   const updateLogic = (d: IData[], c: ICycleList) => {
@@ -193,7 +254,8 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
     setSelPos(e.target.value);
   };
 
-  const trInit = (ranges: any) => {
+  const trInit = (ranges: any[]) => {
+    // TODO: ranges strange type OAO
     let trRows: IRow[] = [];
     for (let range of ranges) {
       let cycle = {
@@ -202,7 +264,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
         rt: [0, 0] as [number, number],
         db: [0, 0] as [number, number],
       };
-      let selValue = Object.values(range) as number[];
+      let selValue = (Object.values(range) as number[]).sort((a, b) => a - b);
       ["gait", "lt", "rt", "db"].forEach((k) => {
         (cycle as any)[k] = selValue.map((x) =>
           findIndex(
@@ -270,25 +332,6 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
     updators.lnav(updateLogic, dataS[selPos][selOpt].data, cyS, range);
   };
 
-  /* Export result */
-  const exportResult = async () => {
-    let ranges = trContent.map((row) => {
-      return { Start: row.range[0], End: row.range[1] };
-    });
-    if (ranges.length == 0 || !resUpld) return;
-    await saveExport(resUpld, ranges);
-  };
-
-  const saveSelection = async () => {
-    let ranges_value = trContent
-      .map((row) => {
-        return row.range.map((i) => cyS.gait.step[i][0]).join("-");
-      })
-      .join(" ");
-    if (!resUpld) return;
-    await saveRange(resUpld.uploadFile, ranges_value);
-  };
-
   /**
    * HACK: pass function upward to parent
    */
@@ -309,7 +352,11 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
   return (
     <div className="normalBox w-full">
       <div className="flex justify-center m-2">
-        <Uploader handleFile={initChartTest} />
+        <Uploader
+          handleFile={initChart}
+          file={inputFile}
+          setFile={setInputFile}
+        />
       </div>
 
       <div
@@ -345,7 +392,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
         </div>
         <div className="col-span-2 flex justify-center md:col-span-3 lg:col-span-2">
           <Selector
-            options={Object.keys(content)}
+            options={content}
             selectedOption={selOpt}
             onChange={selOptChange}
             disable={selDisable}
@@ -379,8 +426,9 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
         <div className="flex justify-end col-span-2 md:col-span-3 lg:col-span-6">
           <a
             // href="#save-modal"
-            className={`btn btn-sm w-full lg:w-fit ${selDisable ? "btn-disabled" : ""
-              }`}
+            className={`btn btn-sm w-full lg:w-fit ${
+              selDisable ? "btn-disabled" : ""
+            }`}
             onClick={() => saveSelection()}
           >
             Save
