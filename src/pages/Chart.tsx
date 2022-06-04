@@ -175,7 +175,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
       file,
       saveDir,
       ranges,
-    })) as any;
+    }).catch() as any); // TODO: ???
     const tmp = await join(saveDir, result["ExportFile"]);
     const output = await join(await homeDir(), result["ExportFile"]);
     save({ title: "Save Export File", defaultPath: output }).then(

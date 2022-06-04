@@ -29,14 +29,15 @@ export function Uploader(props: {
   };
 
   async function handleSelectList() {
-    // if (!selectedFile) return;
     if (!props.file) return;
+    console.log("Start Spinning");
+
     setIsLoading(true);
 
+    // await new Promise(r => setTimeout(r, 1));
     await props.handleFile(props.file);
 
-    // const result = await sendFile(selectedFile[0])
-    // await props.handleFile(result);
+    console.log("End Spinning");
     setIsLoading(false);
   }
 
