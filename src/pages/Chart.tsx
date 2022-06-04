@@ -46,7 +46,7 @@ const position = Object.keys(col_schema);
 const content = ["Accel X", "Accel Y", "Accel Z", "Gyro X", "Gyro Y", "Gyro Z"];
 const refKey = ["line", "bmax", "bmin", "lnav", "bclt", "bcrt", "bcdb", "bcgt"];
 
-const AppDir = await appDir();
+const AppDir = appDir();
 const DataDir = "data";
 const FilterDir = "filter";
 const ExportDir = "export";
@@ -124,7 +124,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
 
   /* Create chart when upload api response FilterdData*/
   async function initChart(file: string) {
-    var saveDir = await join(AppDir, DataDir, FilterDir);
+    var saveDir = await join(await AppDir, DataDir, FilterDir);
     const result = (await invoke("filter_csv", { file, saveDir })) as any;
 
     console.log(result);
@@ -164,9 +164,9 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
     });
     if (ranges.length == 0 || !resUpld) return;
 
-    const saveDir = await join(AppDir, DataDir, ExportDir);
+    const saveDir = await join(await AppDir, DataDir, ExportDir);
     const file = await join(
-      AppDir,
+      await AppDir,
       DataDir,
       FilterDir,
       resUpld["FltrFile"]["rslt"]
@@ -197,7 +197,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
       })
       .join(" ");
     if (!resUpld) return;
-    const saveDir = await join(AppDir, DataDir, SwriteDir);
+    const saveDir = await join(await AppDir, DataDir, SwriteDir);
     const file = inputFile;
     const result = (await invoke("swrite_csv", {
       file,
