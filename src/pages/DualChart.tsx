@@ -23,12 +23,12 @@ const DualChart = () => {
   };
 
   return (
-    <div>
-      <div className="m-4 flex justify-center space-x-2">
+    <div className="flex-grow ml-16">
+      <div className="grid grid-cols-2 m-4 space-x-2">
         <Chart ref={chartRef1} />
         <Chart ref={chartRef2} />
       </div>
-      <div className="m-4 flex justify-end">
+      <div className="fixed bottom-0 right-0 left-16 m-4 flex justify-center">
         <button onClick={() => exportAllClick()}>Export All</button>
       </div>
     </div>

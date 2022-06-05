@@ -350,8 +350,8 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
   }));
 
   return (
-    <div className="normalBox w-full">
-      <div className="flex justify-center m-2">
+    <div className="normalBox">
+      <div className="flex justify-center m-2 max-w-full">
         <Uploader
           handleFile={initChart}
           file={inputFile}

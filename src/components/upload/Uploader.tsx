@@ -51,12 +51,10 @@ export function Uploader(props: {
           hover:bg-white hover:border-blue-600 hover:outline-none shadow-md"
         title=" "
         onClick={openDialog}
-        // onChange={selectOnChange}
-        // multiple
       >
         {props.file ? "file: " + props.file : "Open File"}
       </button>
-      <div className="col-span-1 flex items-center justify-center">
+      <div className="col-span-1">
         <Button
           title={"Upload"}
           onClick={handleSelectList}

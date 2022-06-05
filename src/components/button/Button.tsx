@@ -16,7 +16,7 @@ export function Button(props: ButtonProps): ReactElement | null {
       onClick={props.onClick}
       disabled={props.disabled ? true: false}
     >
-      {props.title}
+      {props.isLoading ? "ing" : props.title}
     </button>
   );
 }
