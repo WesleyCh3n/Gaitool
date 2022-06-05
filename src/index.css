@@ -30,7 +30,7 @@
   }
   .normalBox {
     /*  */
-    @apply border rounded-md border-solid border-gray-300 shadow-md;
+    @apply rounded-md shadow-lg dark:bg-gray-700;
   }
   .smallBtn {
     /*  */

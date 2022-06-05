@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { saveConcat } from "../api/concater";
-import Chart from "./Chart"
+import Chart from "./Chart";
 
 const DualChart = () => {
   const chartRef1 = useRef<any>(null);
@@ -23,12 +23,15 @@ const DualChart = () => {
   };
 
   return (
-    <div className="flex-grow ml-16">
+    <div className="flex-grow ml-16 h-screen dark:bg-gray-800">
       <div className="grid grid-cols-2 m-4 space-x-2">
         <Chart ref={chartRef1} />
         <Chart ref={chartRef2} />
       </div>
-      <div className="fixed bottom-0 right-0 left-16 m-4 flex justify-center">
+      <div
+        className="flex flex-row items-end justify-evenly
+        w-full m-0"
+      >
         <button onClick={() => exportAllClick()}>Export All</button>
       </div>
     </div>
@@ -36,4 +39,3 @@ const DualChart = () => {
 };
 
 export default DualChart;
-
