@@ -92,34 +92,6 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
     updators.bcrt = createBoxChart(refs.bcrt);
     updators.bcdb = createBoxChart(refs.bcdb);
     updators.lnav = createGaitNav(refs.lnav);
-
-    // DEBUG:
-    if (0) {
-      const csvs = [
-        "./result.csv",
-        "./cygt.csv",
-        "./cylt.csv",
-        "./cyrt.csv",
-        "./cydb.csv",
-      ];
-      Promise.all(csvs.map((file) => d3.csv(file))).then(
-        ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
-          setDataS(parseResult(csvResult, dataS));
-          cyS.gait = parseCycle(csvGaitCycle);
-          cyS.lt = parseCycle(csvLtCycle);
-          cyS.rt = parseCycle(csvRtCycle);
-          cyS.db = parseCycle(csvDbCycle);
-          updateApp(dataS[selPos][selOpt], cyS);
-          trInit([
-            { Start: 3.99, End: 8.545 },
-            { Start: 10.21, End: 14.645 },
-            { Start: 20.905, End: 25.29 },
-            { Start: 28.525, End: 32.825 },
-          ]);
-          setSelDisable(false);
-        }
-      );
-    }
   }, []);
 
   /* Create chart when upload api response FilterdData*/
@@ -175,7 +147,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
       file,
       saveDir,
       ranges,
-    }).catch() as any); // TODO: ???
+    }).catch()) as any; // TODO: ???
     const tmp = await join(saveDir, result["ExportFile"]);
     const output = await join(await homeDir(), result["ExportFile"]);
     save({ title: "Save Export File", defaultPath: output }).then(
@@ -350,8 +322,8 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
   }));
 
   return (
-    <div className="normalBox">
-      <div className="flex justify-center m-2 max-w-full">
+    <div className="">
+      <div className="flex justify-center ">
         <Uploader
           handleFile={initChart}
           file={inputFile}
@@ -361,7 +333,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
 
       <div
         className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6
-        gap-1 space-y-1 m-2"
+        gap-1 m-2"
       >
         {[
           { title: "Max", ref: refs.bmax },
@@ -371,18 +343,19 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
           { title: "RT support", ref: refs.bcrt },
           { title: "DB support", ref: refs.bcdb },
         ].map((d) => (
-          <div className="col-span-1 lg:col-span-1 normalBox" key={d.title}>
+          <div className="col-span-1 lg:col-span-1 chart-box" key={d.title}>
             <h1>{d.title}</h1>
             <svg ref={d.ref}></svg>
           </div>
         ))}
-        <div className="normalBox col-span-2 md:col-span-3 lg:col-span-6">
+        <div className="chart-box col-span-2 md:col-span-3 lg:col-span-6">
           <h1>Accelration</h1>
           <svg ref={refs.line}></svg>
           <svg className="mt-4" ref={refs.lnav}></svg>
         </div>
-
-        <div className="col-span-2 flex justify-center md:col-span-3 lg:col-span-2">
+      </div>
+      <div className="grid grid-cols-6 gap-1 m-2">
+        <div className="col-span-2">
           <Selector
             options={position}
             selectedOption={selPos}
@@ -390,7 +363,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
             disable={selDisable}
           />
         </div>
-        <div className="col-span-2 flex justify-center md:col-span-3 lg:col-span-2">
+        <div className="col-span-2">
           <Selector
             options={content}
             selectedOption={selOpt}
@@ -398,24 +371,23 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
             disable={selDisable}
           />
         </div>
-        <div className="col-span-2 md:col-span-3 lg:col-span-1">
-          <button
-            className={`btn-outline w-full ${selDisable ? "btn-disabled" : ""}`}
-            onClick={addTrNode}
-          >
-            Select
-          </button>
-        </div>
-        <div className="col-span-2 md:col-span-3 lg:col-span-1">
-          <button
-            className={`btn-outline w-full ${selDisable ? "btn-disabled" : ""}`}
-            onClick={() => exportResult()}
-          >
-            Export
-          </button>
-        </div>
-
-        <div className="col-span-2 overflow-x-auto no-scrollbar md:col-span-3 lg:col-span-6">
+        <button
+          className={`col-span-1 btn-outline w-full ${
+            selDisable ? "btn-disabled" : ""
+          }`}
+          onClick={addTrNode}
+        >
+          Select
+        </button>
+        <button
+          className={`col-span-1 btn-outline w-full ${
+            selDisable ? "btn-disabled" : ""
+          }`}
+          onClick={saveSelection}
+        >
+          Save
+        </button>
+        <div className="overflow-x-auto no-scrollbar col-span-6 shadow-lg">
           <Table
             content={trContent}
             removeNode={removeTrNode}
@@ -423,28 +395,15 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
             updateView={showSel}
           />
         </div>
-        <div className="flex justify-end col-span-2 md:col-span-3 lg:col-span-6">
-          <a
-            // href="#save-modal"
-            className={`btn btn-sm w-full lg:w-fit ${
-              selDisable ? "btn-disabled" : ""
-            }`}
-            onClick={() => saveSelection()}
-          >
-            Save
-          </a>
-        </div>
       </div>
 
-      <div id="save-modal" className="modal">
-        <div className="modal-box">
-          <p>Selection Saved</p>
-          <div className="modal-action">
-            <a href="#" className="btn btn-sm">
-              OK
-            </a>
-          </div>
-        </div>
+      <div className="flex flex-row items-end justify-evenly gap-1 m-2 w-full">
+        <button
+          className={`chart-btn ${selDisable ? "btn-disabled" : ""}`}
+          onClick={exportResult}
+        >
+          Export
+        </button>
       </div>
     </div>
   );

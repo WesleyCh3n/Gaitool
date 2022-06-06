@@ -16,7 +16,7 @@ export function createBoxChart(ref: RefObject<SVGSVGElement>) {
     .append("rect")
     .attr("class", "rect")
     .attr("stroke", "black")
-    .style("fill", "#69b3a2");
+    // .style("fill", "steelblue");
 
   var gMedian = svg.append("g").attr("class", "g__median");
   gMedian.append("line").attr("class", "line__median");
@@ -55,7 +55,7 @@ export function createBoxChart(ref: RefObject<SVGSVGElement>) {
       .transition()
       .call(d3.axisLeft(yScale))
       .selectAll(".tick text")
-      .attr("font-size", "18px");
+      .attr("font-size", "20px");
 
     // a few features for the box
     var boxCenter = 80;
@@ -68,7 +68,7 @@ export function createBoxChart(ref: RefObject<SVGSVGElement>) {
       .attr("x2", boxCenter)
       .attr("y1", yScale(result.min))
       .attr("y2", yScale(result.max))
-      .attr("stroke", "black")
+      .attr("stroke", "steelblue")
       .transition();
 
     // Show the box

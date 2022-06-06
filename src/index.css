@@ -4,7 +4,6 @@
 
 @layer components {
   .baseSize {
-    /*  */
     @apply text-sm
   }
   .sidebar-icon {
@@ -14,7 +13,11 @@
     text-green-500 hover:text-white
     hover:rounded-xl rounded-3xl
     transition-all duration-150 ease-linear
-    cursor-pointer shadow-lg last:mt-auto;
+    cursor-pointer shadow-lg
+    active:translate-y-[2px];
+  }
+  .sidebar-icon:nth-last-child(2) {
+    @apply mt-auto
   }
   .sidebar-tooltip {
     @apply absolute w-auto p-2 m-2 min-w-max left-14 rounded-md shadow-md
@@ -22,20 +25,23 @@
     text-xs font-bold
     transition-all duration-100 scale-0 origin-left;
   }
-  .selectBox {
-    @apply overflow-y-auto appearance-none block px-3 py-1.5
-    text-sm font-normal text-gray-500 bg-gray-200 bg-clip-padding bg-no-repeat
-    border border-solid border-gray-300 rounded transition ease-in-out
-    hover:text-gray-700 hover:bg-white hover:border-blue-600 hover:outline-none;
-  }
   .normalBox {
     /*  */
     @apply rounded-md shadow-lg dark:bg-gray-700;
   }
-  .smallBtn {
-    /*  */
-    @apply btn btn-sm whitespace-nowrap btn-outline
+  .chart-box {
+    @apply rounded-md shadow-lg dark:bg-gray-700;
   }
+  .chart-btn {
+    @apply lg:col-span-5
+          text-gray-800 dark:text-gray-400 font-bold normal-case
+          bg-gray-200 dark:bg-gray-900 shadow-md border-none
+          rounded-lg transition-all ease-in-out hover:text-white
+          hover:bg-gray-600 dark:hover:bg-gray-600
+  }
+    .rect {
+      @apply fill-gray-900
+    }
 }
 
 @layer base {

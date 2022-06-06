@@ -1,11 +1,10 @@
 import type { ReactElement } from "react";
 import { useState } from "react";
-
-import { Button } from "../button/Button";
 import { open } from "@tauri-apps/api/dialog";
+import { AiOutlineUpload } from "react-icons/ai";
 
 export function Uploader(props: {
-  file: string,
+  file: string;
   setFile: (file: string) => void;
   handleFile: (file: string) => Promise<void>;
 }): ReactElement | null {
@@ -44,22 +43,24 @@ export function Uploader(props: {
   return (
     <div className="grid lg:grid-cols-6 gap-4 content-center">
       <button
-        className="lg:col-span-5 baseSize
-          form-control block p-1 font-normal normal-case
-          text-gray-700 bg-white bg-clip-padding border border-solid
-          border-gray-300 rounded-lg transition ease-in-out hover:text-gray-700
-          hover:bg-white hover:border-blue-600 hover:outline-none shadow-md"
-        title=" "
+        className="chart-btn"
         onClick={openDialog}
       >
         {props.file ? "file: " + props.file : "Open File"}
       </button>
       <div className="col-span-1">
-        <Button
-          title={"Upload"}
+        <button
+          className={`
+            text-gray-800 dark:text-gray-400
+            border-none bg-transparent
+            transition-all ease-in-out
+            hover:text-white hover:bg-gray-600
+            dark:hover:bg-gray-600
+            ${isLoading ? "loading" : ""}`}
           onClick={handleSelectList}
-          isLoading={isLoading}
-        />
+        >
+          {isLoading ? "" : <AiOutlineUpload size={25} strokeWidth={5} />}
+        </button>
       </div>
     </div>
   );
