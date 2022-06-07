@@ -14,9 +14,7 @@ export function createBoxChart(ref: RefObject<SVGSVGElement>) {
 
   svg
     .append("rect")
-    .attr("class", "rect")
-    .attr("stroke", "black")
-    // .style("fill", "steelblue");
+    .attr("class", "rect");
 
   var gMedian = svg.append("g").attr("class", "g__median");
   gMedian.append("line").attr("class", "line__median");
@@ -34,7 +32,7 @@ export function createBoxChart(ref: RefObject<SVGSVGElement>) {
   gOutlier.append("text").attr("class", "text__min");
   gOutlier.append("text").attr("class", "text__max");
 
-  svg.append("g").attr("class", "line_horz");
+  svg.append("g").attr("class", "line__horz");
 
   svg.append("g").attr("class", "text__left");
   svg.append("g").attr("class", "text__right");
@@ -68,7 +66,6 @@ export function createBoxChart(ref: RefObject<SVGSVGElement>) {
       .attr("x2", boxCenter)
       .attr("y1", yScale(result.min))
       .attr("y2", yScale(result.max))
-      .attr("stroke", "steelblue")
       .transition();
 
     // Show the box
@@ -81,11 +78,11 @@ export function createBoxChart(ref: RefObject<SVGSVGElement>) {
       .attr("width", boxWidth);
 
     svg
-      .select(".line_horz")
+      .select(".line__horz")
       .selectAll("line")
       .data([result.min, result.max, result.median])
       .join(
-        (enter) => enter.append("line").attr("stroke", "black"),
+        (enter) => enter.append("line"),
         (update) => update.transition()
       )
       .attr("x1", boxCenter - boxWidth / 2)
@@ -101,7 +98,6 @@ export function createBoxChart(ref: RefObject<SVGSVGElement>) {
         (enter) =>
           enter
             .append("text")
-            .attr("fill", "#000")
             .attr("y", (d) => yScale(d) + 3)
             .text((d) => `${d.toFixed(2)}`),
         (update) =>
@@ -120,7 +116,6 @@ export function createBoxChart(ref: RefObject<SVGSVGElement>) {
         (enter) =>
           enter
             .append("text")
-            .attr("fill", "#000")
             .attr("y", (d) => yScale(d))
             .text((d) => `${d.toFixed(2)}`),
         (update) =>

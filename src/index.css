@@ -39,9 +39,21 @@
           rounded-lg transition-all ease-in-out hover:text-white
           hover:bg-gray-600 dark:hover:bg-gray-600
   }
-    .rect {
-      @apply fill-gray-900
-    }
+  .rect {
+    @apply fill-gray-500 dark:stroke-gray-300 stroke-gray-900
+  }
+  .line__horz {
+    @apply dark:stroke-gray-300 stroke-gray-900
+  }
+  .line__vert {
+    @apply dark:stroke-gray-300 stroke-gray-900
+  }
+  .text__right {
+    @apply dark:fill-gray-300 fill-gray-900
+  }
+  .text__left {
+    @apply dark:fill-gray-300 fill-gray-900
+  }
 }
 
 @layer base {

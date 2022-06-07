@@ -322,7 +322,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
   }));
 
   return (
-    <div className="">
+    <div className="h-1/5">
       <div className="flex justify-center ">
         <Uploader
           handleFile={initChart}
@@ -387,7 +387,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
         >
           Save
         </button>
-        <div className="overflow-x-auto no-scrollbar col-span-6 shadow-lg">
+        <div className="col-span-6 overflow-x-auto no-scrollbar shadow-lg">
           <Table
             content={trContent}
             removeNode={removeTrNode}
@@ -395,11 +395,10 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
             updateView={showSel}
           />
         </div>
-      </div>
-
-      <div className="flex flex-row items-end justify-evenly gap-1 m-2 w-full">
         <button
-          className={`chart-btn ${selDisable ? "btn-disabled" : ""}`}
+          className={`col-start-3 col-span-2 w-full chart-btn ${
+            selDisable ? "btn-disabled" : ""
+          }`}
           onClick={exportResult}
         >
           Export

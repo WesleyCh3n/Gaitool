@@ -21,7 +21,7 @@ export interface TableProps {
 
 export function Table(props: TableProps): ReactElement | null {
   return (
-    <table className="table w-full table-compact table-auto">
+    <table className="table table-compact w-full">
       <thead>
         <tr>
           <th>Range (s)</th>
@@ -52,7 +52,7 @@ export function Table(props: TableProps): ReactElement | null {
           </th>
         </tr>
       </thead>
-      <tbody>
+      <tbody className="">
         {props.content.map((row) => {
           return (
             <tr key={row.id}>
