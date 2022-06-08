@@ -63,6 +63,7 @@ dependencies = [
 [[package]]
 name = "analyze_rs"
 version = "1.0.0"
+source = "git+https://github.com/WesleyCh3n/analyze.rs?branch=tauri#b9babc3756987bd5e32ee7af0517411fb7c3675b"
 dependencies = [
  "clap",
  "indicatif",
