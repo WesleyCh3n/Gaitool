@@ -10,32 +10,11 @@ export function createBoxChart(ref: RefObject<SVGSVGElement>) {
     .append("g") // workground group
     .attr("transform", `translate(${layout.margin.l} ,${layout.margin.t})`);
 
-  svg.append("line").attr("class", "line__vert").attr("stroke", "black");
-
-  svg
-    .append("rect")
-    .attr("class", "rect");
-
-  var gMedian = svg.append("g").attr("class", "g__median");
-  gMedian.append("line").attr("class", "line__median");
-  gMedian.append("text").attr("class", "text__median");
-
-  var gFence = svg.append("g").attr("class", "g__lower");
-  gFence.append("line").attr("class", "line_lower");
-  gFence.append("text").attr("class", "text_lower");
-  gFence.append("line").attr("class", "line__upper");
-  gFence.append("text").attr("class", "text__upper");
-
-  var gOutlier = svg.append("g").attr("class", "g__outlier");
-  gOutlier.append("circle").attr("class", "circle__min");
-  gOutlier.append("circle").attr("class", "circle__max");
-  gOutlier.append("text").attr("class", "text__min");
-  gOutlier.append("text").attr("class", "text__max");
-
-  svg.append("g").attr("class", "line__horz");
-
-  svg.append("g").attr("class", "text__left");
-  svg.append("g").attr("class", "text__right");
+  svg.append("rect").attr("class", "rect");
+  svg.append("g").attr("class", "boxplot-line-vert");
+  svg.append("g").attr("class", "boxplot-line-horz");
+  svg.append("g").attr("class", "boxplot-text-left");
+  svg.append("g").attr("class", "boxplot-text-right");
 
   function update(data: number[]) {
     const result = IQR(data);
@@ -51,22 +30,30 @@ export function createBoxChart(ref: RefObject<SVGSVGElement>) {
     // axis text
     svg
       .transition()
-      .call(d3.axisLeft(yScale))
+      .call(d3.axisLeft(yScale).ticks(5))
       .selectAll(".tick text")
-      .attr("font-size", "20px");
+      .attr("class", "boxplot-tick-text");
 
     // a few features for the box
-    var boxCenter = 80;
+    var boxCenter = 85;
     var boxWidth = 25;
 
     // Show the main vertical line
     svg
-      .select(".line__vert")
+      .select(".boxplot-line-vert")
+      .selectAll("line")
+      .data([result])
+      .join(
+        (enter) => enter.append("line"),
+        (update) =>
+          update
+            .attr("y1", (d) => yScale(d.min))
+            .attr("y2", (d) => yScale(d.max))
+            .transition(),
+        (exit) => exit.remove()
+      )
       .attr("x1", boxCenter)
-      .attr("x2", boxCenter)
-      .attr("y1", yScale(result.min))
-      .attr("y2", yScale(result.max))
-      .transition();
+      .attr("x2", boxCenter);
 
     // Show the box
     svg
@@ -78,20 +65,23 @@ export function createBoxChart(ref: RefObject<SVGSVGElement>) {
       .attr("width", boxWidth);
 
     svg
-      .select(".line__horz")
+      .select(".boxplot-line-horz")
       .selectAll("line")
       .data([result.min, result.max, result.median])
       .join(
         (enter) => enter.append("line"),
-        (update) => update.transition()
+        (update) =>
+          update
+            .attr("y1", (d) => yScale(d))
+            .attr("y2", (d) => yScale(d))
+            .transition(),
+        (exit) => exit.remove()
       )
       .attr("x1", boxCenter - boxWidth / 2)
-      .attr("x2", boxCenter + boxWidth / 2)
-      .attr("y1", (d) => yScale(d))
-      .attr("y2", (d) => yScale(d));
+      .attr("x2", boxCenter + boxWidth / 2);
 
     svg
-      .select(".text__right")
+      .select(".boxplot-text-right")
       .selectAll("text")
       .data([result.min, result.max, result.median])
       .join(
@@ -101,15 +91,18 @@ export function createBoxChart(ref: RefObject<SVGSVGElement>) {
             .attr("y", (d) => yScale(d) + 3)
             .text((d) => `${d.toFixed(2)}`),
         (update) =>
-          update.attr("y", (d) => yScale(d)).text((d) => `${d.toFixed(2)}`)
+          update
+            .attr("y", (d) => yScale(d) + 3)
+            .text((d) => `${d.toFixed(2)}`)
+            .transition(),
+        (exit) => exit.remove()
       )
       .attr("x", boxCenter + boxWidth * 0.7)
-      .attr("text-anchor", "start")
-      .attr("font-size", "22px");
+      .attr("text-anchor", "start");
 
     // the left texts
     svg
-      .select(".text__left")
+      .select(".boxplot-text-left")
       .selectAll("text")
       .data([result.q1, result.q3])
       .join(
@@ -119,10 +112,13 @@ export function createBoxChart(ref: RefObject<SVGSVGElement>) {
             .attr("y", (d) => yScale(d))
             .text((d) => `${d.toFixed(2)}`),
         (update) =>
-          update.attr("y", (d) => yScale(d)).text((d) => `${d.toFixed(2)}`)
+          update
+            .attr("y", (d) => yScale(d))
+            .text((d) => `${d.toFixed(2)}`)
+            .transition(),
+        (exit) => exit.remove()
       )
-      .attr("x", boxCenter - boxWidth * 0.7)
-      .attr("font-size", "22px");
+      .attr("x", boxCenter - boxWidth * 0.7);
   }
   return update;
 }

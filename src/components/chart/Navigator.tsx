@@ -14,7 +14,7 @@ export function createGaitNav(ref: RefObject<SVGSVGElement>) {
   var xScaleNav = d3.scaleLinear().range([0, layout.getWidth()]);
   var yScale = d3.scaleLinear().range([layout.getNavTickHeight(), 0]);
 
-  const xAxisG = navSvg
+  const xAxis = navSvg
     .append("g") // region x axis
     .attr("class", "axis__x")
     .attr("transform", `translate(0, ${layout.getNavTickHeight()})`);
@@ -99,7 +99,7 @@ export function createGaitNav(ref: RefObject<SVGSVGElement>) {
       .axisBottom(xScaleNav)
       .tickSize(-layout.getNavTickHeight());
 
-    xAxisG
+    xAxis
       .call(
         xAxisGen
           .ticks(cycle["gait"].step.length, ",.2f")

@@ -39,20 +39,29 @@
           rounded-lg transition-all ease-in-out hover:text-white
           hover:bg-gray-600 dark:hover:bg-gray-600
   }
+  .lineplot-line {
+    @apply fill-transparent stroke-blue-400
+  }
+  .lineplot-hover-line {
+    @apply stroke-gray-900 dark:stroke-gray-200
+  }
   .rect {
     @apply fill-gray-500 dark:stroke-gray-300 stroke-gray-900
   }
-  .line__horz {
+  .boxplot-line-vert {
     @apply dark:stroke-gray-300 stroke-gray-900
   }
-  .line__vert {
+  .boxplot-line-horz {
     @apply dark:stroke-gray-300 stroke-gray-900
   }
-  .text__right {
-    @apply dark:fill-gray-300 fill-gray-900
+  .boxplot-text-left {
+    @apply dark:fill-gray-300 fill-gray-900 text-[22px]
   }
-  .text__left {
-    @apply dark:fill-gray-300 fill-gray-900
+  .boxplot-text-right {
+    @apply dark:fill-gray-300 fill-gray-900 text-[22px]
+  }
+  .boxplot-tick-text {
+    @apply text-[20px]
   }
 }
 
@@ -69,11 +78,28 @@
 
 @layer utilities {
     /* Chrome, Safari and Opera */
-    .no-scrollbar::-webkit-scrollbar {
+    .custom-scrollbar::-webkit-scrollbar {
+      -webkit-appearance: none;
+      background-color: none;
+    }
+    .custom-scrollbar::-webkit-scrollbar:vertical {
+      width: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar:horizontal {
+      width: 5px;
+      height: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      border-radius: 10px;
+      background-color: #999;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background-color: #666;
+    }
+    .custom-scrollbar::::-webkit-resizer {
       display: none;
     }
-
-    .no-scrollbar {
+    .custom-scrollbar {
       -ms-overflow-style: none; /* IE and Edge */
       scrollbar-width: none; /* Firefox */
     }
