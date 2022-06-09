@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import { ICycleList } from "../chart";
+import { ICyData } from "../chart";
 import { IoIosCloseCircleOutline } from "react-icons/io";
 
 export interface IRow {
@@ -9,7 +9,7 @@ export interface IRow {
   lt: number | string;
   rt: number | string;
   db: number | string;
-  cycle: ICycleList;
+  cycle: ICyData;
   id: string;
 }
 

@@ -5,23 +5,17 @@ import {
   useState,
   useImperativeHandle,
 } from "react";
-import type { ChangeEvent, RefObject } from "react";
+import type { ChangeEvent, RefObject, ForwardedRef } from "react";
 import * as d3 from "d3";
 
 import {
-  // Interface
-  ICsvData,
-  ICycleList,
-  IData,
-  IPosition,
-  // Create chart
   createLineChart,
   createGaitNav,
   createBoxChart,
-  // Utility
   parseResult,
   parseCycle,
 } from "../components/chart";
+import type { ICsvData, ICyData, IData, IPosition } from "../components/chart";
 
 import {
   cycleMax,
@@ -33,7 +27,7 @@ import { Selector } from "../components/selector/Selector";
 import { Uploader } from "../components/upload/Uploader";
 import { Table, IRow } from "../components/table/Table";
 import { findIndex } from "../utils/utils";
-import dataInit, {location, sensor} from "../models/dataInit";
+import dataInit, { location, sensor } from "../models/dataInit";
 
 import { invoke } from "@tauri-apps/api/tauri";
 import { copyFile, readTextFile, removeFile } from "@tauri-apps/api/fs";
@@ -60,7 +54,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
   });
 
   const [dataS, setDataS] = useState<IData>(dataInit);
-  const [cyS, setCyS] = useState<ICycleList>({
+  const [cyS, setCyS] = useState<ICyData>({
     gait: { step: [[]], sel: [0, 0] },
     lt: { step: [[]], sel: [0, 0] },
     rt: { step: [[]], sel: [0, 0] },
@@ -178,7 +172,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
   };
 
   /* Update all chart logic */
-  const updateLogic = (d: IPosition[], c: ICycleList) => {
+  const updateLogic = (d: IPosition[], c: ICyData) => {
     // preprocess/filter data
     let lineD = selLineRange(d, c.gait);
     let lineRange = d3.extent(lineD, (d) => d.x).map((x) => x ?? 0);
@@ -196,7 +190,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
   /* Update App include navigator */
   const updateApp = (
     schema: ICsvData,
-    c: ICycleList,
+    c: ICyData,
     sel_range?: [number, number]
   ) => {
     updateLogic(schema.data, c);
@@ -305,7 +299,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
       });
       if (ranges.length == 0 || !inputFile) return;
       // let res = await postRange(resUpld.python.FltrFile, ranges);
-      var res
+      var res;
       return res;
     },
   }));
@@ -320,29 +314,19 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
         />
       </div>
 
-      <div
-        className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6
-        gap-1 m-2"
-      >
-        {[
-          { title: "Max", ref: refs.bmax },
-          { title: "Min", ref: refs.bmin },
-          { title: "GAIT", ref: refs.bcgt },
-          { title: "LT support", ref: refs.bclt },
-          { title: "RT support", ref: refs.bcrt },
-          { title: "DB support", ref: refs.bcdb },
-        ].map((d) => (
-          <div className="col-span-1 lg:col-span-1 chart-box" key={d.title}>
-            <h1>{d.title}</h1>
-            <svg ref={d.ref}></svg>
-          </div>
-        ))}
-        <div className="chart-box col-span-2 md:col-span-3 lg:col-span-6">
-          <h1>Accelration</h1>
+      <div className="grid grid-cols-6 gap-1 m-2" >
+        <Plot title="Max" ref={refs.bmax} />
+        <Plot title="Min" ref={refs.bmin} />
+        <Plot title="Gait" ref={refs.bcgt} />
+        <Plot title="LT Sup" ref={refs.bclt} />
+        <Plot title="RT Sup" ref={refs.bcrt} />
+        <Plot title="DB Sup" ref={refs.bcdb} />
+        <div className="chart-box col-span-6">
           <svg ref={refs.line}></svg>
-          <svg className="mt-4" ref={refs.lnav}></svg>
+          <svg ref={refs.lnav}></svg>
         </div>
       </div>
+
       <div className="grid grid-cols-6 gap-1 m-2">
         <div className="col-span-2">
           <Selector
@@ -376,8 +360,10 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
         >
           Save
         </button>
-        <div className="col-span-6 h-[15.5vh] shadow-lg rounded-lg
-          overflow-y-scroll overscroll-contain custom-scrollbar">
+        <div
+          className="col-span-6 h-[18vh] shadow-lg rounded-lg
+          overflow-y-scroll overscroll-contain custom-scrollbar"
+        >
           <Table
             content={trContent}
             removeNode={removeTrNode}
@@ -397,5 +383,16 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
     </div>
   );
 });
+
+const Plot = forwardRef(
+  (props: { title: string }, ref: ForwardedRef<SVGSVGElement>) => {
+    return (
+      <div className="chart-box" key={props.title}>
+        <h1>{props.title}</h1>
+        <svg ref={ref}></svg>
+      </div>
+    );
+  }
+);
 
 export default Chart;

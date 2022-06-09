@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 import { RefObject } from "react";
 import { IPosition, layout } from "./";
-import { ICycleList } from "./Chart";
+import { ICyData } from "./Chart";
 
 export function createGaitNav(ref: RefObject<SVGSVGElement>) {
   const navSvg = d3
@@ -35,9 +35,9 @@ export function createGaitNav(ref: RefObject<SVGSVGElement>) {
     .attr("class", "brush");
 
   function update(
-    updateLogic: (d: IPosition[], c: ICycleList) => void,
+    updateLogic: (d: IPosition[], c: ICyData) => void,
     data: IPosition[],
-    cycle: ICycleList,
+    cycle: ICyData,
     move?: [number, number]
   ) {
     const updateView = (range: [number, number]) => {

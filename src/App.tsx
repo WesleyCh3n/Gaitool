@@ -1,11 +1,12 @@
-import { appWindow } from "@tauri-apps/api/window";
-import DualChart from "./pages/DualChart";
-import { SideBar } from "./components/SideBar";
 import { Route, Routes, HashRouter } from "react-router-dom";
+import { appWindow } from "@tauri-apps/api/window";
+
+import DualChart from "./pages/DualChart";
+import SideBar from "./components/SideBar";
 import Home from "./pages/Home";
 
 const titleBar = (
-  <div data-tauri-drag-region className="h-8 bg-white select-none">
+  <div data-tauri-drag-region className="fixed top-0 right-0 h-8 bg-white select-none">
     <div
       className="inline-flex justify-center items-center w-8 h-8 hover:bg-gray-300"
       onClick={() => appWindow.close()}

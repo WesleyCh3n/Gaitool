@@ -32,7 +32,7 @@ export interface ICycle {
   sel: [number, number]
 }
 
-export interface ICycleList {
+export interface ICyData {
   [k: string]: ICycle
   gait: ICycle
   lt: ICycle

@@ -1,6 +1,6 @@
-import { ICycleList } from "../components/chart";
+import { ICyData } from "../components/chart";
 
-const cycleInit: ICycleList = {
+const cycleInit: ICyData = {
   gait: {
     step: [[]],
     sel: [0, 0]
