@@ -1,14 +1,14 @@
 import * as d3 from "d3";
-import { ICycle, IData, IDataSPos } from "./";
+import { ICycle, IPosition, IData } from "./";
 
 export function parseResult(
   files: d3.DSVRowArray<string>,
-  dataSchema: IDataSPos
-): IDataSPos {
+  dataSchema: IData
+): IData {
   // load data into corresponding index/axis
   for (let pos in dataSchema) {
     for (let key in dataSchema[pos]) {
-      let data: IData[] = [];
+      let data: IPosition[] = [];
       files.forEach((row) => {
         data.push({
           x: +(row[dataSchema[pos][key].csvX] ?? 0),

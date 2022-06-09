@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 import { RefObject } from "react";
 
-import { IData, layout } from ".";
+import { IPosition, layout } from ".";
 
 export function createLineChart(ref: RefObject<SVGSVGElement>) {
   const svg = d3
@@ -73,7 +73,7 @@ export function createLineChart(ref: RefObject<SVGSVGElement>) {
     .style("stroke-dasharray", "3, 3")
     .attr("opacity", "0");
 
-  const bisectX = d3.bisector((d: IData) => d.x).center;
+  const bisectX = d3.bisector((d: IPosition) => d.x).center;
   const tooltipOverlay = svg
     .append("rect")
     .attr("class", "overlay")
@@ -94,7 +94,7 @@ export function createLineChart(ref: RefObject<SVGSVGElement>) {
   const xScale = d3.scaleLinear().range([0, layout.getWidth()]);
   const yScale = d3.scaleLinear().range([layout.getLineHeight(), 0]);
 
-  function update(data: IData[], range?: [number, number]) {
+  function update(data: IPosition[], range?: [number, number]) {
     if (range) {
       xScale.domain(range);
     } else {
@@ -126,7 +126,7 @@ export function createLineChart(ref: RefObject<SVGSVGElement>) {
       .attr(
         "d",
         d3
-          .line<IData>()
+          .line<IPosition>()
           .x((d) => xScale(d.x))
           .y((d) => yScale(d.y))
       );

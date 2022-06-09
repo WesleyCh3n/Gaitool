@@ -1,5 +1,7 @@
 import type { ReactElement } from "react";
 import { ICycleList } from "../chart";
+import { IoIosCloseCircleOutline } from "react-icons/io";
+import { BsSearch } from "react-icons/bs";
 
 export interface IRow {
   [k: string]: number | string | any;
@@ -29,30 +31,20 @@ export function Table(props: TableProps): ReactElement | null {
           <th>LT</th>
           <th>RT</th>
           <th>DB</th>
-          <th> </th>
+          <th>SHOW</th>
           <th>
             <button
               onClick={() => props.removeAll()}
-              className="btn btn-circle btn-outline btn-xs text-red-600"
+              className="text-red-600 bg-transparent border-none
+                  hover:bg-gray-300
+                  dark:hover:bg-gray-600"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                className="inline-block w-4 h-4 stroke-current"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M6 18L18 6M6 6l12 12"
-                ></path>
-              </svg>
+              <IoIosCloseCircleOutline size={24} />
             </button>
           </th>
         </tr>
       </thead>
-      <tbody className="">
+      <tbody>
         {props.content.map((row) => {
           return (
             <tr key={row.id}>
@@ -68,29 +60,22 @@ export function Table(props: TableProps): ReactElement | null {
               <th>
                 <button
                   onClick={() => props.updateView(row.range)}
-                  className="btn btn-ghost btn-outline btn-xs"
+                  className="bg-transparent border-none
+                  text-gray-700 dark:text-gray-400
+                  hover:bg-gray-300
+                  dark:hover:bg-gray-600"
                 >
-                  Show
+                  <BsSearch size={15} />
                 </button>
               </th>
               <th>
                 <button
                   onClick={() => props.removeNode(row.id)}
-                  className="btn btn-circle btn-outline btn-xs text-red-600"
+                  className="text-red-600 bg-transparent border-none
+                  hover:bg-gray-300
+                  dark:hover:bg-gray-600"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    className="inline-block w-4 h-4 stroke-current"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M6 18L18 6M6 6l12 12"
-                    ></path>
-                  </svg>
+                  <IoIosCloseCircleOutline size={24} />
                 </button>
               </th>
             </tr>

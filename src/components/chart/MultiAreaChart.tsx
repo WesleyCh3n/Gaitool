@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { IData, IDatasetInfo, layout } from "./";
+import { IPosition, ICsvData, layout } from "./";
 
 {/* var multiFunc = createMultiAreaChart("double_support");
   * multiFunc(dataSchema.slice(-3), true);
@@ -30,7 +30,7 @@ export function createMultiAreaChart(divSelector: string) {
     .append("g") // line path group
     .attr("class", "area") // Assign a class for styling
 
-  function update(data: IDatasetInfo[], first: boolean) {
+  function update(data: ICsvData[], first: boolean) {
     var xScale = d3.scaleLinear().range([0, layout.getWidth()]);
     if (first) {
       xScale.domain(d3.extent(data[0].data, (d) => d.x).map((x) => x ?? 0));
@@ -73,7 +73,7 @@ export function createMultiAreaChart(divSelector: string) {
         .attr(
           "d",
           d3
-            .area<IData>()
+            .area<IPosition>()
             .x((d) => xScale(d.x))
             .y0(yScale(0))
             .y1((d) => yScale(d.y))

@@ -1,21 +1,30 @@
-export interface IData {
+export interface IPosition {
   x: number;
   y: number;
 }
 
-export interface IDatasetInfo {
-  // name: string;
-  data: IData[];
+export interface ICsvData {
+  data: IPosition[];
   csvX: string;
   csvY: string;
 }
 
-export interface IDataSchema {
-  [key: string]: IDatasetInfo;
+export interface ISensor {
+  [key: string]: ICsvData;
+  "Accel X": ICsvData;
+  "Accel Y": ICsvData;
+  "Accel Z": ICsvData;
+  "Gyro X": ICsvData;
+  "Gyro Y": ICsvData;
+  "Gyro Z": ICsvData;
 }
 
-export interface IDataSPos {
-  [key: string]: IDataSchema
+export interface IData {
+  [key: string]: ISensor
+  "L": ISensor;
+  "T": ISensor;
+  "Scapular LT": ISensor;
+  "Scapular RT": ISensor;
 }
 
 export interface ICycle {

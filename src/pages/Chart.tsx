@@ -10,10 +10,10 @@ import * as d3 from "d3";
 
 import {
   // Interface
-  IDatasetInfo,
+  ICsvData,
   ICycleList,
-  IDataSPos,
   IData,
+  IPosition,
   // Create chart
   createLineChart,
   createGaitNav,
@@ -32,18 +32,14 @@ import {
 import { Selector } from "../components/selector/Selector";
 import { Uploader } from "../components/upload/Uploader";
 import { Table, IRow } from "../components/table/Table";
-import { postRange } from "../api/exporter";
 import { findIndex } from "../utils/utils";
-import { ResUpload } from "../models/response_models";
-import { col_schema } from "../models/column_schema";
+import dataInit, {location, sensor} from "../models/dataInit";
 
 import { invoke } from "@tauri-apps/api/tauri";
 import { copyFile, readTextFile, removeFile } from "@tauri-apps/api/fs";
-import { join, appDir, homeDir } from "@tauri-apps/api/path";
+import { join, appDir, homeDir, basename } from "@tauri-apps/api/path";
 import { save, message } from "@tauri-apps/api/dialog";
 
-const position = Object.keys(col_schema);
-const content = ["Accel X", "Accel Y", "Accel Z", "Gyro X", "Gyro Y", "Gyro Z"];
 const refKey = ["line", "bmax", "bmin", "lnav", "bclt", "bcrt", "bcdb", "bcgt"];
 
 const AppDir = appDir();
@@ -55,29 +51,24 @@ const SwriteDir = "swrite";
 export interface ChartProps {}
 
 const Chart = forwardRef((_props: ChartProps, ref) => {
-  const dataSInit: IDataSPos = {};
-  position.forEach((p) => {
-    dataSInit[p] = JSON.parse(JSON.stringify((col_schema as any)[p])); // HACK: deep copy
-  });
-
   const refs: { [k: string]: RefObject<SVGSVGElement> } = {};
   refKey.forEach((k) => {
     refs[k] = useRef<SVGSVGElement>(null);
   });
-  const [dataS, setDataS] = useState<IDataSPos>(dataSInit);
+  const [updators] = useState<{ [key: string]: Function }>({
+    _: new Function(),
+  });
+
+  const [dataS, setDataS] = useState<IData>(dataInit);
   const [cyS, setCyS] = useState<ICycleList>({
     gait: { step: [[]], sel: [0, 0] },
     lt: { step: [[]], sel: [0, 0] },
     rt: { step: [[]], sel: [0, 0] },
     db: { step: [[]], sel: [0, 0] },
   });
-  const [resUpld, setResUpld] = useState<ResUpload>();
-  const [updators] = useState<{ [key: string]: Function }>({
-    _: new Function(),
-  });
 
-  const [selPos, setSelPos] = useState<string>(position[0]);
-  const [selOpt, setSelOpt] = useState<string>(content[0]);
+  const [selPos, setSelPos] = useState<string>(location[0]);
+  const [selOpt, setSelOpt] = useState<string>(sensor[0]);
   const [selDisable, setSelDisable] = useState<boolean>(true);
   const [trContent, setTrContent] = useState<IRow[]>([]);
   const [inputFile, setInputFile] = useState<string>("");
@@ -98,9 +89,6 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
   async function initChart(file: string) {
     var saveDir = await join(await AppDir, DataDir, FilterDir);
     const result = (await invoke("filter_csv", { file, saveDir })) as any;
-
-    console.log(result);
-    setResUpld(result); // TODO: what is this for?
 
     const result_path = await join(saveDir, result["FltrFile"]["rslt"]);
     const gt_path = await join(saveDir, result["FltrFile"]["cyGt"]);
@@ -134,14 +122,14 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
     let ranges = trContent.map((row) => {
       return [row.range[0], row.range[1]];
     });
-    if (ranges.length == 0 || !resUpld) return;
+    if (ranges.length == 0 || !inputFile) return;
 
     const saveDir = await join(await AppDir, DataDir, ExportDir);
     const file = await join(
       await AppDir,
       DataDir,
       FilterDir,
-      resUpld["FltrFile"]["rslt"]
+      await basename(inputFile)
     );
     const result = (await invoke("export_csv", {
       file,
@@ -168,7 +156,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
         return row.range.map((i) => cyS.gait.step[i][0]).join("-");
       })
       .join(" ");
-    if (!resUpld) return;
+    if (!inputFile) return;
     const saveDir = await join(await AppDir, DataDir, SwriteDir);
     const file = inputFile;
     const result = (await invoke("swrite_csv", {
@@ -190,7 +178,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
   };
 
   /* Update all chart logic */
-  const updateLogic = (d: IData[], c: ICycleList) => {
+  const updateLogic = (d: IPosition[], c: ICycleList) => {
     // preprocess/filter data
     let lineD = selLineRange(d, c.gait);
     let lineRange = d3.extent(lineD, (d) => d.x).map((x) => x ?? 0);
@@ -207,7 +195,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
 
   /* Update App include navigator */
   const updateApp = (
-    schema: IDatasetInfo,
+    schema: ICsvData,
     c: ICycleList,
     sel_range?: [number, number]
   ) => {
@@ -315,8 +303,9 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
       let ranges = trContent.map((row) => {
         return { Start: row.range[0], End: row.range[1] };
       });
-      if (ranges.length == 0 || !resUpld) return;
-      let res = await postRange(resUpld.python.FltrFile, ranges);
+      if (ranges.length == 0 || !inputFile) return;
+      // let res = await postRange(resUpld.python.FltrFile, ranges);
+      var res
       return res;
     },
   }));
@@ -325,9 +314,9 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
     <div>
       <div className="flex justify-center">
         <Uploader
-          handleFile={initChart}
           file={inputFile}
           setFile={setInputFile}
+          handleFile={initChart}
         />
       </div>
 
@@ -357,7 +346,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
       <div className="grid grid-cols-6 gap-1 m-2">
         <div className="col-span-2">
           <Selector
-            options={position}
+            options={location}
             selectedOption={selPos}
             onChange={selPosChange}
             disable={selDisable}
@@ -365,7 +354,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
         </div>
         <div className="col-span-2">
           <Selector
-            options={content}
+            options={sensor}
             selectedOption={selOpt}
             onChange={selOptChange}
             disable={selDisable}
@@ -387,8 +376,8 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
         >
           Save
         </button>
-        <div className="col-span-6 max-h-[25vh]
-          overflow-x-auto overflow-y-auto custom-scrollbar shadow-lg">
+        <div className="col-span-6 h-[18vh] overflow-x-auto overflow-y-auto
+          custom-scrollbar shadow-lg rounded-lg">
           <Table
             content={trContent}
             removeNode={removeTrNode}

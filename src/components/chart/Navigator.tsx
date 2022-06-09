@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 import { RefObject } from "react";
-import { IData, layout } from "./";
+import { IPosition, layout } from "./";
 import { ICycleList } from "./Chart";
 
 export function createGaitNav(ref: RefObject<SVGSVGElement>) {
@@ -35,8 +35,8 @@ export function createGaitNav(ref: RefObject<SVGSVGElement>) {
     .attr("class", "brush");
 
   function update(
-    updateLogic: (d: IData[], c: ICycleList) => void,
-    data: IData[],
+    updateLogic: (d: IPosition[], c: ICycleList) => void,
+    data: IPosition[],
     cycle: ICycleList,
     move?: [number, number]
   ) {
@@ -114,7 +114,7 @@ export function createGaitNav(ref: RefObject<SVGSVGElement>) {
     if (data) {
       yScale.domain(d3.extent(data, (d) => d.y).map((y) => y ?? 0));
       let lineGen = d3
-        .line<IData>()
+        .line<IPosition>()
         .x((d) => xScaleNav(d.x))
         .y((d) => yScale(d.y));
       lineG.datum(data).transition().attr("d", lineGen);
