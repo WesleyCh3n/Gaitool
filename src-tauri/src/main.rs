@@ -6,37 +6,29 @@
 use std::path::PathBuf;
 
 use analyze_rs::core::{export::exporter, filter::filter, swrite::swrite};
-use serde_json::{json, Value};
+use serde_json::Value;
 
 #[tauri::command(async)]
-fn filter_csv(file: PathBuf, save_dir: PathBuf) -> Value {
-    let result = if let Ok(resp) = filter(file, save_dir) {
-        resp
-    } else {
-        json!({
-            "Status": "Faild"
-        })
-    };
-    result
+fn filter_csv(file: PathBuf, save_dir: PathBuf) -> Result<Value, String>{
+    match filter(file, save_dir) {
+        Ok(resp) => Ok(resp),
+        Err(e) => Err(format!("{}", e))
+    }
 }
 
-#[tauri::command]
+#[tauri::command(async)]
 fn export_csv(
     file: PathBuf,
     save_dir: PathBuf,
     ranges: Vec<(u32, u32)>,
-) -> Value {
-    let result = if let Ok(resp) = exporter(file, save_dir, ranges) {
-        resp
-    } else {
-        json!({
-            "Status": "Faild"
-        })
-    };
-    result
+) -> Result<Value, String> {
+    match exporter(file, save_dir, ranges) {
+        Ok(resp) => Ok(resp),
+        Err(e) => Err(format!("{}", e))
+    }
 }
 
-#[tauri::command]
+#[tauri::command(async)]
 fn swrite_csv(
     file: PathBuf,
     save_dir: PathBuf,
