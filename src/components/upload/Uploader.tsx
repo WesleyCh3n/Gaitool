@@ -1,6 +1,7 @@
 import type { ReactElement } from "react";
 import { useState } from "react";
 import { open } from "@tauri-apps/api/dialog";
+import { message } from "@tauri-apps/api/dialog";
 import { AiOutlineUpload } from "react-icons/ai";
 
 export function Uploader(props: {
@@ -29,14 +30,8 @@ export function Uploader(props: {
 
   async function handleSelectList() {
     if (!props.file) return;
-    console.log("Start Spinning");
-
     setIsLoading(true);
-
-    // await new Promise(r => setTimeout(r, 1));
-    await props.handleFile(props.file);
-
-    console.log("End Spinning");
+    await props.handleFile(props.file).catch(e => message(e, "Error"));
     setIsLoading(false);
   }
 
