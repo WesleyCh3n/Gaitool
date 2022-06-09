@@ -376,8 +376,8 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
         >
           Save
         </button>
-        <div className="col-span-6 h-[18vh] overflow-x-auto overflow-y-auto
-          custom-scrollbar shadow-lg rounded-lg">
+        <div className="col-span-6 h-[15.5vh] shadow-lg rounded-lg
+          overflow-y-scroll overscroll-contain custom-scrollbar">
           <Table
             content={trContent}
             removeNode={removeTrNode}
