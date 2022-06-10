@@ -3,6 +3,7 @@ import { useState } from "react";
 import { open } from "@tauri-apps/api/dialog";
 import { message } from "@tauri-apps/api/dialog";
 import { AiOutlineUpload } from "react-icons/ai";
+import { Button } from "../button/Button";
 
 export function Uploader(props: {
   file: string;
@@ -31,32 +32,29 @@ export function Uploader(props: {
   async function handleSelectList() {
     if (!props.file) return;
     setIsLoading(true);
-    await props.handleFile(props.file).catch(e => message(e, "Error"));
+    await props.handleFile(props.file).catch((e) => message(e, "Error"));
     setIsLoading(false);
   }
 
   return (
-    <div className="grid lg:grid-cols-6 gap-4 content-center">
-      <button
-        className="chart-btn"
+    <div className="grid lg:grid-cols-6 gap-2 mx-2 w-full">
+      <Button
+        className="col-span-5 whitespace-nowrap overflow-x-auto no-scrollbar"
         onClick={openDialog}
-      >
-        {props.file ? "file: " + props.file : "Open File"}
-      </button>
-      <div className="col-span-1">
-        <button
-          className={`
-            text-gray-800 dark:text-gray-400
-            border-none bg-transparent
-            transition-all ease-in-out
-            hover:text-white hover:bg-gray-600
-            dark:hover:bg-gray-600
-            ${isLoading ? "loading" : ""}`}
-          onClick={handleSelectList}
-        >
-          {isLoading ? "" : <AiOutlineUpload size={25} strokeWidth={5} />}
-        </button>
-      </div>
+        content={props.file ? "file: " + props.file : "Open File"}
+      />
+      <Button
+        className={`col-span-1 border-none bg-transparent shadow-none
+         dark:bg-transparent text-gray-800 dark:text-gray-400
+         ${
+           isLoading
+             ? "dark:hover:bg-transparent hover:bg-transparent cursor-default"
+             : ""
+         }`}
+        onClick={handleSelectList}
+        content={<AiOutlineUpload size={25} strokeWidth={5} />}
+        isLoading={isLoading}
+      />
     </div>
   );
 }

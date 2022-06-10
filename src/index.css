@@ -32,75 +32,70 @@
   .chart-box {
     @apply rounded-md shadow-lg dark:bg-gray-700;
   }
-  .chart-btn {
-    @apply lg:col-span-5
-          text-gray-800 dark:text-gray-400 font-bold normal-case
-          bg-gray-200 dark:bg-gray-900 shadow-md border-none
-          rounded-lg transition-all ease-in-out hover:text-white
-          hover:bg-gray-600 dark:hover:bg-gray-600
-  }
   .lineplot-line {
     @apply fill-transparent stroke-blue-400
+  }
+  .lineplot-axis {
+    @apply text-[20px] stroke-gray-500 dark:text-gray-400 dark:stroke-gray-400
   }
   .lineplot-hover-line {
     @apply stroke-gray-900 dark:stroke-gray-200
   }
-  .rect {
-    @apply fill-gray-500 dark:stroke-gray-300 stroke-gray-900
+  .navplot-axis {
+    @apply text-xs stroke-gray-500 dark:text-gray-400 dark:stroke-gray-400
   }
-  .boxplot-line-vert {
-    @apply dark:stroke-gray-300 stroke-gray-900
+  .navplot-line {
+    @apply fill-transparent stroke-blue-400
   }
-  .boxplot-line-horz {
-    @apply dark:stroke-gray-300 stroke-gray-900
+  .navplot-handle {
+    @apply stroke-[1.5] stroke-gray-500 dark:stroke-gray-400
   }
-  .boxplot-text-left {
-    @apply dark:fill-gray-300 fill-gray-900 text-[22px]
+  .boxplot-rect {
+    @apply fill-gray-500 dark:stroke-gray-300 stroke-gray-800
   }
-  .boxplot-text-right {
-    @apply dark:fill-gray-300 fill-gray-900 text-[22px]
+  .boxplot-axis {
+    @apply text-[20px] stroke-gray-900 dark:text-gray-400 dark:stroke-gray-400
   }
-  .boxplot-tick-text {
-    @apply text-[20px]
+  .boxplot-line {
+    @apply dark:stroke-gray-300 stroke-gray-600 stroke-2
   }
-}
-
-@layer base {
-  h1 {
-    /*  */
-    @apply text-center text-xs whitespace-nowrap
-  }
-  button {
-    /*  */
-    @apply btn btn-sm whitespace-nowrap
+  .boxplot-text {
+    @apply dark:stroke-gray-300 stroke-gray-900 text-[22px] stroke-[1.2]
   }
 }
 
 @layer utilities {
-    /* Chrome, Safari and Opera */
-    .custom-scrollbar::-webkit-scrollbar {
-      -webkit-appearance: none;
-      background-color: none;
-    }
-    .custom-scrollbar::-webkit-scrollbar:vertical {
-      width: 5px;
-    }
-    .custom-scrollbar::-webkit-scrollbar:horizontal {
-      width: 5px;
-      height: 5px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      border-radius: 10px;
-      background-color: #999;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-      background-color: #666;
-    }
-    .custom-scrollbar::::-webkit-resizer {
-      display: none;
-    }
-    .custom-scrollbar {
-      -ms-overflow-style: none; /* IE and Edge */
-      scrollbar-width: none; /* Firefox */
-    }
+  .custom-scrollbar::-webkit-scrollbar {
+    -webkit-appearance: none;
+    background-color: none;
+  }
+  .custom-scrollbar::-webkit-scrollbar:vertical {
+    width: 5px;
+  }
+  .custom-scrollbar::-webkit-scrollbar:horizontal {
+    width: 5px;
+    height: 5px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background-color: #999;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: #666;
+  }
+  .custom-scrollbar::::-webkit-resizer {
+    display: none;
+  }
+  .custom-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
 }

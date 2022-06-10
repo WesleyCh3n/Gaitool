@@ -33,6 +33,7 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { copyFile, readTextFile, removeFile } from "@tauri-apps/api/fs";
 import { join, appDir, homeDir, basename } from "@tauri-apps/api/path";
 import { save, message } from "@tauri-apps/api/dialog";
+import { Button, ButtonOutline } from "../components/button/Button";
 
 const refKey = ["line", "bmax", "bmin", "lnav", "bclt", "bcrt", "bcdb", "bcgt"];
 
@@ -314,7 +315,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
         />
       </div>
 
-      <div className="grid grid-cols-6 gap-1 m-2" >
+      <div className="grid grid-cols-6 gap-1 m-2">
         <Plot title="Max" ref={refs.bmax} />
         <Plot title="Min" ref={refs.bmin} />
         <Plot title="Gait" ref={refs.bcgt} />
@@ -344,24 +345,20 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
             disable={selDisable}
           />
         </div>
-        <button
-          className={`col-span-1 btn-outline w-full ${
-            selDisable ? "btn-disabled" : ""
-          }`}
+        <ButtonOutline
+          className="col-span-1 w-full"
           onClick={addTrNode}
-        >
-          Select
-        </button>
-        <button
-          className={`col-span-1 btn-outline w-full ${
-            selDisable ? "btn-disabled" : ""
-          }`}
+          content={"Select"}
+          disabled={selDisable}
+        />
+        <ButtonOutline
+          className="col-span-1 w-full"
           onClick={saveSelection}
-        >
-          Save
-        </button>
+          content={"Save"}
+          disabled={selDisable}
+        />
         <div
-          className="col-span-6 h-[18vh] shadow-lg rounded-lg
+          className="col-span-6 h-[20vh] shadow-lg rounded-xl
           overflow-y-scroll overscroll-contain custom-scrollbar"
         >
           <Table
@@ -371,14 +368,11 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
             updateView={showSel}
           />
         </div>
-        <button
-          className={`col-start-3 col-span-2 mt-2 w-full chart-btn ${
-            selDisable ? "btn-disabled" : ""
-          }`}
+        <Button
+          className="col-start-3 col-span-2 mt-2"
           onClick={exportResult}
-        >
-          Export
-        </button>
+          content={"Export"}
+          />
       </div>
     </div>
   );
@@ -388,7 +382,7 @@ const Plot = forwardRef(
   (props: { title: string }, ref: ForwardedRef<SVGSVGElement>) => {
     return (
       <div className="chart-box" key={props.title}>
-        <h1>{props.title}</h1>
+        <p className="text-center text-sm dark:text-gray-400">{props.title}</p>
         <svg ref={ref}></svg>
       </div>
     );

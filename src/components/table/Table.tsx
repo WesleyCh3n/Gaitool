@@ -1,6 +1,7 @@
 import type { ReactElement } from "react";
 import { ICyData } from "../chart";
 import { IoIosCloseCircleOutline } from "react-icons/io";
+import { Button } from "../button/Button";
 
 export interface IRow {
   [k: string]: number | string | any;
@@ -35,12 +36,12 @@ export function Table(props: TableProps): ReactElement | null {
           <th className="sticky top-0 px-4 bg-gray-50 dark:bg-gray-700">RT</th>
           <th className="sticky top-0 px-4 bg-gray-50 dark:bg-gray-700">DB</th>
           <th className="sticky top-0 px-4 bg-gray-50 dark:bg-gray-700">
-            <button
+            <Button
               onClick={() => props.removeAll()}
-              className="text-red-600 bg-transparent border-none hover:bg-gray-300 dark:hover:bg-gray-600"
-            >
-              <IoIosCloseCircleOutline size={24} />
-            </button>
+              className="bg-transparent shadow-none
+                         dark:bg-transparent text-red-600 dark:text-red-600"
+              content={<IoIosCloseCircleOutline size={24} />}
+            />
           </th>
         </tr>
       </thead>
@@ -62,12 +63,12 @@ export function Table(props: TableProps): ReactElement | null {
               <td className="px-4">{row.rt}</td>
               <td className="px-4">{row.db}</td>
               <td className="px-4">
-                <button
+                <Button
                   onClick={() => props.removeNode(row.id)}
-                  className="text-red-600 bg-transparent border-none hover:bg-gray-300 dark:hover:bg-gray-600"
-                >
-                  <IoIosCloseCircleOutline size={24} />
-                </button>
+                  className="bg-transparent shadow-none
+                         dark:bg-transparent text-red-600 dark:text-red-600"
+                  content={<IoIosCloseCircleOutline size={24} />}
+                />
               </td>
             </tr>
           );
