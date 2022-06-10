@@ -104,14 +104,12 @@ export function createLineChart(ref: RefObject<SVGSVGElement>) {
 
     // region x/y axis
     xAxis.transition()
+      .attr("class", "lineplot-axis")
       .call(d3.axisBottom(xScale))
-      .selectAll(".tick text")
-      .attr("font-size", "15");
 
     yAxis.transition()
-      .call(d3.axisLeft(yScale))
-      .selectAll(".tick text")
-      .attr("font-size", "15");
+      .attr("class", "lineplot-axis")
+      .call(d3.axisLeft(yScale));
 
     svg
       .select(".lineplot-line") // region line/area

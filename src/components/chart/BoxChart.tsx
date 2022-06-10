@@ -10,7 +10,7 @@ export function createBoxChart(ref: RefObject<SVGSVGElement>) {
     .append("g") // workground group
     .attr("transform", `translate(${layout.margin.l} ,${layout.margin.t})`);
 
-  svg.append("rect").attr("class", "rect");
+  svg.append("rect").attr("class", "boxplot-rect");
   svg.append("g").attr("class", "boxplot-line-vert");
   svg.append("g").attr("class", "boxplot-line-horz");
   svg.append("g").attr("class", "boxplot-text-left");
@@ -30,9 +30,8 @@ export function createBoxChart(ref: RefObject<SVGSVGElement>) {
     // axis text
     svg
       .transition()
-      .call(d3.axisLeft(yScale).ticks(5))
-      .selectAll(".tick text")
-      .attr("class", "boxplot-tick-text");
+      .attr("class", "boxplot-axis")
+      .call(d3.axisLeft(yScale).ticks(5));
 
     // a few features for the box
     var boxCenter = 85;
@@ -42,6 +41,7 @@ export function createBoxChart(ref: RefObject<SVGSVGElement>) {
     svg
       .select(".boxplot-line-vert")
       .selectAll("line")
+      .attr("class", "boxplot-line")
       .data([result])
       .join(
         (enter) => enter.append("line"),
@@ -57,7 +57,7 @@ export function createBoxChart(ref: RefObject<SVGSVGElement>) {
 
     // Show the box
     svg
-      .select(".rect")
+      .select(".boxplot-rect")
       .transition()
       .attr("x", boxCenter - boxWidth / 2)
       .attr("y", yScale(result.q3))
@@ -67,6 +67,7 @@ export function createBoxChart(ref: RefObject<SVGSVGElement>) {
     svg
       .select(".boxplot-line-horz")
       .selectAll("line")
+      .attr("class", "boxplot-line")
       .data([result.min, result.max, result.median])
       .join(
         (enter) => enter.append("line"),
@@ -83,6 +84,7 @@ export function createBoxChart(ref: RefObject<SVGSVGElement>) {
     svg
       .select(".boxplot-text-right")
       .selectAll("text")
+      .attr("class", "boxplot-text")
       .data([result.min, result.max, result.median])
       .join(
         (enter) =>
@@ -104,6 +106,7 @@ export function createBoxChart(ref: RefObject<SVGSVGElement>) {
     svg
       .select(".boxplot-text-left")
       .selectAll("text")
+      .attr("class", "boxplot-text")
       .data([result.q1, result.q3])
       .join(
         (enter) =>

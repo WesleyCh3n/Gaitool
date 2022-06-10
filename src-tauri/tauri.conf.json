@@ -59,7 +59,7 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 700,
+        "height": 720,
         "resizable": true,
         "title": "FuAn Analyze",
         "width": 1300

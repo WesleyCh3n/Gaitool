@@ -16,19 +16,16 @@ export function createGaitNav(ref: RefObject<SVGSVGElement>) {
 
   const xAxis = navSvg
     .append("g") // region x axis
-    .attr("class", "axis__x")
+    .attr("class", "navplot-axis")
     .attr("transform", `translate(0, ${layout.getNavTickHeight()})`);
 
   navSvg
     .selectAll(".axis line")
-    .attr("stroke", "#566573")
-    .attr("stroke-width", "3px");
+    .attr("class", "navplot-line");
 
   const lineG = navSvg
     .append("path") // line path group
-    .attr("class", "line__indicate") // Assign a class for styling
-    .attr("fill", "none")
-    .attr("stroke", "rgba(70, 130, 180, 0.5)");
+    .attr("class", "navplot-line") // Assign a class for styling
 
   const gBrush = navSvg
     .append("g") // region brush
@@ -68,7 +65,7 @@ export function createGaitNav(ref: RefObject<SVGSVGElement>) {
         if (!event.selection) return;
         var s = event.selection;
         gBrush
-          .selectAll(".handle__custom")
+          .selectAll(".navplot-handle")
           .attr("display", null)
           .attr(
             "transform",
@@ -79,7 +76,7 @@ export function createGaitNav(ref: RefObject<SVGSVGElement>) {
         if (!event.sourceEvent || !event.mode) {
           return;
         } else if (!event.selection) {
-          gBrush.selectAll(".handle__custom").attr("display", "none");
+          gBrush.selectAll(".navplot-handle").attr("display", "none");
           return;
         } else {
           let d0 = event.selection.map(xScaleNav.invert);
@@ -109,7 +106,7 @@ export function createGaitNav(ref: RefObject<SVGSVGElement>) {
       .style("text-anchor", "end")
       .attr("dx", "-.8em")
       .attr("dy", ".15em")
-      .attr("transform", "rotate(-40)");
+      .attr("transform", "rotate(-30)");
 
     if (data) {
       yScale.domain(d3.extent(data, (d) => d.y).map((y) => y ?? 0));
@@ -124,13 +121,11 @@ export function createGaitNav(ref: RefObject<SVGSVGElement>) {
     gBrush.call(brush);
 
     gBrush
-      .selectAll(".handle__custom") // brushHandle
+      .selectAll(".navplot-handle") // brushHandle
       .data([{ type: "w" }, { type: "e" }])
       .enter()
       .append("path")
-      .attr("class", "handle__custom")
-      .attr("stroke", "#000")
-      .attr("stroke-width", "1.5")
+      .attr("class", "navplot-handle")
       .attr("cursor", "ew-resize")
       .attr("d", brushHandlePath)
       .attr("transform", `translate(0, ${-layout.getNavTickHeight()})`);

@@ -25,10 +25,10 @@ module.exports = {
     },
   },
   plugins: [
-    require('@tailwindcss/typography'),
-    require('daisyui')
+    require('@tailwindcss/forms'),
+    // require('daisyui')
   ],
-  daisyui: {
+  /* daisyui: {
     themes: [
       "light",
       {
@@ -50,5 +50,5 @@ module.exports = {
         },
       }
     ],
-  },
+  }, */
 }
