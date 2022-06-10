@@ -104,8 +104,8 @@ export function createGaitNav(ref: RefObject<SVGSVGElement>) {
       )
       .selectAll(".tick text") // region tick style
       .style("text-anchor", "end")
-      .attr("dx", "-.8em")
-      .attr("dy", ".15em")
+      .attr("dx", "-.1em")
+      .attr("dy", ".5em")
       .attr("transform", "rotate(-30)");
 
     if (data) {
