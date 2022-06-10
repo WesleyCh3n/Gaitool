@@ -30,7 +30,12 @@ import { findIndex } from "../utils/utils";
 import dataInit, { location, sensor } from "../models/dataInit";
 
 import { invoke } from "@tauri-apps/api/tauri";
-import { copyFile, readTextFile, removeFile } from "@tauri-apps/api/fs";
+import {
+  copyFile,
+  readTextFile,
+  removeDir,
+  removeFile,
+} from "@tauri-apps/api/fs";
 import { join, appDir, homeDir, basename } from "@tauri-apps/api/path";
 import { save, message } from "@tauri-apps/api/dialog";
 import { Button, ButtonOutline } from "../components/button/Button";
@@ -78,6 +83,12 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
     updators.bcrt = createBoxChart(refs.bcrt);
     updators.bcdb = createBoxChart(refs.bcdb);
     updators.lnav = createGaitNav(refs.lnav);
+
+    (async () => {
+      await removeDir(await join(await AppDir, DataDir), {
+        recursive: true,
+      }).catch((e) => e);
+    })();
   }, []);
 
   /* Create chart when upload api response FilterdData*/
@@ -372,7 +383,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
           className="col-start-3 col-span-2 mt-2"
           onClick={exportResult}
           content={"Export"}
-          />
+        />
       </div>
     </div>
   );

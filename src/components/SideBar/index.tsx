@@ -17,7 +17,7 @@ export function SideBar() {
     >
       <SideBarIcon icon={<AiOutlineHome size="28" />} text="home" link="/" />
       <SideBarIcon icon={<IoAnalyticsOutline size="28" />} text="chart" />
-      <SideBarIcon icon={<AiOutlineScissor size="28" />} text="tooltip" />
+      <SideBarIcon icon={<AiOutlineScissor size="28" />} text="split" />
       <SideBarIcon icon={<AiOutlineCheck size="28" />} text="tooltip" />
       <ThemeIcon />
       <SideBarIcon icon={<AiOutlineSetting size="28" />} text="tooltip" />

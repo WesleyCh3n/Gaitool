@@ -23,7 +23,7 @@ const DualChart = () => {
   };
 
   return (
-    <div className="flex-grow ml-16 h-screen dark:bg-gray-800">
+    <div className="flex-grow h-screen dark:bg-gray-800">
       <div className="grid grid-cols-2 mx-1 mt-4">
         <Chart ref={chartRef1} />
         <Chart ref={chartRef2} />

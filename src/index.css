@@ -64,6 +64,12 @@
   }
 }
 
+@layer base{
+  p {
+    @apply dark:text-gray-300
+  }
+}
+
 @layer utilities {
   .custom-scrollbar::-webkit-scrollbar {
     -webkit-appearance: none;

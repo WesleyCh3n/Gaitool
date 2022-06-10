@@ -5,7 +5,7 @@
 
 use std::path::PathBuf;
 
-use analyze_rs::core::{export::exporter, filter::filter, swrite::swrite};
+use analyze_rs::core::{export::exporter, filter::filter, swrite::swrite, split::split};
 use serde_json::Value;
 
 #[tauri::command(async)]
@@ -40,10 +40,23 @@ fn swrite_csv(
     }
 }
 
+#[tauri::command(async)]
+fn split_csv(
+    file_dir: PathBuf,
+    save_dir: PathBuf,
+    percent: usize,
+) -> Result<(), String> {
+    match split(file_dir, save_dir, percent) {
+        Ok(()) => Ok(()),
+        Err(e) => Err(format!("{}", e)),
+    }
+}
+
+
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
-            filter_csv, export_csv, swrite_csv
+            filter_csv, export_csv, swrite_csv, split_csv
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

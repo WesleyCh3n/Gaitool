@@ -4,6 +4,7 @@ import { appWindow } from "@tauri-apps/api/window";
 import DualChart from "./pages/DualChart";
 import SideBar from "./components/SideBar";
 import Home from "./pages/Home";
+import Split from "./pages/Split";
 
 const titleBar = (
   <div data-tauri-drag-region className="fixed top-0 right-0 h-8 bg-white select-none">
@@ -37,11 +38,12 @@ const titleBar = (
 function App() {
   return (
     <HashRouter>
-      <div className="flex">
+      <div className="flex ml-16">
         <SideBar />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/chart" element={<DualChart />} />
+          <Route path="/split" element={<Split />} />
         </Routes>
       </div>
     </HashRouter>
