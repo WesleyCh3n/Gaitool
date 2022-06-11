@@ -7,7 +7,7 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "analyze.app",
+    "productName": "analyze",
     "version": "0.1.0"
   },
   "tauri": {

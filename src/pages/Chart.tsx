@@ -369,7 +369,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
           disabled={selDisable}
         />
         <div
-          className="col-span-6 h-[20vh] shadow-lg rounded-xl mt-1
+          className="col-span-6 h-[18vh] shadow-lg rounded-xl mt-1
           overflow-y-scroll overscroll-contain custom-scrollbar"
         >
           <Table
