@@ -89,7 +89,7 @@
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background-color: #666;
   }
-  .custom-scrollbar::::-webkit-resizer {
+  .custom-scrollbar::-webkit-resizer {
     display: none;
   }
   .custom-scrollbar {
