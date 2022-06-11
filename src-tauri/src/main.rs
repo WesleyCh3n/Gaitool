@@ -11,7 +11,7 @@ use serde_json::value::Value;
 #[tauri::command(async)]
 fn filter_csv(file: PathBuf, save_dir: PathBuf) -> Result<Value, String>{
     match filter(file, save_dir) {
-        Ok(resp) => Ok(resp as Value),
+        Ok(resp) => Ok(Value::from(resp)),
         Err(e) => Err(format!("{}", e))
     }
 }
@@ -23,7 +23,7 @@ fn export_csv(
     ranges: Vec<(u32, u32)>,
 ) -> Result<Value, String> {
     match exporter(file, save_dir, ranges) {
-        Ok(resp) => Ok(resp as Value),
+        Ok(resp) => Ok(Value::from(resp)),
         Err(e) => Err(format!("{}", e))
     }
 }
@@ -35,7 +35,7 @@ fn swrite_csv(
     ranges_value: String,
 ) -> Result<Value, String> {
     match swrite(file, save_dir, ranges_value) {
-        Ok(resp) => Ok(resp as Value),
+        Ok(resp) => Ok(Value::from(resp)),
         Err(e) => Err(format!("{}", e)),
     }
 }
