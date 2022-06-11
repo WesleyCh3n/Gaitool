@@ -6,7 +6,7 @@
 use std::path::PathBuf;
 
 use analyze_rs::core::{export::exporter, filter::filter, swrite::swrite, split::split};
-use serde_json::Value;
+use serde_json::value::Value;
 
 #[tauri::command(async)]
 fn filter_csv(file: PathBuf, save_dir: PathBuf) -> Result<Value, String>{
