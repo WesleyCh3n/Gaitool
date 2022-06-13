@@ -26,7 +26,10 @@ export function Button(props: ButtonProps): ReactElement | null {
       disabled={props.disabled ? true : false}
     >
       {props.isLoading ? (
-        <AiOutlineLoading className="animate-spin" size={25} />
+        <AiOutlineLoading
+          className="flex justify-center items-center animate-spin"
+          size={20}
+        />
       ) : (
         props.content
       )}
@@ -51,7 +54,10 @@ export function ButtonOutline(props: ButtonProps): ReactElement | null {
       disabled={props.disabled ? true : false}
     >
       {props.isLoading ? (
-        <AiOutlineLoading className="animate-spin" size={25} />
+        <AiOutlineLoading
+          className="flex justify-center items-center animate-spin"
+          size={20}
+        />
       ) : (
         props.content
       )}

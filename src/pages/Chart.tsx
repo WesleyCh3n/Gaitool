@@ -59,7 +59,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
     _: new Function(),
   });
 
-  const [dataS, setDataS] = useState<IData>(dataInit);
+  const [dataS, setDataS] = useState<IData>(JSON.parse(JSON.stringify(dataInit)));
   const [cyS, setCyS] = useState<ICyData>({
     gait: { step: [[]], sel: [0, 0] },
     lt: { step: [[]], sel: [0, 0] },
@@ -72,6 +72,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
   const [selDisable, setSelDisable] = useState<boolean>(true);
   const [trContent, setTrContent] = useState<IRow[]>([]);
   const [inputFile, setInputFile] = useState<string>("");
+  const [saveLoading, setSaveLoading] = useState(false);
 
   useEffect(() => {
     // setup chart manually when component mount
@@ -157,6 +158,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
   };
 
   const saveSelection = async () => {
+    setSaveLoading(true);
     let rangesValue = trContent
       .map((row) => {
         return row.range.map((i) => cyS.gait.step[i][0]).join("-");
@@ -181,6 +183,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
         await removeFile(tmp);
       }
     );
+    setSaveLoading(false);
   };
 
   /* Update all chart logic */
@@ -367,10 +370,11 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
           onClick={saveSelection}
           content={"Save"}
           disabled={selDisable}
+          isLoading={saveLoading}
         />
         <div
           className="col-span-6 h-[18vh] shadow-lg rounded-xl mt-1
-          overflow-y-scroll overscroll-contain custom-scrollbar"
+          overflow-y-scroll overscroll-none custom-scrollbar"
         >
           <Table
             content={trContent}
