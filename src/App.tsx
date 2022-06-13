@@ -38,7 +38,7 @@ const titleBar = (
 function App() {
   return (
     <HashRouter>
-      <div className="flex ml-16">
+      <div className="flex ml-16 overscroll-contain">
         <SideBar />
         <Routes>
           <Route path="/" element={<Home />} />

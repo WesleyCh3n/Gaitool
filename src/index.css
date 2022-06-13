@@ -84,10 +84,10 @@
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
     border-radius: 10px;
-    background-color: #999;
+    background-color: #666;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background-color: #666;
+    background-color: #999;
   }
   .custom-scrollbar::-webkit-resizer {
     display: none;
