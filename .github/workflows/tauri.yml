@@ -17,7 +17,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: clone analyse rs
       run: |
-        git clone https://github.com/WesleyCh3n/analyze.rs ../analyze.rs
+        git clone https://github.com/WesleyCh3n/analyze-rs ../analyze-rs
     - name: setup node
       uses: actions/setup-node@v1
       with:
