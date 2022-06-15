@@ -5,7 +5,7 @@
 
 use std::path::PathBuf;
 
-use analyze_rs::core::{export::exporter, filter::filter, swrite::swrite, split::split};
+use analyze::core::{export::exporter, filter::filter, swrite::swrite, split::split};
 use serde_json::value::Value;
 
 #[tauri::command(async)]
