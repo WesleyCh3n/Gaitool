@@ -5,14 +5,21 @@
 
 use std::path::PathBuf;
 
-use analyze::core::{export::exporter, filter::filter, swrite::swrite, split::split};
+use analyze::core::{
+    export::exporter, filter::filter, split::split, swrite::swrite,
+};
 use serde_json::value::Value;
 
 #[tauri::command(async)]
-fn filter_csv(file: PathBuf, save_dir: PathBuf) -> Result<Value, String>{
-    match filter(file, save_dir) {
+fn filter_csv(
+    file: PathBuf,
+    save_dir: PathBuf,
+    remap_csv: PathBuf,
+    filter_csv: PathBuf,
+) -> Result<Value, String> {
+    match filter(file, save_dir, remap_csv, filter_csv) {
         Ok(resp) => Ok(Value::from(resp)),
-        Err(e) => Err(format!("{}", e))
+        Err(e) => Err(format!("{}", e)),
     }
 }
 
@@ -24,7 +31,7 @@ fn export_csv(
 ) -> Result<Value, String> {
     match exporter(file, save_dir, ranges) {
         Ok(resp) => Ok(Value::from(resp)),
-        Err(e) => Err(format!("{}", e))
+        Err(e) => Err(format!("{}", e)),
     }
 }
 
@@ -51,7 +58,6 @@ fn split_csv(
         Err(e) => Err(format!("{}", e)),
     }
 }
-
 
 fn main() {
     tauri::Builder::default()

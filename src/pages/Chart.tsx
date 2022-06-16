@@ -36,7 +36,7 @@ import {
   removeDir,
   removeFile,
 } from "@tauri-apps/api/fs";
-import { join, appDir, homeDir, basename } from "@tauri-apps/api/path";
+import { join, appDir, homeDir, basename, resourceDir } from "@tauri-apps/api/path";
 import { save, message } from "@tauri-apps/api/dialog";
 import { Button, ButtonOutline } from "../components/button/Button";
 
@@ -95,6 +95,8 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
   /* Create chart when upload api response FilterdData*/
   async function initChart(file: string) {
     var saveDir = await join(await AppDir, DataDir, FilterDir);
+    console.log(await resourceDir());
+
     const result = (await invoke("filter_csv", { file, saveDir })) as any;
 
     const result_path = await join(saveDir, result["FltrFile"]["rslt"]);
