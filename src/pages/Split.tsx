@@ -1,4 +1,5 @@
 import { open, message } from "@tauri-apps/api/dialog";
+import { join, resourceDir } from "@tauri-apps/api/path";
 import { invoke } from "@tauri-apps/api/tauri";
 import { useState } from "react";
 import { Button, ButtonOutline } from "../components/button/Button";
@@ -25,7 +26,8 @@ function Split() {
 
   const splitCsv = async () => {
     setloading(true);
-    await invoke("split_csv", { fileDir, saveDir, percent }).catch((e) =>
+    var remapCsv = await join(await resourceDir(), "assets/all.csv")
+    await invoke("split_csv", { fileDir, saveDir, percent, remapCsv }).catch((e) =>
       message(e));
     setloading(false);
   };

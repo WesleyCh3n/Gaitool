@@ -95,9 +95,10 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
   /* Create chart when upload api response FilterdData*/
   async function initChart(file: string) {
     var saveDir = await join(await AppDir, DataDir, FilterDir);
-    console.log(await resourceDir());
+    var remapCsv = await join(await resourceDir(), "assets/all.csv")
+    var filterCsv = await join(await resourceDir(), "assets/filter.csv")
 
-    const result = (await invoke("filter_csv", { file, saveDir })) as any;
+    const result = (await invoke("filter_csv", { file, saveDir, remapCsv, filterCsv})) as any;
 
     const result_path = await join(saveDir, result["FltrFile"]["rslt"]);
     const gt_path = await join(saveDir, result["FltrFile"]["cyGt"]);
@@ -168,11 +169,13 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
       .join(" ");
     if (!inputFile) return;
     const saveDir = await join(await AppDir, DataDir, SwriteDir);
+    var remapCsv = await join(await resourceDir(), "assets/all.csv")
     const file = inputFile;
     const result = (await invoke("swrite_csv", {
       file,
       saveDir,
       rangesValue,
+      remapCsv
     })) as any;
     const tmp = await join(saveDir, result["CleanFile"]);
     const output = await join(await homeDir(), result["CleanFile"]);

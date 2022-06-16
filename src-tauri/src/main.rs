@@ -40,8 +40,9 @@ fn swrite_csv(
     file: PathBuf,
     save_dir: PathBuf,
     ranges_value: String,
+    remap_csv: PathBuf,
 ) -> Result<Value, String> {
-    match swrite(file, save_dir, ranges_value) {
+    match swrite(file, save_dir, ranges_value, remap_csv) {
         Ok(resp) => Ok(Value::from(resp)),
         Err(e) => Err(format!("{}", e)),
     }
@@ -52,8 +53,9 @@ fn split_csv(
     file_dir: PathBuf,
     save_dir: PathBuf,
     percent: usize,
+    remap_csv: PathBuf,
 ) -> Result<(), String> {
-    match split(file_dir, save_dir, percent) {
+    match split(file_dir, save_dir, percent, remap_csv) {
         Ok(()) => Ok(()),
         Err(e) => Err(format!("{}", e)),
     }
