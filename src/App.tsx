@@ -5,6 +5,7 @@ import DualChart from "./pages/DualChart";
 import SideBar from "./components/SideBar";
 import Home from "./pages/Home";
 import Split from "./pages/Split";
+import Setting from "./pages/Setting";
 
 const titleBar = (
   <div data-tauri-drag-region className="fixed top-0 right-0 h-8 bg-white select-none">
@@ -44,6 +45,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/chart" element={<DualChart />} />
           <Route path="/split" element={<Split />} />
+          <Route path="/setting" element={<Setting />} />
         </Routes>
       </div>
     </HashRouter>

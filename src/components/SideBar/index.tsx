@@ -20,7 +20,7 @@ export function SideBar() {
       <SideBarIcon icon={<AiOutlineScissor size="28" />} text="split" />
       <SideBarIcon icon={<AiOutlineCheck size="28" />} text="tooltip" />
       <ThemeIcon />
-      <SideBarIcon icon={<AiOutlineSetting size="28" />} text="tooltip" />
+      <SideBarIcon icon={<AiOutlineSetting size="28" />} text="setting" />
     </div>
   );
 }
