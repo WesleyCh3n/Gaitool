@@ -36,7 +36,13 @@ import {
   removeDir,
   removeFile,
 } from "@tauri-apps/api/fs";
-import { join, appDir, homeDir, basename, resourceDir } from "@tauri-apps/api/path";
+import {
+  join,
+  appDir,
+  homeDir,
+  basename,
+  resourceDir,
+} from "@tauri-apps/api/path";
 import { save, message } from "@tauri-apps/api/dialog";
 import { Button, ButtonOutline } from "../components/button/Button";
 
@@ -59,7 +65,9 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
     _: new Function(),
   });
 
-  const [dataS, setDataS] = useState<IData>(JSON.parse(JSON.stringify(dataInit)));
+  const [dataS, setDataS] = useState<IData>(
+    JSON.parse(JSON.stringify(dataInit))
+  );
   const [cyS, setCyS] = useState<ICyData>({
     gait: { step: [[]], sel: [0, 0] },
     lt: { step: [[]], sel: [0, 0] },
@@ -95,10 +103,15 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
   /* Create chart when upload api response FilterdData*/
   async function initChart(file: string) {
     var saveDir = await join(await AppDir, DataDir, FilterDir);
-    var remapCsv = await join(await resourceDir(), "assets/all.csv")
-    var filterCsv = await join(await resourceDir(), "assets/filter.csv")
+    var remapCsv = await join(await resourceDir(), "assets/all.csv");
+    var filterCsv = await join(await resourceDir(), "assets/filter.csv");
 
-    const result = (await invoke("filter_csv", { file, saveDir, remapCsv, filterCsv})) as any;
+    const result = (await invoke("filter_csv", {
+      file,
+      saveDir,
+      remapCsv,
+      filterCsv,
+    }).catch(message)) as any;
 
     const result_path = await join(saveDir, result["FltrFile"]["rslt"]);
     const gt_path = await join(saveDir, result["FltrFile"]["cyGt"]);
@@ -145,7 +158,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
       file,
       saveDir,
       ranges,
-    }).catch()) as any; // TODO: ???
+    }).catch(message)) as any; // TODO: ???
     const tmp = await join(saveDir, result["ExportFile"]);
     const output = await join(await homeDir(), result["ExportFile"]);
     save({ title: "Save Export File", defaultPath: output }).then(
@@ -169,14 +182,14 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
       .join(" ");
     if (!inputFile) return;
     const saveDir = await join(await AppDir, DataDir, SwriteDir);
-    var remapCsv = await join(await resourceDir(), "assets/all.csv")
+    var remapCsv = await join(await resourceDir(), "assets/all.csv");
     const file = inputFile;
     const result = (await invoke("swrite_csv", {
       file,
       saveDir,
       rangesValue,
-      remapCsv
-    })) as any;
+      remapCsv,
+    }).catch(message)) as any;
     const tmp = await join(saveDir, result["CleanFile"]);
     const output = await join(await homeDir(), result["CleanFile"]);
     save({ title: "Save Swrite File", defaultPath: output }).then(
