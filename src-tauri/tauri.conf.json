@@ -14,7 +14,7 @@
     "allowlist": {
       "all": true,
       "fs": {
-        "scope": ["$APP/*","$APP"]
+        "scope": ["$APP/*","$APP", "$RESOURCE"]
       }
     },
     "bundle": {
@@ -43,7 +43,7 @@
       },
       "resources": ["./assets"],
       "shortDescription": "",
-      "targets": "all",
+      "targets": ["deb", "msi", "dmg"],
       "windows": {
         "certificateThumbprint": null,
         "digestAlgorithm": "sha256",
