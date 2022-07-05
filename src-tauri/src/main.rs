@@ -50,12 +50,18 @@ fn swrite_csv(
 
 #[tauri::command(async)]
 fn split_csv(
-    file_dir: PathBuf,
+    file: PathBuf,
     save_dir: PathBuf,
     percent: usize,
     remap_csv: PathBuf,
 ) -> Result<(), String> {
-    match split(file_dir, save_dir, percent, remap_csv) {
+    match split(
+        &file,
+        &save_dir,
+        percent,
+        &remap_csv,
+        None,
+    ) {
         Ok(()) => Ok(()),
         Err(e) => Err(format!("{}", e)),
     }
