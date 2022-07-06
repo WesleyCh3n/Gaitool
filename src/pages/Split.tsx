@@ -37,22 +37,49 @@ function Split() {
   };
 
   const splitCsv = async () => {
-    setIsSplitting(() => true);
+    if (fileDir == "") {
+      message("input dir cannot be empty");
+      return;
+    }
+    if (saveDir == "") {
+      message("save dir cannot be empty");
+      return;
+    }
 
+    setIsSplitting(() => true);
+    setMsg((m) => [
+      ...m,
+      {
+        msg: `Start Spliting ${fileDir} to ${saveDir}`,
+        key: `${new Date().getTime()}`,
+      },
+    ]);
     var remapCsv = globalPath.remapCsv;
-    const entries = await readDir("/home/wesley/Downloads/input_dir");
+    const entries = await readDir(fileDir);
     for (const entry of entries) {
       let file = entry.path;
-      setMsg((m) => [
-        ...m,
-        { msg: file, key: `${new Date().getTime()} ${file}` },
-      ]);
-
-      await invoke("split_csv", { file, saveDir, percent, remapCsv }).catch(
-        (e) => message(e)
-      );
+      await invoke("split_csv", { file, saveDir, percent, remapCsv })
+        .then(() => {
+          setMsg((m) => [
+            ...m,
+            { msg: `${file}: Success`, key: `${new Date().getTime()} ${file}` },
+          ]);
+        })
+        .catch((e) => {
+          setMsg((m) => [
+            ...m,
+            { msg: `${file}: ${e}`, key: `${new Date().getTime()} ${file}` },
+          ]);
+        });
     }
     setIsSplitting(false);
+    setMsg((m) => [
+      ...m,
+      {
+        msg: `Finished`,
+        key: `${new Date().getTime()}`,
+      },
+    ]);
   };
 
   return (

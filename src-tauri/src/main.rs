@@ -48,8 +48,8 @@ fn swrite_csv(
     }
 }
 
-#[tauri::command(async)]
-fn split_csv(
+#[tauri::command]
+async fn split_csv(
     file: PathBuf,
     save_dir: PathBuf,
     percent: usize,
