@@ -14,7 +14,7 @@
     "allowlist": {
       "all": true,
       "fs": {
-        "scope": ["$APP", "$RESOURCE", "$HOME"]
+        "scope": ["$APP", "$APP/*", "$RESOURCE", "$HOME"]
       }
     },
     "bundle": {
