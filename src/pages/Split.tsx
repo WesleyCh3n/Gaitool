@@ -19,7 +19,10 @@ function Split() {
   useEffect(() => {
     (async () => {
       setGlobalPath({
-        remapCsv: await join(await resourceDir(), "assets/all.csv"),
+        remapCsv: await join(
+          (await resourceDir()).replace("\\\\?\\", ""),
+          "assets/all.csv"
+        ),
       });
     })();
   }, []);
