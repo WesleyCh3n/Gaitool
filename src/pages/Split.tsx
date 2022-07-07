@@ -10,7 +10,9 @@ function Split() {
   const [saveDir, setSaveDir] = useState("");
   const [percent, setPercent] = useState(70);
 
-  const [msg, setMsg] = useState<{ msg: string; key: string }[]>([]);
+  const [msg, setMsg] = useState<
+    { msg: string; key: string; success: boolean }[]
+  >([]);
   const [globalPath, setGlobalPath] = useState({ remapCsv: "" });
   const [isSpliting, setIsSplitting] = useState(false);
 
@@ -52,6 +54,7 @@ function Split() {
       {
         msg: `Start Spliting ${fileDir} to ${saveDir}`,
         key: `${new Date().getTime()}`,
+        success: true,
       },
     ]);
     var remapCsv = globalPath.remapCsv;
@@ -62,13 +65,21 @@ function Split() {
         .then(() => {
           setMsg((m) => [
             ...m,
-            { msg: `${file}: Success`, key: `${new Date().getTime()} ${file}` },
+            {
+              msg: `${file}: Success`,
+              key: `${new Date().getTime()} ${file}`,
+              success: true,
+            },
           ]);
         })
         .catch((e) => {
           setMsg((m) => [
             ...m,
-            { msg: `${file}: ${e}`, key: `${new Date().getTime()} ${file}` },
+            {
+              msg: `${file}: ${e}`,
+              key: `${new Date().getTime()} ${file}`,
+              success: false,
+            },
           ]);
         });
     }
@@ -78,6 +89,7 @@ function Split() {
       {
         msg: `Finished`,
         key: `${new Date().getTime()}`,
+        success: true,
       },
     ]);
   };
@@ -119,7 +131,9 @@ function Split() {
   );
 }
 
-const Log = (props: { messages: { msg: string; key: string }[] }) => {
+const Log = (props: {
+  messages: { msg: string; key: string; success: boolean }[];
+}) => {
   const msgEndRef = useRef<null | HTMLDivElement>(null);
   useEffect(() => {
     msgEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -130,7 +144,12 @@ const Log = (props: { messages: { msg: string; key: string }[] }) => {
         overflow-y-scroll overflow-visible custom-scrollbar"
     >
       {props.messages.map((msg) => (
-        <div key={msg.key} className="text-gray-400 text-sm">
+        <div
+          key={msg.key}
+          className={`${
+            msg.success ? "text-gray-400" : "text-red-500"
+          } text-sm`}
+        >
           {msg.msg}
         </div>
       ))}
