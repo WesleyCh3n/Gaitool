@@ -35,14 +35,26 @@
   .lineplot-line {
     @apply fill-transparent stroke-blue-400
   }
-  .lineplot-axis {
-    @apply text-[20px] stroke-gray-500 dark:text-gray-400 dark:stroke-gray-400
+  .lineplot-axis path{
+    @apply stroke-gray-900 dark:stroke-gray-400 stroke-[2]
+  }
+  .lineplot-axis line{
+    @apply stroke-gray-900 dark:stroke-gray-400 stroke-[2]
+  }
+  .lineplot-axis text{
+    @apply text-[20px] dark:fill-gray-300 stroke-[0.1]
   }
   .lineplot-hover-line {
     @apply stroke-gray-900 dark:stroke-gray-200
   }
-  .navplot-axis {
-    @apply text-xs stroke-gray-500 dark:text-gray-400 dark:stroke-gray-400
+  .navplot-axis path{
+    @apply stroke-gray-900 dark:stroke-gray-400 stroke-[2]
+  }
+  .navplot-axis line{
+    @apply stroke-gray-900 dark:stroke-gray-400 stroke-[2]
+  }
+  .navplot-axis text{
+    @apply text-xs dark:fill-gray-300 stroke-[0.1]
   }
   .navplot-line {
     @apply fill-transparent stroke-blue-400
@@ -53,14 +65,21 @@
   .boxplot-rect {
     @apply fill-gray-500 dark:stroke-gray-300 stroke-gray-800
   }
-  .boxplot-axis {
-    @apply text-[20px] stroke-gray-900 dark:text-gray-400 dark:stroke-gray-400
+  .boxplot-axis path{
+    @apply stroke-gray-900 dark:stroke-gray-400 stroke-[2]
+  }
+  .boxplot-axis line{
+    @apply stroke-gray-900 dark:stroke-gray-400 stroke-[2]
+  }
+  .boxplot-axis text{
+    @apply text-[20px] dark:fill-gray-300 stroke-[0.1]
   }
   .boxplot-line {
     @apply dark:stroke-gray-300 stroke-gray-600 stroke-2
   }
   .boxplot-text {
-    @apply dark:stroke-gray-300 stroke-gray-900 text-[22px] stroke-[1.2]
+    @apply dark:fill-gray-300 dark:stroke-gray-300
+      fill-gray-900 stroke-gray-900 text-[22px] stroke-[0.1]
   }
 }
 
