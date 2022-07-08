@@ -62,7 +62,8 @@
         "height": 750,
         "resizable": true,
         "title": "FuAn Analyze",
-        "width": 1300
+        "width": 1300,
+        "visible": false
       }
     ]
   }

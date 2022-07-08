@@ -6,6 +6,8 @@ import SideBar from "./components/SideBar";
 import Home from "./pages/Home";
 import Split from "./pages/Split";
 import Setting from "./pages/Setting";
+import { useEffect } from "react";
+import { invoke } from "@tauri-apps/api/tauri";
 
 const titleBar = (
   <div data-tauri-drag-region className="fixed top-0 right-0 h-8 bg-white select-none">
@@ -37,6 +39,9 @@ const titleBar = (
 );
 
 function App() {
+  useEffect(() => {
+    invoke('show_main_window');
+  }, [])
   return (
     <HashRouter>
       <div className="flex ml-16 overscroll-contain">

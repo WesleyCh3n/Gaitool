@@ -3,6 +3,7 @@
     windows_subsystem = "windows"
 )]
 
+use tauri::Manager;
 use std::path::PathBuf;
 
 use analyze::core::{
@@ -67,10 +68,15 @@ async fn split_csv(
     }
 }
 
+#[tauri::command]
+async fn show_main_window(window: tauri::Window) {
+    window.get_window("main").unwrap().show().unwrap(); // replace "main" by the name of your window
+}
+
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
-            filter_csv, export_csv, swrite_csv, split_csv
+            filter_csv, export_csv, swrite_csv, split_csv, show_main_window
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
