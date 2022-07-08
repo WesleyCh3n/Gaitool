@@ -132,7 +132,7 @@ const Log = (props: {
   }, [props.messages]);
   return (
     <div
-      className="h-full w-full bg-gray-900 rounded-lg p-3 mt-2
+      className="h-full w-full bg-gray-200 dark:bg-gray-900 rounded-lg p-3 mt-2
         overflow-y-scroll overflow-visible custom-scrollbar"
     >
       {props.messages.map((msg) => (

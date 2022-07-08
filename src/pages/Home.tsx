@@ -1,6 +1,15 @@
 const Home = () => {
-  return(
+  return (
     <div className="w-screen h-screen dark:bg-gray-800">
+      <div className="w-full h-full flex justify-center items-center">
+        <h1
+          className="select-none font-extrabold text-transparent text-8xl
+        bg-clip-text bg-gradient-to-r from-yellow-300 to-pink-600"
+        >
+          FuAn Analyze
+        </h1>
+      </div>
+
     </div>
   )
 }
