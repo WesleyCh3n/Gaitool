@@ -41,7 +41,6 @@ import {
   appDir,
   homeDir,
   basename,
-  resourceDir,
 } from "@tauri-apps/api/path";
 import { save, message } from "@tauri-apps/api/dialog";
 import { Button, ButtonOutline } from "../components/button/Button";
@@ -113,7 +112,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
       saveDir,
       remapCsv,
       filterCsv,
-    }).catch(message)) as any;
+    })) as any;
 
     const result_path = await join(saveDir, result["FltrFile"]["rslt"]);
     const gt_path = await join(saveDir, result["FltrFile"]["cyGt"]);
