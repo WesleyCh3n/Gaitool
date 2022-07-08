@@ -1,11 +1,12 @@
 import { open, message } from "@tauri-apps/api/dialog";
 import { readDir } from "@tauri-apps/api/fs";
-import { join, resourceDir } from "@tauri-apps/api/path";
 import { invoke } from "@tauri-apps/api/tauri";
 import { useState, useRef, useEffect } from "react";
 import { Button, ButtonOutline } from "../components/button/Button";
+import { useStore } from "../store";
 
 function Split() {
+  const cfgPath = useStore((state) => state.cfgPath);
   const [fileDir, setFileDir] = useState("");
   const [saveDir, setSaveDir] = useState("");
   const [percent, setPercent] = useState(70);
@@ -13,19 +14,7 @@ function Split() {
   const [msg, setMsg] = useState<
     { msg: string; key: string; success: boolean }[]
   >([]);
-  const [globalPath, setGlobalPath] = useState({ remapCsv: "" });
   const [isSpliting, setIsSplitting] = useState(false);
-
-  useEffect(() => {
-    (async () => {
-      setGlobalPath({
-        remapCsv: await join(
-          (await resourceDir()).replace("\\\\?\\", ""),
-          "assets/all.csv"
-        ),
-      });
-    })();
-  }, []);
 
   const openDialog = (setDir: (dir: string) => void) => {
     open({
@@ -60,7 +49,7 @@ function Split() {
         success: true,
       },
     ]);
-    var remapCsv = globalPath.remapCsv;
+    var remapCsv = cfgPath.remapCsv;
     const entries = await readDir(fileDir);
     for (const entry of entries) {
       let file = entry.path;
@@ -149,9 +138,8 @@ const Log = (props: {
       {props.messages.map((msg) => (
         <div
           key={msg.key}
-          className={`${
-            msg.success ? "text-gray-400" : "text-red-500"
-          } text-sm`}
+          className={`${msg.success ? "text-gray-400" : "text-red-500"
+            } text-sm`}
         >
           {msg.msg}
         </div>

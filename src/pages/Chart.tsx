@@ -45,6 +45,7 @@ import {
 } from "@tauri-apps/api/path";
 import { save, message } from "@tauri-apps/api/dialog";
 import { Button, ButtonOutline } from "../components/button/Button";
+import { useStore } from "../store";
 
 const refKey = ["line", "bmax", "bmin", "lnav", "bclt", "bcrt", "bcdb", "bcgt"];
 
@@ -57,6 +58,7 @@ const SwriteDir = "swrite";
 export interface ChartProps {}
 
 const Chart = forwardRef((_props: ChartProps, ref) => {
+  const cfgPath = useStore((state) => state.cfgPath);
   const refs: { [k: string]: RefObject<SVGSVGElement> } = {};
   refKey.forEach((k) => {
     refs[k] = useRef<SVGSVGElement>(null);
@@ -103,8 +105,8 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
   /* Create chart when upload api response FilterdData*/
   async function initChart(file: string) {
     var saveDir = await join(await AppDir, DataDir, FilterDir);
-    var remapCsv = await join((await resourceDir()).replace("\\\\?\\", ""), "assets/all.csv");
-    var filterCsv = await join((await resourceDir()).replace("\\\\?\\", ""), "assets/filter.csv");
+    var remapCsv = cfgPath.remapCsv;
+    var filterCsv = cfgPath.filterCsv;
 
     const result = (await invoke("filter_csv", {
       file,
@@ -182,7 +184,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
       .join(" ");
     if (!inputFile) return;
     const saveDir = await join(await AppDir, DataDir, SwriteDir);
-    var remapCsv = await join((await resourceDir()).replace("\\\\?\\", ""), "assets/all.csv");
+    var remapCsv = cfgPath.remapCsv;
     const file = inputFile;
     const result = (await invoke("swrite_csv", {
       file,
