@@ -64,7 +64,7 @@ const PathItem = (props: {
           <span className="text-sm font-bold text-gray-700 dark:text-gray-500">
             {props.title}
           </span>
-          <span className="text-lg dark:text-gray-400">{props.content}</span>
+          <span className="text-lg whitespace-nowrap dark:text-gray-400">{props.content}</span>
         </div>
       </div>
       <ButtonOutline content="Modify" onClick={props.f} />
