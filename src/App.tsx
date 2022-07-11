@@ -1,15 +1,13 @@
-import { Route, Routes, HashRouter } from "react-router-dom";
-import { appWindow } from "@tauri-apps/api/window";
-
-import DualChart from "./pages/DualChart";
-import SideBar from "./components/SideBar";
-import Home from "./pages/Home";
-import Split from "./pages/Split";
-import Setting from "./pages/Setting";
 import { useEffect } from "react";
+import { HashRouter as Router } from "react-router-dom";
 import { invoke } from "@tauri-apps/api/tauri";
-import { useStore } from "./store";
+import { appWindow } from "@tauri-apps/api/window";
 import { join, resourceDir } from "@tauri-apps/api/path";
+
+import SideBar from "./components/SideBar";
+import AnimatedRoute from "./components/AnimatedRoute";
+
+import { useStore } from "./store";
 
 const titleBar = (
   <div
@@ -61,17 +59,12 @@ function App() {
   }, []);
 
   return (
-    <HashRouter>
+    <Router>
       <div className="flex ml-16 overscroll-contain">
         <SideBar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/chart" element={<DualChart />} />
-          <Route path="/split" element={<Split />} />
-          <Route path="/setting" element={<Setting />} />
-        </Routes>
+        <AnimatedRoute />
       </div>
-    </HashRouter>
+    </Router>
   );
 }
 
