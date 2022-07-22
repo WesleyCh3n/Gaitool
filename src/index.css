@@ -4,45 +4,123 @@
 
 @layer components {
   .baseSize {
-    /*  */
     @apply text-sm
   }
-  .selectBox {
-    @apply overflow-y-auto appearance-none block px-3 py-1.5
-    text-sm font-normal text-gray-500 bg-gray-200 bg-clip-padding bg-no-repeat
-    border border-solid border-gray-300 rounded transition ease-in-out
-    hover:text-gray-700 hover:bg-white hover:border-blue-600 hover:outline-none;
+  .sidebar-icon {
+    @apply relative flex items-center justify-center
+    h-12 w-12 mt-2 mb-2 mx-auto
+    bg-gray-400 hover:bg-green-600 dark:bg-gray-800
+    text-green-500 hover:text-white
+    hover:rounded-xl rounded-3xl
+    transition-all duration-150 ease-linear
+    cursor-pointer shadow-lg
+    active:translate-y-[2px];
+  }
+  .sidebar-icon:nth-last-child(2) {
+    @apply mt-auto
+  }
+  .sidebar-tooltip {
+    @apply absolute w-auto p-2 m-2 min-w-max left-14 rounded-md shadow-md
+    text-white bg-gray-900
+    text-xs font-bold
+    transition-all duration-100 scale-0 origin-left;
   }
   .normalBox {
     /*  */
-    @apply border rounded-md border-solid border-gray-300 shadow-md;
+    @apply rounded-md shadow-lg dark:bg-gray-700;
   }
-  .smallBtn {
-    /*  */
-    @apply btn btn-sm whitespace-nowrap btn-outline
+  .chart-box {
+    @apply rounded-md shadow-lg dark:bg-gray-700;
+  }
+  .lineplot-line {
+    @apply fill-transparent stroke-blue-400
+  }
+  .lineplot-axis path{
+    @apply stroke-gray-900 dark:stroke-gray-400 stroke-[2]
+  }
+  .lineplot-axis line{
+    @apply stroke-gray-900 dark:stroke-gray-400 stroke-[2]
+  }
+  .lineplot-axis text{
+    @apply text-[20px] dark:fill-gray-300 stroke-[0.1]
+  }
+  .lineplot-hover-line {
+    @apply stroke-gray-900 dark:stroke-gray-200
+  }
+  .navplot-axis path{
+    @apply stroke-gray-900 dark:stroke-gray-400 stroke-[2]
+  }
+  .navplot-axis line{
+    @apply stroke-gray-900 dark:stroke-gray-400 stroke-[2]
+  }
+  .navplot-axis text{
+    @apply text-xs dark:fill-gray-300 stroke-[0.1]
+  }
+  .navplot-line {
+    @apply fill-transparent stroke-blue-400
+  }
+  .navplot-handle {
+    @apply stroke-[1.5] stroke-gray-500 dark:stroke-gray-400
+  }
+  .boxplot-rect {
+    @apply fill-gray-500 dark:stroke-gray-300 stroke-gray-800
+  }
+  .boxplot-axis path{
+    @apply stroke-gray-900 dark:stroke-gray-400 stroke-[2]
+  }
+  .boxplot-axis line{
+    @apply stroke-gray-900 dark:stroke-gray-400 stroke-[2]
+  }
+  .boxplot-axis text{
+    @apply text-[20px] dark:fill-gray-300 stroke-[0.1]
+  }
+  .boxplot-line {
+    @apply dark:stroke-gray-300 stroke-gray-600 stroke-2
+  }
+  .boxplot-text {
+    @apply dark:fill-gray-300 dark:stroke-gray-300
+      fill-gray-900 stroke-gray-900 text-[22px] stroke-[0.1]
   }
 }
 
-@layer base {
-  h1 {
-    /*  */
-    @apply text-center text-xs whitespace-nowrap
-  }
-  button {
-    /*  */
-    @apply btn btn-sm whitespace-nowrap
+@layer base{
+  p {
+    @apply dark:text-gray-300
   }
 }
 
 @layer utilities {
-    /* Chrome, Safari and Opera */
-    .no-scrollbar::-webkit-scrollbar {
-      display: none;
-    }
+  .custom-scrollbar::-webkit-scrollbar {
+    -webkit-appearance: none;
+    background-color: none;
+  }
+  .custom-scrollbar::-webkit-scrollbar:vertical {
+    width: 5px;
+  }
+  .custom-scrollbar::-webkit-scrollbar:horizontal {
+    width: 5px;
+    height: 5px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background-color: #666;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: #999;
+  }
+  .custom-scrollbar::-webkit-resizer {
+    display: none;
+  }
+  .custom-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
 
-    .no-scrollbar {
-      -ms-overflow-style: none; /* IE and Edge */
-      scrollbar-width: none; /* Firefox */
-    }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
 }
-

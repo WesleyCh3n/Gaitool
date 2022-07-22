@@ -1,54 +1,60 @@
 import type { ReactElement } from "react";
 import { useState } from "react";
-
+import { open } from "@tauri-apps/api/dialog";
+import { message } from "@tauri-apps/api/dialog";
+import { AiOutlineUpload } from "react-icons/ai";
 import { Button } from "../button/Button";
-import { sendFile } from "../../api/filter"
-import { ResData } from "../../models/response_models";
 
-export interface UploaderProps {
-  handleFile: (res: ResData) => Promise<void>;
-}
-
-export function Uploader(props: UploaderProps): ReactElement | null {
-  const [selectedFile, setSelectedFile] = useState<FileList>();
+export function Uploader(props: {
+  file: string;
+  setFile: (file: string) => void;
+  handleFile: (file: string) => Promise<void>;
+}): ReactElement | null {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const selectOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files) return;
-
-    setSelectedFile(e.target.files);
+  const openDialog = () => {
+    open({
+      title: "File Picker",
+      filters: [
+        { name: "CSV File", extensions: ["csv"] },
+        { name: "All", extensions: ["*"] },
+      ],
+      multiple: false,
+      directory: false,
+    }).then((res) => {
+      if (Array.isArray(res) || !res) {
+        return;
+      }
+      props.setFile(res);
+    });
   };
 
   async function handleSelectList() {
-    if (!selectedFile) return;
+    if (!props.file) return;
     setIsLoading(true);
-
-    const result = await sendFile(selectedFile[0])
-    await props.handleFile(result);
+    await props.handleFile(props.file).catch((e) => message(e, "Error"));
     setIsLoading(false);
   }
 
   return (
-    <div className="grid lg:grid-cols-6 gap-4 content-center">
-      <input
-        className="lg:col-span-5 baseSize
-          form-control block p-1 font-normal
-          text-gray-700 bg-white bg-clip-padding border border-solid
-          border-gray-300 rounded-lg transition ease-in-out hover:text-gray-700
-          hover:bg-white hover:border-blue-600 hover:outline-none shadow-md"
-        type="file"
-        name="file"
-        title=" "
-        onChange={selectOnChange}
-        // multiple
+    <div className="grid lg:grid-cols-6 gap-2 mx-2 w-full">
+      <Button
+        className="col-span-5 whitespace-nowrap overflow-x-auto no-scrollbar"
+        onClick={openDialog}
+        content={props.file ? "file: " + props.file : "Open File"}
       />
-      <div className="col-span-1 flex items-center justify-center">
-        <Button
-          title={"Upload"}
-          onClick={handleSelectList}
-          isLoading={isLoading}
-        />
-      </div>
+      <Button
+        className={`col-span-1 border-none bg-transparent shadow-none
+         dark:bg-transparent text-gray-800 dark:text-gray-400
+         ${
+           isLoading
+             ? "dark:hover:bg-transparent hover:bg-transparent cursor-default"
+             : ""
+         }`}
+        onClick={handleSelectList}
+        content={<AiOutlineUpload size={25} strokeWidth={5} />}
+        isLoading={isLoading}
+      />
     </div>
   );
 }

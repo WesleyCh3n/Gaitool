@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 import { RefObject } from "react";
 
-import { IData, layout } from ".";
+import { IPosition, layout } from ".";
 
 export function createLineChart(ref: RefObject<SVGSVGElement>) {
   const svg = d3
@@ -9,23 +9,18 @@ export function createLineChart(ref: RefObject<SVGSVGElement>) {
     .attr("preserveAspectRatio", "xMinYMin meet")
     .attr("viewBox", `0 0 ${layout.width} ${layout.lineHeight}`)
     .append("g") // workground group
-    .attr("transform", `translate(${layout.margin.l} ,${layout.margin.t})`)
-    .attr("class", "workspace");
+    .attr("transform", `translate(${layout.margin.l} ,${layout.margin.t})`);
 
-  svg
+  const xAxis = svg
     .append("g") // x axis group
-    .attr("class", "axis axis__x")
     .attr("transform", `translate(0, ${layout.getLineHeight()})`);
 
-  svg
+  const yAxis = svg
     .append("g") // y axis group
-    .attr("class", "axis axis__y");
 
   svg
     .append("path") // line path group
-    .attr("class", "line") // Assign a class for styling
-    .attr("fill", "none")
-    .attr("stroke", "steelblue");
+    .attr("class", "lineplot-line") // Assign a class for styling
 
   svg
     .append("defs") // region clip path
@@ -71,14 +66,14 @@ export function createLineChart(ref: RefObject<SVGSVGElement>) {
 
   tooltipGroup
     .append("path") // create vertical line to follow mouse
-    .attr("class", "mouse-line")
+    .attr("class", "lineplot-hover-line")
     .attr("d", `M 0 0 V ${layout.getLineHeight()}`)
     .attr("stroke", "#303030")
     .attr("stroke-width", 2)
     .style("stroke-dasharray", "3, 3")
     .attr("opacity", "0");
 
-  const bisectX = d3.bisector((d: IData) => d.x).center;
+  const bisectX = d3.bisector((d: IPosition) => d.x).center;
   const tooltipOverlay = svg
     .append("rect")
     .attr("class", "overlay")
@@ -99,7 +94,7 @@ export function createLineChart(ref: RefObject<SVGSVGElement>) {
   const xScale = d3.scaleLinear().range([0, layout.getWidth()]);
   const yScale = d3.scaleLinear().range([layout.getLineHeight(), 0]);
 
-  function update(data: IData[], range?: [number, number]) {
+  function update(data: IPosition[], range?: [number, number]) {
     if (range) {
       xScale.domain(range);
     } else {
@@ -107,31 +102,29 @@ export function createLineChart(ref: RefObject<SVGSVGElement>) {
     }
     yScale.domain(d3.extent(data, (d) => d.y).map((y) => y ?? 0));
 
-    // prepare axisGen
-    var xAxisGen = d3.axisBottom(xScale);
-    var yAxisGen = d3.axisLeft(yScale);
-
     // region x/y axis
-    svg
-      .select(".axis__x")
-      .call(xAxisGen as any) // TODO: fix type
-      .selectAll(".tick text")
-      .attr("font-size", "15");
-    svg
-      .select(".axis__y")
-      .call(yAxisGen as any) // TODO: fix type
-      .selectAll(".tick text")
-      .attr("font-size", "15");
+    xAxis.transition()
+      .attr("class", "lineplot-axis")
+      .call(d3.axisBottom(xScale))
+
+    yAxis.transition()
+      .attr("class", "lineplot-axis")
+      .call(d3.axisLeft(yScale));
 
     svg
-      .select(".line") // region line/area
-      .datum(data)
-      .attr("clip-path", "url(#chart-path)")
+      .select(".lineplot-line") // region line/area
+      .data([data])
+      .join(
+        (enter) => enter,
+        (update) => update,
+        (exit) => exit.remove(),
+      )
       .transition()
+      .attr("clip-path", "url(#chart-path)")
       .attr(
         "d",
         d3
-          .line<IData>()
+          .line<IPosition>()
           .x((d) => xScale(d.x))
           .y((d) => yScale(d.y))
       );
@@ -151,7 +144,7 @@ export function createLineChart(ref: RefObject<SVGSVGElement>) {
       tooltipGroup.select(".tooltip-x").text(`x: ${closestCord.x}`);
       tooltipGroup.select(".tooltip-y").text(`y: ${closestCord.y.toFixed(3)}`);
       tooltipGroup
-        .select(".mouse-line")
+        .select(".lineplot-hover-line")
         .attr("opacity", "1")
         .attr("transform", `translate(0, ${-yScale(closestCord.y)})`);
     });

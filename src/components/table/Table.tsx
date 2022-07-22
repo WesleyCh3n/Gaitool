@@ -1,5 +1,7 @@
 import type { ReactElement } from "react";
-import { ICycleList } from "../chart";
+import { ICyData } from "../chart";
+import { IoIosCloseCircleOutline } from "react-icons/io";
+import { Button } from "../button/Button";
 
 export interface IRow {
   [k: string]: number | string | any;
@@ -8,7 +10,7 @@ export interface IRow {
   lt: number | string;
   rt: number | string;
   db: number | string;
-  cycle: ICycleList;
+  cycle: ICyData;
   id: string;
 }
 
@@ -21,78 +23,53 @@ export interface TableProps {
 
 export function Table(props: TableProps): ReactElement | null {
   return (
-    <table className="table w-full table-compact table-auto">
-      <thead>
+    <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+      <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
         <tr>
-          <th>Range (s)</th>
-          <th>GAIT</th>
-          <th>LT</th>
-          <th>RT</th>
-          <th>DB</th>
-          <th> </th>
-          <th>
-            <button
+          <th className="sticky top-0 px-4 bg-gray-50 dark:bg-gray-700">
+            Range (s)
+          </th>
+          <th className="sticky top-0 px-4 bg-gray-50 dark:bg-gray-700">
+            GAIT
+          </th>
+          <th className="sticky top-0 px-4 bg-gray-50 dark:bg-gray-700">LT</th>
+          <th className="sticky top-0 px-4 bg-gray-50 dark:bg-gray-700">RT</th>
+          <th className="sticky top-0 px-4 bg-gray-50 dark:bg-gray-700">DB</th>
+          <th className="sticky top-0 px-4 bg-gray-50 dark:bg-gray-700">
+            <Button
               onClick={() => props.removeAll()}
-              className="btn btn-circle btn-outline btn-xs text-red-600"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                className="inline-block w-4 h-4 stroke-current"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M6 18L18 6M6 6l12 12"
-                ></path>
-              </svg>
-            </button>
+              className="bg-transparent shadow-none
+                         dark:bg-transparent text-red-600 dark:text-red-600"
+              content={<IoIosCloseCircleOutline size={24} />}
+            />
           </th>
         </tr>
       </thead>
       <tbody>
         {props.content.map((row) => {
           return (
-            <tr key={row.id}>
-              <td>
+            <tr
+              onClick={() => props.updateView(row.range)}
+              className="relative bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 hover:cursor-pointer"
+              key={row.id}
+            >
+              <td className="px-4">
                 {row.range
                   .map((i) => row.cycle.gait.step[i][0].toFixed(2))
                   .join("-")}
               </td>
-              <td>{row.gt}</td>
-              <td>{row.lt}</td>
-              <td>{row.rt}</td>
-              <td>{row.db}</td>
-              <th>
-                <button
-                  onClick={() => props.updateView(row.range)}
-                  className="btn btn-ghost btn-outline btn-xs"
-                >
-                  Show
-                </button>
-              </th>
-              <th>
-                <button
+              <td className="px-4">{row.gt}</td>
+              <td className="px-4">{row.lt}</td>
+              <td className="px-4">{row.rt}</td>
+              <td className="px-4">{row.db}</td>
+              <td className="px-4">
+                <Button
                   onClick={() => props.removeNode(row.id)}
-                  className="btn btn-circle btn-outline btn-xs text-red-600"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    className="inline-block w-4 h-4 stroke-current"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M6 18L18 6M6 6l12 12"
-                    ></path>
-                  </svg>
-                </button>
-              </th>
+                  className="bg-transparent shadow-none
+                         dark:bg-transparent text-red-600 dark:text-red-600"
+                  content={<IoIosCloseCircleOutline size={24} />}
+                />
+              </td>
             </tr>
           );
         })}

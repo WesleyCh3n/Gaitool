@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 import { RefObject } from "react";
-import { IData, layout } from "./";
-import { ICycleList } from "./Chart";
+import { IPosition, layout } from "./";
+import { ICyData } from "./Chart";
 
 export function createGaitNav(ref: RefObject<SVGSVGElement>) {
   const navSvg = d3
@@ -14,30 +14,27 @@ export function createGaitNav(ref: RefObject<SVGSVGElement>) {
   var xScaleNav = d3.scaleLinear().range([0, layout.getWidth()]);
   var yScale = d3.scaleLinear().range([layout.getNavTickHeight(), 0]);
 
-  const xAxisG = navSvg
+  const xAxis = navSvg
     .append("g") // region x axis
-    .attr("class", "axis__x")
+    .attr("class", "navplot-axis")
     .attr("transform", `translate(0, ${layout.getNavTickHeight()})`);
 
   navSvg
     .selectAll(".axis line")
-    .attr("stroke", "#566573")
-    .attr("stroke-width", "3px");
+    .attr("class", "navplot-line");
 
   const lineG = navSvg
     .append("path") // line path group
-    .attr("class", "line__indicate") // Assign a class for styling
-    .attr("fill", "none")
-    .attr("stroke", "rgba(70, 130, 180, 0.5)");
+    .attr("class", "navplot-line") // Assign a class for styling
 
   const gBrush = navSvg
     .append("g") // region brush
     .attr("class", "brush");
 
   function update(
-    updateLogic: (d: IData[], c: ICycleList) => void,
-    data: IData[],
-    cycle: ICycleList,
+    updateLogic: (d: IPosition[], c: ICyData) => void,
+    data: IPosition[],
+    cycle: ICyData,
     move?: [number, number]
   ) {
     const updateView = (range: [number, number]) => {
@@ -68,7 +65,7 @@ export function createGaitNav(ref: RefObject<SVGSVGElement>) {
         if (!event.selection) return;
         var s = event.selection;
         gBrush
-          .selectAll(".handle__custom")
+          .selectAll(".navplot-handle")
           .attr("display", null)
           .attr(
             "transform",
@@ -79,7 +76,7 @@ export function createGaitNav(ref: RefObject<SVGSVGElement>) {
         if (!event.sourceEvent || !event.mode) {
           return;
         } else if (!event.selection) {
-          gBrush.selectAll(".handle__custom").attr("display", "none");
+          gBrush.selectAll(".navplot-handle").attr("display", "none");
           return;
         } else {
           let d0 = event.selection.map(xScaleNav.invert);
@@ -99,7 +96,7 @@ export function createGaitNav(ref: RefObject<SVGSVGElement>) {
       .axisBottom(xScaleNav)
       .tickSize(-layout.getNavTickHeight());
 
-    xAxisG
+    xAxis
       .call(
         xAxisGen
           .ticks(cycle["gait"].step.length, ",.2f")
@@ -107,14 +104,14 @@ export function createGaitNav(ref: RefObject<SVGSVGElement>) {
       )
       .selectAll(".tick text") // region tick style
       .style("text-anchor", "end")
-      .attr("dx", "-.8em")
-      .attr("dy", ".15em")
-      .attr("transform", "rotate(-40)");
+      .attr("dx", "-.1em")
+      .attr("dy", ".5em")
+      .attr("transform", "rotate(-30)");
 
     if (data) {
       yScale.domain(d3.extent(data, (d) => d.y).map((y) => y ?? 0));
       let lineGen = d3
-        .line<IData>()
+        .line<IPosition>()
         .x((d) => xScaleNav(d.x))
         .y((d) => yScale(d.y));
       lineG.datum(data).transition().attr("d", lineGen);
@@ -124,13 +121,11 @@ export function createGaitNav(ref: RefObject<SVGSVGElement>) {
     gBrush.call(brush);
 
     gBrush
-      .selectAll(".handle__custom") // brushHandle
+      .selectAll(".navplot-handle") // brushHandle
       .data([{ type: "w" }, { type: "e" }])
       .enter()
       .append("path")
-      .attr("class", "handle__custom")
-      .attr("stroke", "#000")
-      .attr("stroke-width", "1.5")
+      .attr("class", "navplot-handle")
       .attr("cursor", "ew-resize")
       .attr("d", brushHandlePath)
       .attr("transform", `translate(0, ${-layout.getNavTickHeight()})`);

@@ -1,4 +1,6 @@
-export const col_schema  = {
+import { IData } from "../components/chart";
+
+export const dataInit: IData = {
   "L": {
     "Accel X": { data: [], csvX: "time", csvY: "L Accel Sensor X (mG)" },
     "Accel Y": { data: [], csvX: "time", csvY: "L Accel Sensor Y (mG)" },
@@ -32,3 +34,8 @@ export const col_schema  = {
     "Gyro Z": { data: [], csvX: "time", csvY: "Noraxon MyoMotion-Segments-Scapular RT-Gyroscope-z (deg/s)" },
   }
 }
+
+export const location = Object.keys(dataInit);
+export const sensor = Object.keys(dataInit[location[0]]);
+
+export default dataInit;

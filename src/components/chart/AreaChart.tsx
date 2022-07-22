@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { layout, IData } from "./";
+import { layout, IPosition } from "./";
 
 export function createAreaChart(divSelector: string) {
   var svg = d3
@@ -28,7 +28,7 @@ export function createAreaChart(divSelector: string) {
   return update;
 }
 
-export function update(data: IData[], name: string, first: boolean) {
+export function update(data: IPosition[], name: string, first: boolean) {
   var xScale = d3.scaleLinear().range([0, layout.getWidth()]);
   if (first) {
     xScale.domain(d3.extent(data, (d) => d.x).map((x) => x ?? 0));
@@ -67,7 +67,7 @@ export function update(data: IData[], name: string, first: boolean) {
     .attr(
       "d",
       d3
-        .area<IData>()
+        .area<IPosition>()
         .x((d) => xScale(d.x))
         .y0(yScale(0))
         .y1((d) => yScale(d.y))
@@ -104,7 +104,7 @@ export function update(data: IData[], name: string, first: boolean) {
     .attr("x", 18)
     .attr("y", 18);
 
-  const bisectX = d3.bisector((d: IData) => d.x).center;
+  const bisectX = d3.bisector((d: IPosition) => d.x).center;
   chartSvg
     .append("rect")
     .attr("class", "overlay")

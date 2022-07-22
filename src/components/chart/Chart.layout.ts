@@ -5,7 +5,7 @@ export var layout = {
   lineHeight: 300,
   areaHeight: 100,
   navHeight: 100,
-  margin: { t: 20, r: 50, b: 30, l: 50, },
+  margin: { t: 20, r: 50, b: 30, l: 60, },
   getWidth: function () {
     return this.width - this.margin.l - this.margin.r;
   },

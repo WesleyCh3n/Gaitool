@@ -5,23 +5,17 @@ import {
   useState,
   useImperativeHandle,
 } from "react";
-import type { ChangeEvent, RefObject } from "react";
+import type { ChangeEvent, RefObject, ForwardedRef } from "react";
 import * as d3 from "d3";
 
 import {
-  // Interface
-  IDatasetInfo,
-  ICycleList,
-  IDataSPos,
-  IData,
-  // Create chart
   createLineChart,
   createGaitNav,
   createBoxChart,
-  // Utility
   parseResult,
   parseCycle,
 } from "../components/chart";
+import type { ICsvData, ICyData, IData, IPosition } from "../components/chart";
 
 import {
   cycleMax,
@@ -32,50 +26,62 @@ import {
 import { Selector } from "../components/selector/Selector";
 import { Uploader } from "../components/upload/Uploader";
 import { Table, IRow } from "../components/table/Table";
-import { postRange, saveExport, saveRange } from "../api/exporter";
 import { findIndex } from "../utils/utils";
-import { ResUpload } from "../models/response_models";
-import { col_schema } from "../models/column_schema";
+import dataInit, { location, sensor } from "../models/dataInit";
 
-const position = ["L", "T", "Scapular LT", "Scapular RT"];
-const content = {
-  "Accel X": { data: [], csvX: "time", csvY: "A_X" },
-  "Accel Y": { data: [], csvX: "time", csvY: "A_Y" },
-  "Accel Z": { data: [], csvX: "time", csvY: "A_Z" },
-  "Gyro X": { data: [], csvX: "time", csvY: "Gyro_X" },
-  "Gyro Y": { data: [], csvX: "time", csvY: "Gyro_Y" },
-  "Gyro Z": { data: [], csvX: "time", csvY: "Gyro_Z" },
-};
+import { invoke } from "@tauri-apps/api/tauri";
+import {
+  copyFile,
+  readTextFile,
+  removeDir,
+  removeFile,
+} from "@tauri-apps/api/fs";
+import {
+  join,
+  appDir,
+  homeDir,
+  basename,
+} from "@tauri-apps/api/path";
+import { save, message } from "@tauri-apps/api/dialog";
+import { Button, ButtonOutline } from "../components/button/Button";
+import { useStore } from "../store";
+
 const refKey = ["line", "bmax", "bmin", "lnav", "bclt", "bcrt", "bcdb", "bcgt"];
+
+const AppDir = appDir();
+const DataDir = "data";
+const FilterDir = "filter";
+const ExportDir = "export";
+const SwriteDir = "swrite";
 
 export interface ChartProps {}
 
 const Chart = forwardRef((_props: ChartProps, ref) => {
-  const dataSInit: IDataSPos = {};
-  position.forEach((p) => {
-    dataSInit[p] = JSON.parse(JSON.stringify((col_schema as any)[p])); // HACK: deep copy
-  });
-
+  const cfgPath = useStore((state) => state.cfgPath);
   const refs: { [k: string]: RefObject<SVGSVGElement> } = {};
   refKey.forEach((k) => {
     refs[k] = useRef<SVGSVGElement>(null);
   });
-  const [dataS, setDataS] = useState<IDataSPos>(dataSInit);
-  const [cyS, setCyS] = useState<ICycleList>({
+  const [updators] = useState<{ [key: string]: Function }>({
+    _: new Function(),
+  });
+
+  const [dataS, setDataS] = useState<IData>(
+    JSON.parse(JSON.stringify(dataInit))
+  );
+  const [cyS, setCyS] = useState<ICyData>({
     gait: { step: [[]], sel: [0, 0] },
     lt: { step: [[]], sel: [0, 0] },
     rt: { step: [[]], sel: [0, 0] },
     db: { step: [[]], sel: [0, 0] },
   });
-  const [resUpld, setResUpld] = useState<ResUpload>();
-  const [updators] = useState<{ [key: string]: Function }>({
-    _: new Function(),
-  });
 
-  const [selPos, setSelPos] = useState<string>(position[0]);
-  const [selOpt, setSelOpt] = useState<string>(Object.keys(content)[0]);
+  const [selPos, setSelPos] = useState<string>(location[0]);
+  const [selOpt, setSelOpt] = useState<string>(sensor[0]);
   const [selDisable, setSelDisable] = useState<boolean>(true);
   const [trContent, setTrContent] = useState<IRow[]>([]);
+  const [inputFile, setInputFile] = useState<string>("");
+  const [saveLoading, setSaveLoading] = useState(false);
 
   useEffect(() => {
     // setup chart manually when component mount
@@ -88,63 +94,119 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
     updators.bcdb = createBoxChart(refs.bcdb);
     updators.lnav = createGaitNav(refs.lnav);
 
-    // DEBUG:
-    if (0) {
-      const csvs = [
-        "./result.csv",
-        "./cygt.csv",
-        "./cylt.csv",
-        "./cyrt.csv",
-        "./cydb.csv",
-      ];
-      Promise.all(csvs.map((file) => d3.csv(file))).then(
-        ([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
-          setDataS(parseResult(csvResult, dataS));
-          cyS.gait = parseCycle(csvGaitCycle);
-          cyS.lt = parseCycle(csvLtCycle);
-          cyS.rt = parseCycle(csvRtCycle);
-          cyS.db = parseCycle(csvDbCycle);
-          updateApp(dataS[selPos][selOpt], cyS);
-          trInit([
-            { Start: 3.99, End: 8.545 },
-            { Start: 10.21, End: 14.645 },
-            { Start: 20.905, End: 25.29 },
-            { Start: 28.525, End: 32.825 },
-          ]);
-          setSelDisable(false);
-        }
-      );
-    }
+    (async () => {
+      await removeDir(await join(await AppDir, DataDir), {
+        recursive: true,
+      }).catch((e) => e);
+    })();
   }, []);
 
   /* Create chart when upload api response FilterdData*/
-  async function initChart(res: ResUpload) {
-    setResUpld(res);
-    return Promise.all(
-      [
-        `${res.serverRoot}/${res.saveDir}/${res.python.FltrFile.rslt}`,
-        `${res.serverRoot}/${res.saveDir}/${res.python.FltrFile.cyGt}`,
-        `${res.serverRoot}/${res.saveDir}/${res.python.FltrFile.cyLt}`,
-        `${res.serverRoot}/${res.saveDir}/${res.python.FltrFile.cyRt}`,
-        `${res.serverRoot}/${res.saveDir}/${res.python.FltrFile.cyDb}`,
-      ].map((file) => d3.csv(file))
-    ).then(([csvResult, csvGaitCycle, csvLtCycle, csvRtCycle, csvDbCycle]) => {
-      setDataS(parseResult(csvResult, dataS));
-      cyS.gait = parseCycle(csvGaitCycle);
-      cyS.lt = parseCycle(csvLtCycle);
-      cyS.rt = parseCycle(csvRtCycle);
-      cyS.db = parseCycle(csvDbCycle);
+  async function initChart(file: string) {
+    var saveDir = await join(await AppDir, DataDir, FilterDir);
+    var remapCsv = cfgPath.remapCsv;
+    var filterCsv = cfgPath.filterCsv;
+
+    const result = (await invoke("filter_csv", {
+      file,
+      saveDir,
+      remapCsv,
+      filterCsv,
+    })) as any;
+
+    const result_path = await join(saveDir, result["FltrFile"]["rslt"]);
+    const gt_path = await join(saveDir, result["FltrFile"]["cyGt"]);
+    const lt_path = await join(saveDir, result["FltrFile"]["cyLt"]);
+    const rt_path = await join(saveDir, result["FltrFile"]["cyRt"]);
+    const db_path = await join(saveDir, result["FltrFile"]["cyDb"]);
+
+    return Promise.all([
+      readTextFile(result_path),
+      readTextFile(gt_path),
+      readTextFile(lt_path),
+      readTextFile(rt_path),
+      readTextFile(db_path),
+    ]).then(([resultRawStr, gtRawStr, ltRawStr, rtRawStr, dbRawStr]) => {
+      setDataS(parseResult(d3.csvParse(resultRawStr), dataS));
+      cyS.gait = parseCycle(d3.csvParse(gtRawStr));
+      cyS.lt = parseCycle(d3.csvParse(ltRawStr));
+      cyS.rt = parseCycle(d3.csvParse(rtRawStr));
+      cyS.db = parseCycle(d3.csvParse(dbRawStr));
       updateApp(dataS[selPos][selOpt], cyS, [
         0,
         cyS["gait"]["step"].length - 1,
       ]);
-      trInit(res["python"]["Range"]);
+      trInit(result["Range"]);
       setSelDisable(false);
     });
   }
 
+  /* Export result */
+  const exportResult = async () => {
+    let ranges = trContent.map((row) => {
+      return [row.range[0], row.range[1]];
+    });
+    if (ranges.length == 0 || !inputFile) return;
+
+    const saveDir = await join(await AppDir, DataDir, ExportDir);
+    const file = await join(
+      await AppDir,
+      DataDir,
+      FilterDir,
+      await basename(inputFile)
+    );
+    const result = (await invoke("export_csv", {
+      file,
+      saveDir,
+      ranges,
+    }).catch(message)) as any; // TODO: ???
+    const tmp = await join(saveDir, result["ExportFile"]);
+    const output = await join(await homeDir(), result["ExportFile"]);
+    save({ title: "Save Export File", defaultPath: output }).then(
+      async (path) => {
+        if (Array.isArray(path) || !path) {
+          return;
+        }
+        await copyFile(tmp, path);
+        await removeFile(tmp);
+        await message("Done!");
+      }
+    );
+  };
+
+  const saveSelection = async () => {
+    setSaveLoading(true);
+    let rangesValue = trContent
+      .map((row) => {
+        return row.range.map((i) => cyS.gait.step[i][0]).join("-");
+      })
+      .join(" ");
+    if (!inputFile) return;
+    const saveDir = await join(await AppDir, DataDir, SwriteDir);
+    var remapCsv = cfgPath.remapCsv;
+    const file = inputFile;
+    const result = (await invoke("swrite_csv", {
+      file,
+      saveDir,
+      rangesValue,
+      remapCsv,
+    }).catch(message)) as any;
+    const tmp = await join(saveDir, result["CleanFile"]);
+    const output = await join(await homeDir(), result["CleanFile"]);
+    save({ title: "Save Swrite File", defaultPath: output }).then(
+      async (path) => {
+        if (Array.isArray(path) || !path) {
+          return;
+        }
+        await copyFile(tmp, path);
+        await removeFile(tmp);
+      }
+    );
+    setSaveLoading(false);
+  };
+
   /* Update all chart logic */
-  const updateLogic = (d: IData[], c: ICycleList) => {
+  const updateLogic = (d: IPosition[], c: ICyData) => {
     // preprocess/filter data
     let lineD = selLineRange(d, c.gait);
     let lineRange = d3.extent(lineD, (d) => d.x).map((x) => x ?? 0);
@@ -161,8 +223,8 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
 
   /* Update App include navigator */
   const updateApp = (
-    schema: IDatasetInfo,
-    c: ICycleList,
+    schema: ICsvData,
+    c: ICyData,
     sel_range?: [number, number]
   ) => {
     updateLogic(schema.data, c);
@@ -180,7 +242,8 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
     setSelPos(e.target.value);
   };
 
-  const trInit = (ranges: any) => {
+  const trInit = (ranges: any[]) => {
+    // TODO: ranges strange type OAO
     let trRows: IRow[] = [];
     for (let range of ranges) {
       let cycle = {
@@ -189,7 +252,7 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
         rt: [0, 0] as [number, number],
         db: [0, 0] as [number, number],
       };
-      let selValue = Object.values(range) as number[];
+      let selValue = (Object.values(range) as number[]).sort((a, b) => a - b);
       ["gait", "lt", "rt", "db"].forEach((k) => {
         (cycle as any)[k] = selValue.map((x) =>
           findIndex(
@@ -257,25 +320,6 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
     updators.lnav(updateLogic, dataS[selPos][selOpt].data, cyS, range);
   };
 
-  /* Export result */
-  const exportResult = async () => {
-    let ranges = trContent.map((row) => {
-      return { Start: row.range[0], End: row.range[1] };
-    });
-    if (ranges.length == 0 || !resUpld) return;
-    await saveExport(resUpld, ranges);
-  };
-
-  const saveSelection = async () => {
-    let ranges_value = trContent
-      .map((row) => {
-        return row.range.map((i) => cyS.gait.step[i][0]).join("-");
-      })
-      .join(" ");
-    if (!resUpld) return;
-    await saveRange(resUpld.uploadFile, ranges_value);
-  };
-
   /**
    * HACK: pass function upward to parent
    */
@@ -287,75 +331,70 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
       let ranges = trContent.map((row) => {
         return { Start: row.range[0], End: row.range[1] };
       });
-      if (ranges.length == 0 || !resUpld) return;
-      let res = await postRange(resUpld.python.FltrFile, ranges);
+      if (ranges.length == 0 || !inputFile) return;
+      // let res = await postRange(resUpld.python.FltrFile, ranges);
+      var res;
       return res;
     },
   }));
 
   return (
-    <div className="normalBox w-full">
-      <div className="flex justify-center m-2">
-        <Uploader handleFile={initChart} />
+    <div>
+      <div className="flex justify-center">
+        <Uploader
+          file={inputFile}
+          setFile={setInputFile}
+          handleFile={initChart}
+        />
       </div>
 
-      <div
-        className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6
-        gap-1 space-y-1 m-2"
-      >
-        {[
-          { title: "Max", ref: refs.bmax },
-          { title: "Min", ref: refs.bmin },
-          { title: "GAIT", ref: refs.bcgt },
-          { title: "LT support", ref: refs.bclt },
-          { title: "RT support", ref: refs.bcrt },
-          { title: "DB support", ref: refs.bcdb },
-        ].map((d) => (
-          <div className="col-span-1 lg:col-span-1 normalBox" key={d.title}>
-            <h1>{d.title}</h1>
-            <svg ref={d.ref}></svg>
-          </div>
-        ))}
-        <div className="normalBox col-span-2 md:col-span-3 lg:col-span-6">
-          <h1>Accelration</h1>
+      <div className="grid grid-cols-6 gap-1 m-2">
+        <Plot title="Max" ref={refs.bmax} />
+        <Plot title="Min" ref={refs.bmin} />
+        <Plot title="Gait" ref={refs.bcgt} />
+        <Plot title="LT Sup" ref={refs.bclt} />
+        <Plot title="RT Sup" ref={refs.bcrt} />
+        <Plot title="DB Sup" ref={refs.bcdb} />
+        <div className="chart-box col-span-6">
           <svg ref={refs.line}></svg>
-          <svg className="mt-4" ref={refs.lnav}></svg>
+          <svg ref={refs.lnav}></svg>
         </div>
+      </div>
 
-        <div className="col-span-2 flex justify-center md:col-span-3 lg:col-span-2">
+      <div className="grid grid-cols-6 gap-1 m-2">
+        <div className="col-span-2">
           <Selector
-            options={position}
+            options={location}
             selectedOption={selPos}
             onChange={selPosChange}
             disable={selDisable}
           />
         </div>
-        <div className="col-span-2 flex justify-center md:col-span-3 lg:col-span-2">
+        <div className="col-span-2">
           <Selector
-            options={Object.keys(content)}
+            options={sensor}
             selectedOption={selOpt}
             onChange={selOptChange}
             disable={selDisable}
           />
         </div>
-        <div className="col-span-2 md:col-span-3 lg:col-span-1">
-          <button
-            className={`btn-outline w-full ${selDisable ? "btn-disabled" : ""}`}
-            onClick={addTrNode}
-          >
-            Select
-          </button>
-        </div>
-        <div className="col-span-2 md:col-span-3 lg:col-span-1">
-          <button
-            className={`btn-outline w-full ${selDisable ? "btn-disabled" : ""}`}
-            onClick={() => exportResult()}
-          >
-            Export
-          </button>
-        </div>
-
-        <div className="col-span-2 overflow-x-auto no-scrollbar md:col-span-3 lg:col-span-6">
+        <ButtonOutline
+          className="col-span-1 w-full"
+          onClick={addTrNode}
+          content={"Select"}
+          disabled={selDisable}
+        />
+        <ButtonOutline
+          className="col-span-1 w-full"
+          onClick={saveSelection}
+          content={"Save"}
+          disabled={selDisable}
+          isLoading={saveLoading}
+        />
+        <div
+          className="col-span-6 h-[18vh] shadow-lg rounded-xl mt-1
+          overflow-y-scroll overscroll-none custom-scrollbar"
+        >
           <Table
             content={trContent}
             removeNode={removeTrNode}
@@ -363,31 +402,25 @@ const Chart = forwardRef((_props: ChartProps, ref) => {
             updateView={showSel}
           />
         </div>
-        <div className="flex justify-end col-span-2 md:col-span-3 lg:col-span-6">
-          <a
-            // href="#save-modal"
-            className={`btn btn-sm w-full lg:w-fit ${
-              selDisable ? "btn-disabled" : ""
-            }`}
-            onClick={() => saveSelection()}
-          >
-            Save
-          </a>
-        </div>
-      </div>
-
-      <div id="save-modal" className="modal">
-        <div className="modal-box">
-          <p>Selection Saved</p>
-          <div className="modal-action">
-            <a href="#" className="btn btn-sm">
-              OK
-            </a>
-          </div>
-        </div>
+        <Button
+          className="col-start-3 col-span-2 mt-2"
+          onClick={exportResult}
+          content={"Export"}
+        />
       </div>
     </div>
   );
 });
+
+const Plot = forwardRef(
+  (props: { title: string }, ref: ForwardedRef<SVGSVGElement>) => {
+    return (
+      <div className="chart-box" key={props.title}>
+        <p className="text-center text-sm dark:text-gray-400">{props.title}</p>
+        <svg ref={ref}></svg>
+      </div>
+    );
+  }
+);
 
 export default Chart;

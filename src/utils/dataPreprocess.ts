@@ -1,4 +1,4 @@
-import { IData, ICycle } from "../components/chart";
+import { IPosition, ICycle } from "../components/chart";
 
 export const cycleDuration = (cycle: ICycle): number[] => {
   const dataFiltered: number[] = [];
@@ -9,7 +9,7 @@ export const cycleDuration = (cycle: ICycle): number[] => {
   return dataFiltered;
 };
 
-export const cycleMin = (d: IData[], cycle: ICycle): number[] => {
+export const cycleMin = (d: IPosition[], cycle: ICycle): number[] => {
   const dataFiltered: number[] = [];
   for (let i = cycle.sel[0]; i < cycle.sel[1]; i++) {
     let cycleDataY = d
@@ -20,7 +20,7 @@ export const cycleMin = (d: IData[], cycle: ICycle): number[] => {
   return dataFiltered;
 };
 
-export const cycleMax = (d: IData[], cycle: ICycle): number[] => {
+export const cycleMax = (d: IPosition[], cycle: ICycle): number[] => {
   const dataFiltered: number[] = [];
   for (let i = cycle.sel[0]; i < cycle.sel[1]; i++) {
     let cycleDataY = d
@@ -32,7 +32,7 @@ export const cycleMax = (d: IData[], cycle: ICycle): number[] => {
   return dataFiltered;
 };
 
-export const selLineRange = (d: IData[], cycle: ICycle): IData[] => {
+export const selLineRange = (d: IPosition[], cycle: ICycle): IPosition[] => {
   let boundary = cycle.sel.map((s) => cycle.step[s][0]);
   let dataFiltered = d.filter((d) => d.x >= boundary[0] && d.x <= boundary[1]);
   return dataFiltered;
