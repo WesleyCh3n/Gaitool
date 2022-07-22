@@ -3,13 +3,13 @@
     windows_subsystem = "windows"
 )]
 
-use tauri::Manager;
+use serde_json::value::Value;
 use std::path::PathBuf;
+use tauri::Manager;
 
 use analyze::core::{
     export::exporter, filter::filter, split::split, swrite::swrite,
 };
-use serde_json::value::Value;
 
 #[tauri::command(async)]
 fn filter_csv(
@@ -56,16 +56,23 @@ async fn split_csv(
     percent: usize,
     remap_csv: PathBuf,
 ) -> Result<(), String> {
-    match split(
-        &file,
-        &save_dir,
-        percent,
-        &remap_csv,
-        None,
-    ) {
+    match split(&file, &save_dir, percent, &remap_csv, None) {
         Ok(()) => Ok(()),
         Err(e) => Err(format!("{}", e)),
     }
+}
+
+#[tauri::command]
+async fn hash_file(dir: PathBuf) -> Result<(), String> {
+    if let Ok(paths) = std::fs::read_dir(dir) {
+        for path in paths {
+            println!("{:#?}", path.unwrap());
+        }
+    } else {
+        return Err("Failed to read dir".to_string());
+    };
+
+    Ok(())
 }
 
 #[tauri::command]
@@ -76,7 +83,12 @@ async fn show_main_window(window: tauri::Window) {
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
-            filter_csv, export_csv, swrite_csv, split_csv, show_main_window
+            filter_csv,
+            export_csv,
+            swrite_csv,
+            split_csv,
+            hash_file,
+            show_main_window
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
