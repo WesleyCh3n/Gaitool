@@ -15,6 +15,7 @@ function Split() {
     { msg: string; key: string; success: boolean }[]
   >([]);
   const [isSpliting, setIsSplitting] = useState(false);
+  const [isGenMD5, setIsGenMD5] = useState(false);
 
   const openDialog = (setDir: (dir: string) => void) => {
     open({
@@ -134,10 +135,13 @@ function Split() {
         />
         <Button
           className="my-1"
-          onClick={() => {
-            invoke("hash_file", {dir: fileDir, saveDir: saveDir})
+          onClick={async () => {
+            setIsGenMD5(() => true);
+            await invoke("hash_file", {dir: fileDir, saveDir: saveDir});
+            setIsGenMD5(() => false);
           }}
           content={"Create MD5"}
+          isLoading={isGenMD5}
         />
       </div>
     </div>
