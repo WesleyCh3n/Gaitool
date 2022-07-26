@@ -62,11 +62,35 @@ async fn split_csv(
     }
 }
 
+use base64ct::{Base64, Encoding};
+use md5::{Digest, Md5};
+use std::fs::{self, File};
+use std::io::LineWriter;
+use std::io::{self, prelude::*};
+
 #[tauri::command]
-async fn hash_file(dir: PathBuf) -> Result<(), String> {
+async fn hash_file(dir: PathBuf, save_dir: PathBuf) -> Result<(), String> {
     if let Ok(paths) = std::fs::read_dir(dir) {
+        let saved_path = save_dir.join("index.csv");
+        let index_file = File::create(saved_path).unwrap();
+        let mut index_file = LineWriter::new(index_file);
         for path in paths {
-            println!("{:#?}", path.unwrap());
+            let path = path.unwrap().path();
+            if path.ends_with("index.csv") {
+                continue;
+            }
+
+            let mut file = fs::File::open(&path).unwrap();
+            let mut hasher = Md5::new();
+            io::copy(&mut file, &mut hasher).unwrap();
+            let hash = hasher.finalize();
+
+            let line = format!(
+                "{}, {}\n",
+                &path.file_name().unwrap().to_str().unwrap(),
+                Base64::encode_string(&hash)
+            );
+            index_file.write_all(line.as_bytes()).unwrap();
         }
     } else {
         return Err("Failed to read dir".to_string());

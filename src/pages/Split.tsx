@@ -87,38 +87,59 @@ function Split() {
   };
 
   return (
-    <div className="h-screen w-screen flex flex-col p-2 dark:bg-gray-800">
-      <ButtonOutline
-        className="my-1"
-        onClick={() => openDialog(setFileDir)}
-        content={fileDir ? fileDir : "Open Csv Directory"}
-      />
-      <ButtonOutline
-        className="my-1"
-        onClick={() => openDialog(setSaveDir)}
-        content={saveDir ? saveDir : "Open Save Directory"}
-      />
-      <div className="flex">
-        <input
-          type="range"
-          min="0"
-          max="100"
-          defaultValue="70"
-          step="5"
-          onChange={(e) => setPercent(+e.target.value)}
-          className="my-4 min-w-[80vw] h-2 bg-gray-200 rounded-lg appearance-none
-          cursor-pointer dark:bg-gray-700"
+    <div className="h-screen w-screen flex flex-row p-2 dark:bg-gray-800">
+      <div className="flex flex-col w-1/2 m-2">
+        <ButtonOutline
+          className="my-1"
+          onClick={() => openDialog(setFileDir)}
+          content={fileDir ? fileDir : "Open Csv Directory"}
         />
-        <p className="flex w-full justify-center items-center">{percent}</p>
+        <ButtonOutline
+          className="my-1"
+          onClick={() => openDialog(setSaveDir)}
+          content={saveDir ? saveDir : "Open Save Directory"}
+        />
+        <div className="flex">
+          <input
+            type="range"
+            min="0"
+            max="100"
+            defaultValue="70"
+            step="5"
+            onChange={(e) => setPercent(+e.target.value)}
+            className="my-4 min-w-[40vw] h-2 bg-gray-200 rounded-lg appearance-none
+          cursor-pointer dark:bg-gray-700"
+          />
+          <p className="flex w-full justify-center items-center">{percent}</p>
+        </div>
+        <Button
+          className="my-1"
+          onClick={splitCsv}
+          content={"Split"}
+          isLoading={isSpliting}
+          disabled={isSpliting}
+        />
+        <Log messages={msg} />
       </div>
-      <Button
-        className="my-1"
-        onClick={splitCsv}
-        content={"Split"}
-        isLoading={isSpliting}
-        disabled={isSpliting}
-      />
-      <Log messages={msg} />
+      <div className="flex flex-col w-1/2 m-2">
+        <ButtonOutline
+          className="my-1"
+          onClick={() => openDialog(setFileDir)}
+          content={fileDir ? fileDir : "Open Csv Directory"}
+        />
+        <ButtonOutline
+          className="my-1"
+          onClick={() => openDialog(setSaveDir)}
+          content={saveDir ? saveDir : "Open Save Directory"}
+        />
+        <Button
+          className="my-1"
+          onClick={() => {
+            invoke("hash_file", {dir: fileDir, saveDir: saveDir})
+          }}
+          content={"Create MD5"}
+        />
+      </div>
     </div>
   );
 }
