@@ -29,8 +29,8 @@ export function SideBar() {
       />
       <SideBarIcon
         icon={<AiOutlineCheck size="28" />}
-        text="tooltip"
-        link="/tooltip"
+        text="check"
+        link="/check"
       />
       <ThemeIcon />
       <SideBarIcon

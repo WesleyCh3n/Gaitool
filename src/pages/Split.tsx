@@ -100,7 +100,7 @@ function Split() {
           onClick={() => openDialog(setSaveDir)}
           content={saveDir ? saveDir : "Open Save Directory"}
         />
-        <div className="flex">
+        <div className="flex w-full">
           <input
             type="range"
             min="0"
@@ -108,10 +108,10 @@ function Split() {
             defaultValue="70"
             step="5"
             onChange={(e) => setPercent(+e.target.value)}
-            className="my-4 min-w-[40vw] h-2 bg-gray-200 rounded-lg appearance-none
+            className="my-4 w-[80%] h-2 bg-gray-200 rounded-lg appearance-none
           cursor-pointer dark:bg-gray-700"
           />
-          <p className="flex w-full justify-center items-center">{percent}</p>
+          <p className="flex w-[20%] justify-center items-center">{percent}</p>
         </div>
         <Button
           className="my-1"

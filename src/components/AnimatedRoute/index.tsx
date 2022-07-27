@@ -3,6 +3,7 @@ import DualChart from "../../pages/DualChart";
 import Home from "../../pages/Home";
 import Split from "../../pages/Split";
 import Setting from "../../pages/Setting";
+import Check from "../../pages/Check";
 import { useEffect } from "react";
 import { useStore } from "../../store";
 
@@ -18,6 +19,7 @@ const AnimatedRoute = () => {
       <Route path="/chart" element={<DualChart />} />
       <Route path="/split" element={<Split />} />
       <Route path="/setting" element={<Setting />} />
+      <Route path="/check" element={<Check />} />
     </Routes>
   )
 }
