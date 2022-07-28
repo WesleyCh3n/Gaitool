@@ -1,6 +1,6 @@
 #![cfg_attr(
     all(not(debug_assertions), target_os = "windows"),
-    windows_subsystem = "&wind&ows"
+    windows_subsystem = "windows"
 )]
 
 use serde_json::value::Value;

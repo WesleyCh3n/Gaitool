@@ -89,8 +89,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tagName: ${{ github.sha }}
+        tagName: app-v__VERSION__
         releaseName: "Development App"
-        releaseBody: "See the assets to download this version and install."
+        releaseBody: ""
         releaseDraft: true
         prerelease: true
