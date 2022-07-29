@@ -1,9 +1,11 @@
 import { invoke } from "@tauri-apps/api/tauri";
+import { useState } from "react";
 import { ButtonOutline } from "../components/button/Button";
 import { useStore } from "../store";
 
 const Check = () => {
   const cfgPath = useStore((state) => state.cfgPath);
+  const [diffText, setDiffText] = useState<string[]>([]);
   return (
     <div className="h-screen w-screen flex justify-center items-center dark:bg-gray-800">
       <ButtonOutline
@@ -15,7 +17,6 @@ const Check = () => {
         }}
         content={"DIFF"}
       />
-      <div className="dark:text-gray-200">Hello World</div>
     </div>
   );
 };
