@@ -15,7 +15,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
     - uses: actions/checkout@v2
-    - name: clone analyse rs
+    - name: clone analyze rs
       run: |
         git clone -b tauri https://github.com/WesleyCh3n/analyze-rs ../analyze-rs
     - name: setup node
@@ -89,8 +89,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tagName: app-v__VERSION__
-        releaseName: "Development App"
+        tagName: analyze-v__VERSION__
+        releaseName: __VERSION__
         releaseBody: ""
-        releaseDraft: true
+        releaseDraft: false
         prerelease: true
