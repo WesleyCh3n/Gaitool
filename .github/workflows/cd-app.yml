@@ -1,9 +1,9 @@
-name: "App build CI"
+name: "App build CD"
 on:
   workflow_dispatch:
   push:
-    branches:
-      - "main"
+    tags:
+      - "v*"
 
 jobs:
   publish-tauri:
@@ -67,9 +67,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: target
-        # Add date to the cache to keep it up to date
         key: ${{ matrix.os }}-stable-cargo-core-${{ hashFiles('core/**/Cargo.toml') }}-${{ env.CURRENT_DATE }}
-        # Restore from outdated cache for speed
         restore-keys: |
           ${{ matrix.os }}-stable-cargo-core-${{ hashFiles('core/**/Cargo.toml') }}
           ${{ matrix.os }}-stable-cargo-core-
@@ -77,9 +75,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: tooling/cli.rs/target
-        # Add date to the cache to keep it up to date
         key: ${{ matrix.os }}-stable-cargo-cli-${{ hashFiles('tooling/cli.rs/Cargo.lock') }}-${{ env.CURRENT_DATE }}
-        # Restore from outdated cache for speed
         restore-keys: |
           ${{ matrix.os }}-stable-cargo-cli-${{ hashFiles('tooling/cli.rs/Cargo.lock') }}
           ${{ matrix.os }}-stable-cargo-cli-
@@ -103,3 +99,28 @@ jobs:
         path: |
           src-tauri/target/release/bundle/${{ matrix.format}}/*.${{ matrix.format }}
         retention-days: 5
+
+  pre-release:
+    needs: build
+    name: "Tag Release"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - id: get_repository_name
+        run: echo ::set-output name=REPO_NAME::${{ github.event.repository.name }}
+        shell: bash
+      - uses: actions/download-artifact@master
+        with:
+          name: macos-latest-build
+      - name: list
+        run: |
+          ls
+      # - uses: marvinpinto/action-automatic-releases@latest
+      #   with:
+      #     repo_token: ${{ secrets.GITHUB_TOKEN }}
+      #     prerelease: false
+      #     files: |
+      #       ${{ steps.get_repository_name.outputs.REPO_NAME }}-x86_64-apple-darwin.tar.gz
+      #       ${{ steps.get_repository_name.outputs.REPO_NAME }}-x86_64-unknown-linux-gnu.tar.gz
+      #       ${{ steps.get_repository_name.outputs.REPO_NAME }}-x86_64-pc-windows-msvc.zip
+      #

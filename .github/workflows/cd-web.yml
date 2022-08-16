@@ -1,5 +1,5 @@
 ---
-name: "Continuous Deployment"
+name: "Web CD"
 
 on:
   workflow_dispatch:
