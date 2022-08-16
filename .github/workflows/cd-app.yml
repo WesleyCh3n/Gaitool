@@ -112,15 +112,18 @@ jobs:
       - uses: actions/download-artifact@master
         with:
           name: macos-latest-build
-      - name: list
-        run: |
-          ls
-      # - uses: marvinpinto/action-automatic-releases@latest
-      #   with:
-      #     repo_token: ${{ secrets.GITHUB_TOKEN }}
-      #     prerelease: false
-      #     files: |
-      #       ${{ steps.get_repository_name.outputs.REPO_NAME }}-x86_64-apple-darwin.tar.gz
-      #       ${{ steps.get_repository_name.outputs.REPO_NAME }}-x86_64-unknown-linux-gnu.tar.gz
-      #       ${{ steps.get_repository_name.outputs.REPO_NAME }}-x86_64-pc-windows-msvc.zip
-      #
+      - uses: actions/download-artifact@master
+        with:
+          name: ubuntu-latest-build
+      - uses: actions/download-artifact@master
+        with:
+          name: windows-latest-build
+      - uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: false
+          files: |
+            *.dmg
+            *.deb
+            *.msi
+
