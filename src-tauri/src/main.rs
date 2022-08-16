@@ -55,9 +55,9 @@ async fn split_csv(
     file: PathBuf,
     save_dir: PathBuf,
     percent: usize,
-    remap_csv: PathBuf,
+    remap_csv_dir: PathBuf,
 ) -> Result<(), String> {
-    match split(&file, &save_dir, percent, &remap_csv, None) {
+    match split(&file, &save_dir, percent, &remap_csv_dir, None) {
         Ok(()) => Ok(()),
         Err(e) => Err(format!("{}", e)),
     }

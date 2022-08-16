@@ -1,4 +1,5 @@
 import { open, message } from "@tauri-apps/api/dialog";
+import { join, resourceDir } from "@tauri-apps/api/path";
 import { readDir } from "@tauri-apps/api/fs";
 import { invoke } from "@tauri-apps/api/tauri";
 import { useState, useRef, useEffect } from "react";
@@ -50,11 +51,14 @@ function Split() {
         success: true,
       },
     ]);
-    var remapCsv = cfgPath.remapCsv;
+    var remapCsvDir = await join(
+      (await resourceDir()).replace("\\\\?\\", ""),
+      "assets"
+    );
     const entries = await readDir(fileDir);
     for (const entry of entries) {
       let file = entry.path;
-      await invoke("split_csv", { file, saveDir, percent, remapCsv })
+      await invoke("split_csv", { file, saveDir, percent, remapCsvDir })
         .then(() => {
           setMsg((m) => [
             ...m,
@@ -137,7 +141,7 @@ function Split() {
           className="my-1"
           onClick={async () => {
             setIsGenMD5(() => true);
-            await invoke("hash_file", {dir: fileDir, saveDir: saveDir});
+            await invoke("hash_file", { dir: fileDir, saveDir: saveDir });
             setIsGenMD5(() => false);
           }}
           content={"Create MD5"}
