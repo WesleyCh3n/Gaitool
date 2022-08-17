@@ -1,11 +1,11 @@
 [package]
-name = "analyze"
+name = "app"
 version = "0.1.0"
 description = "A Tauri App"
 authors = ["you"]
 license = ""
 repository = ""
-default-run = "analyze"
+default-run = "app"
 edition = "2021"
 rust-version = "1.57"
 
@@ -20,7 +20,8 @@ serde = { version = "1.0", features = ["derive"] }
 tauri = { version = "1.0.0-rc.16", features = ["api-all"] }
 md-5 = "0.10.1"
 base64ct = {version = "1.5.1", features = ["alloc"] }
-analyze-rs = { path = "../../analyze-rs/" }
+polars = { version="0.23.0", features= ["json", "lazy", "csv-file", "lazy_regex"] }
+gaitool-rs = { path = "../../gaitool-rs/" }
 # analyze_rs = { git = "https://github.com/WesleyCh3n/analyze.rs", branch ="tauri"}
 
 [features]

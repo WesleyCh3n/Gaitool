@@ -50,30 +50,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "analyze"
-version = "0.1.0"
-dependencies = [
- "analyze-rs",
- "base64ct",
- "md-5",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
-]
-
-[[package]]
-name = "analyze-rs"
-version = "1.0.0"
-dependencies = [
- "clap",
- "indicatif",
- "polars",
- "serde_json",
- "similar",
-]
-
-[[package]]
 name = "ansi_term"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -89,6 +65,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "08f9b8508dccb7687a1d6c4ce66b2b0ecef467c94667de27d8d7fe1f8d2a9cdc"
 
 [[package]]
+name = "app"
+version = "0.1.0"
+dependencies = [
+ "base64ct",
+ "gaitool-rs",
+ "md-5",
+ "polars",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+]
+
+[[package]]
 name = "arrow2"
 version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -99,12 +89,16 @@ dependencies = [
  "chrono",
  "dyn-clone",
  "either",
+ "fallible-streaming-iterator",
  "foreign_vec",
  "hash_hasher",
+ "indexmap",
+ "json-deserializer",
  "lexical-core",
  "multiversion",
  "num-traits",
  "simdutf8",
+ "streaming-iterator",
  "strength_reduce",
 ]
 
@@ -845,6 +839,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a357d28ed41a50f9c765dbfe56cbc04a64e53e5fc58ba79fbc34c10ef3df831f"
 
 [[package]]
+name = "fallible-streaming-iterator"
+version = "0.1.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7360491ce676a36bf9bb3c56c1aa791658183a54d2744120f27285738d90465a"
+
+[[package]]
 name = "fastrand"
 version = "1.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1043,6 +1043,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c31b6d751ae2c7f11320402d34e41349dd1016f8d5d45e48c4312bc8625af50c"
 dependencies = [
  "byteorder",
+]
+
+[[package]]
+name = "gaitool-rs"
+version = "2.0.0"
+dependencies = [
+ "clap",
+ "indicatif",
+ "polars",
+ "serde_json",
+ "similar",
 ]
 
 [[package]]
@@ -1584,6 +1595,12 @@ checksum = "671a26f820db17c2a2750743f1dd03bafd15b98c9f30c7c2628c024c05d73397"
 dependencies = [
  "wasm-bindgen",
 ]
+
+[[package]]
+name = "json-deserializer"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "47631885425c482fcf2dc4b182fc973c3c5b81a8f43a028055559bd24cccfa6e"
 
 [[package]]
 name = "json-patch"
@@ -2534,6 +2551,7 @@ dependencies = [
  "polars-utils",
  "rayon",
  "regex",
+ "serde_json",
  "simdutf8",
 ]
 
@@ -3246,6 +3264,12 @@ name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
+
+[[package]]
+name = "streaming-iterator"
+version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4817bfdf8f0b576330b83b55bed0ec89204aa7da62c2fa11fad2119f33a70014"
 
 [[package]]
 name = "strength_reduce"

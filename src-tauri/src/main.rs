@@ -3,27 +3,12 @@
     windows_subsystem = "windows"
 )]
 
+mod chart;
 use serde_json::value::Value;
 use std::path::PathBuf;
-use tauri::Manager;
+use tauri::{LogicalSize, Manager, PhysicalSize, Size};
 
-use analyze::core::{
-    diff::diff_column, export::exporter, filter::filter, split::split,
-    swrite::swrite,
-};
-
-#[tauri::command(async)]
-fn filter_csv(
-    file: PathBuf,
-    save_dir: PathBuf,
-    remap_csv: PathBuf,
-    filter_csv: PathBuf,
-) -> Result<Value, String> {
-    match filter(file, save_dir, remap_csv, filter_csv) {
-        Ok(resp) => Ok(Value::from(resp)),
-        Err(e) => Err(format!("{}", e)),
-    }
-}
+use gaitool_rs::core::{diff::diff_column, export::exporter, split::split};
 
 #[tauri::command(async)]
 fn export_csv(
@@ -32,19 +17,6 @@ fn export_csv(
     ranges: Vec<(u32, u32)>,
 ) -> Result<Value, String> {
     match exporter(file, save_dir, ranges) {
-        Ok(resp) => Ok(Value::from(resp)),
-        Err(e) => Err(format!("{}", e)),
-    }
-}
-
-#[tauri::command(async)]
-fn swrite_csv(
-    file: PathBuf,
-    save_dir: PathBuf,
-    ranges_value: String,
-    remap_csv: PathBuf,
-) -> Result<Value, String> {
-    match swrite(file, save_dir, ranges_value, remap_csv) {
         Ok(resp) => Ok(Value::from(resp)),
         Err(e) => Err(format!("{}", e)),
     }
@@ -116,16 +88,35 @@ async fn show_main_window(window: tauri::Window) {
     window.get_window("main").unwrap().show().unwrap(); // replace "main" by the name of your window
 }
 
+#[tauri::command]
+async fn resize_window(window: tauri::Window) {
+    window
+        .set_size(Size::Logical(LogicalSize {
+            width: 100.0,
+            height: 100.0,
+        }))
+        .unwrap();
+    // or
+    window
+        .set_size(Size::Physical(PhysicalSize {
+            width: 100,
+            height: 100,
+        }))
+        .unwrap();
+    // btw don't use .unwrap() here, i'm just lazy.
+}
+
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
-            filter_csv,
+            chart::cmd::filter_csv,
+            chart::cmd::swrite_csv,
             export_csv,
-            swrite_csv,
             split_csv,
             hash_file,
             diff_col,
-            show_main_window
+            show_main_window,
+            resize_window
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
