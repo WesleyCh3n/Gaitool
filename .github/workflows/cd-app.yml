@@ -21,9 +21,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
-    - name: clone analyze rs
+    - name: clone gaitool-rs
       run: |
-        git clone -b tauri https://github.com/WesleyCh3n/analyze-rs ../analyze-rs
+        git clone https://github.com/WesleyCh3n/gaitool-rs ../gaitool-rs
     - name: setup node
       uses: actions/setup-node@v1
       with:
