@@ -6,7 +6,7 @@ on:
       - "main"
 
 jobs:
-  publish-tauri:
+  build:
     strategy:
       fail-fast: false
       matrix:
