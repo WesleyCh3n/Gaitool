@@ -47,9 +47,8 @@ const SideBarIcon = (props: { icon: any; text: string; link: string }) => {
   return (
     <Link
       to={props.link}
-      className={`sidebar-icon group ${
-        props.link == selectedLink ? "bg-gray-500 dark:bg-gray-600" : ""
-      }`}
+      className={`sidebar-icon group ${props.link == selectedLink ? "bg-gray-300 dark:bg-gray-600" : ""
+        }`}
     >
       {props.icon}
       <span className="sidebar-tooltip group-hover:scale-100">

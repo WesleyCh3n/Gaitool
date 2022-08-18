@@ -17,7 +17,7 @@ tauri-build = { version = "1.0.0-rc.14", features = [] }
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.0.0-rc.16", features = ["api-all"] }
+tauri = { version = "1.0.0-rc.16", features = ["api-all", "macos-private-api"] }
 md-5 = "0.10.1"
 base64ct = {version = "1.5.1", features = ["alloc"] }
 polars = { version="0.23.0", features= ["json", "lazy", "csv-file", "lazy_regex"] }
