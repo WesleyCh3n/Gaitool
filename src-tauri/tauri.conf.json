@@ -7,7 +7,7 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "gaitool",
+    "productName": "Gaitool",
     "version": "3.1.0"
   },
   "tauri": {
@@ -61,7 +61,7 @@
         "fullscreen": false,
         "height": 750,
         "resizable": true,
-        "title": "FuAn Analyze",
+        "title": "Gaitool",
         "width": 1300,
         "visible": false
       }

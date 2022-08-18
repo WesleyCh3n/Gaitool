@@ -9,7 +9,7 @@ const Home = () => {
           from-yellow-300 to-pink-600
           hover:from-blue-700 hover:to-green-300"
         >
-          FuAn Analyze
+          GAITOOL
         </h1>
       </div>
     </div>
