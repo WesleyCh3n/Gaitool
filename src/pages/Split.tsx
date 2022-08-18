@@ -92,7 +92,7 @@ function Split() {
   };
 
   return (
-    <div className="h-screen w-screen flex flex-row p-2 dark:bg-gray-800 rounded-r-2xl pt-8">
+    <div className="h-screen w-screen flex flex-row p-2 bg-white dark:bg-gray-800 rounded-r-2xl pt-8">
       <div className="flex flex-col w-1/2 m-2">
         <ButtonOutline
           className="my-1"

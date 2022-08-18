@@ -7,12 +7,12 @@ const Check = () => {
   const cfgPath = useStore((state) => state.cfgPath);
   const [diffText, setDiffText] = useState<string[]>([]);
   return (
-    <div className="h-screen w-screen flex justify-center items-center dark:bg-gray-800">
+    <div className="h-screen w-screen flex justify-center items-center bg-white dark:bg-gray-800 rounded-r-2xl">
       <ButtonOutline
         className="my-1"
         onClick={async () => {
           var remapCsv = cfgPath.remapCsv;
-          let result = await invoke("diff_col", {file: "D:\\data\\2022-03-08-11-55_64-8-2-2-[1]-1.csv", remapCsv: remapCsv});
+          let result = await invoke("diff_col", { file: "D:\\data\\2022-03-08-11-55_64-8-2-2-[1]-1.csv", remapCsv: remapCsv });
           console.log(result);
         }}
         content={"DIFF"}
