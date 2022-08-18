@@ -65,7 +65,7 @@
         "width": 1300,
         "visible": false,
         "decorations": false,
-        "decorations": true
+        "transparent": true
       }
     ],
     "macOSPrivateApi":true

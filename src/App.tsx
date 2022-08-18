@@ -6,37 +6,33 @@ import { join, resourceDir } from "@tauri-apps/api/path";
 
 import SideBar from "./components/SideBar";
 import AnimatedRoute from "./components/AnimatedRoute";
+import { VscCircleFilled } from "react-icons/vsc";
 
 import { useStore } from "./store";
 
 const titleBar = (
   <div
     data-tauri-drag-region
-    className="fixed top-0 right-0 h-8 bg-white select-none"
+    className="fixed h-8 bg-white select-none w-full flex justify-end
+    dark:bg-gray-800 rounded-t-2xl"
   >
     <div
-      className="inline-flex justify-center items-center w-8 h-8 hover:bg-gray-300"
-      onClick={() => appWindow.close()}
-    >
-      <img src="https://api.iconify.design/mdi:close.svg" alt="close" />
-    </div>
-    <div
-      className="inline-flex justify-center items-center w-8 h-8 hover:bg-gray-300"
+      className="inline-flex justify-center items-center w-8 h-8 text-yellow-400 hover:text-yellow-600"
       onClick={() => appWindow.minimize()}
     >
-      <img
-        src="https://api.iconify.design/mdi:window-minimize.svg"
-        alt="minimize"
-      />
+      <VscCircleFilled size={25} />
     </div>
     <div
-      className="inline-flex justify-center items-center w-8 h-8 hover:bg-gray-300"
+      className="inline-flex justify-center items-center w-8 h-8 text-green-400 hover:text-green-600"
       onClick={() => appWindow.toggleMaximize()}
     >
-      <img
-        src="https://api.iconify.design/mdi:window-maximize.svg"
-        alt="maximize"
-      />
+      <VscCircleFilled size={25} />
+    </div>
+    <div
+      className="inline-flex justify-center items-center w-8 h-8 text-red-400 hover:text-red-600"
+      onClick={() => appWindow.close()}
+    >
+      <VscCircleFilled size={25} />
     </div>
   </div>
 );
@@ -61,11 +57,13 @@ function App() {
   return (
     <Router>
       {
-        //titleBar
+        titleBar
       }
       <div className="flex ml-16 overscroll-contain">
         <SideBar />
-        <AnimatedRoute />
+        {
+          <AnimatedRoute />
+        }
       </div>
     </Router>
   );

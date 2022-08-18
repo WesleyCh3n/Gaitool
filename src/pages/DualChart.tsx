@@ -23,20 +23,20 @@ const DualChart = () => {
   };
 
   return (
-    <div className="flex-grow min-h-screen dark:bg-gray-800">
+    <div className="flex-grow min-h-screen dark:bg-gray-800 rounded-r-2xl pt-8">
       <div className="grid grid-cols-2 mx-1 mt-4">
         <Chart ref={chartRef1} />
         <Chart ref={chartRef2} />
       </div>
       {
-      /* <div
-        className="flex flex-row items-end justify-evenly
-        w-full m-0"
-      >
-        <button className="chart-btn" onClick={() => exportAllClick()}>
-          Export All
-        </button>
-      </div> */
+        /* <div
+          className="flex flex-row items-end justify-evenly
+          w-full m-0"
+        >
+          <button className="chart-btn" onClick={() => exportAllClick()}>
+            Export All
+          </button>
+        </div> */
       }
     </div>
   );
