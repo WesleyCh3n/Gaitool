@@ -7,7 +7,7 @@ const Check = () => {
   const cfgPath = useStore((state) => state.cfgPath);
   const [diffText, setDiffText] = useState<string[]>([]);
   return (
-    <div className="h-screen w-screen flex justify-center items-center bg-white dark:bg-gray-800 rounded-r-2xl">
+    <div className="h-screen w-screen flex justify-center items-center page">
       <ButtonOutline
         className="my-1"
         onClick={async () => {

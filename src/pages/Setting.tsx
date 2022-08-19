@@ -8,7 +8,7 @@ const Setting = () => {
   const setCfgPath = useStore((state) => state.setCfgPath);
 
   return (
-    <div className="h-screen w-screen flex flex-col p-4 bg-white dark:bg-gray-800 rounded-r-2xl">
+    <div className="h-screen w-screen flex flex-col p-2 page">
       <div
         className="flex flex-col h-full w-full bg-gray-200 dark:bg-gray-700
         rounded-lg p-4 gap-4 mt-8"

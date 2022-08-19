@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 @layer components {
-  .baseSize {
-    @apply text-sm
+  .page {
+    @apply bg-white dark:bg-gray-800 rounded-r-2xl pt-8
   }
   .sidebar-icon {
     @apply relative flex items-center justify-center
@@ -26,7 +26,6 @@
     transition-all duration-100 scale-0 origin-left;
   }
   .normalBox {
-    /*  */
     @apply rounded-md shadow-lg dark:bg-gray-700;
   }
   .chart-box {

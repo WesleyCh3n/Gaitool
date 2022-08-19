@@ -1,11 +1,10 @@
 import {
   AiOutlineHome,
-  AiOutlineScissor,
   AiOutlineSetting,
-  AiOutlineCheck,
 } from "react-icons/ai";
 import { IoAnalyticsOutline } from "react-icons/io5";
 import { BsMoon, BsSun } from "react-icons/bs";
+import { CgToolbox } from "react-icons/cg";
 import { Link } from "react-router-dom";
 import useDarkMode from "../../hooks/useDarkMode";
 import { useStore } from "../../store";
@@ -14,7 +13,7 @@ export function SideBar() {
   return (
     <div
       className="fixed top-0 left-0 h-full w-16 flex flex-col
-                  bg-white dark:bg-gray-900 shadow-2xl rounded-l-2xl"
+                  bg-white dark:bg-gray-900 shadow-2xl rounded-l-2xl pt-2 pb-2"
     >
       <SideBarIcon icon={<AiOutlineHome size="28" />} text="home" link="/" />
       <SideBarIcon
@@ -22,16 +21,20 @@ export function SideBar() {
         text="chart"
         link="/chart"
       />
-      <SideBarIcon
-        icon={<AiOutlineScissor size="28" />}
-        text="split"
-        link="/split"
-      />
-      <SideBarIcon
-        icon={<AiOutlineCheck size="28" />}
-        text="check"
-        link="/check"
-      />
+      {
+        <SideBarIcon
+          icon={<CgToolbox size="28" />}
+          text="tool"
+          link="/tool"
+        />
+      }
+      {
+        // <SideBarIcon
+        //   icon={<CgToolbox size="28" />}
+        //   text="check"
+        //   link="/check"
+        // />
+      }
       <ThemeIcon />
       <SideBarIcon
         icon={<AiOutlineSetting size="28" />}

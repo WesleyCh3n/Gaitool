@@ -1,7 +1,7 @@
 import { Route, Routes, useLocation } from "react-router-dom";
 import DualChart from "../../pages/DualChart";
 import Home from "../../pages/Home";
-import Split from "../../pages/Split";
+import Tool from "../../pages/Split";
 import Setting from "../../pages/Setting";
 import Check from "../../pages/Check";
 import { useEffect } from "react";
@@ -17,7 +17,7 @@ const AnimatedRoute = () => {
     <Routes location={location} key={location.pathname}>
       <Route path="/" element={<Home />} />
       <Route path="/chart" element={<DualChart />} />
-      <Route path="/split" element={<Split />} />
+      <Route path="/tool" element={<Tool />} />
       <Route path="/setting" element={<Setting />} />
       <Route path="/check" element={<Check />} />
     </Routes>
