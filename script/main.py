@@ -11,6 +11,7 @@ R_SINGLE_SUPPORT = "r_single_support"
 
 df = (
     df.lazy()
+    # replace 1000 to True
     .with_columns(
         [
             pl.when(pl.col(LT_CONTACT) == 1000)
@@ -23,21 +24,23 @@ df = (
             .alias(RT_CONTACT),
         ]
     )
+    # double_support
     .with_column((pl.col(LT_CONTACT) & pl.col(RT_CONTACT)).alias(DOUBLE_SUPPORT))
+    # single_support
     .with_column(pl.col(DOUBLE_SUPPORT).is_not().alias(SINGLE_SUPPORT))
+    # L/R single_support
     .with_columns(
         [
             (pl.col(LT_CONTACT) & pl.col(SINGLE_SUPPORT)).alias(L_SINGLE_SUPPORT),
             (pl.col(RT_CONTACT) & pl.col(SINGLE_SUPPORT)).alias(R_SINGLE_SUPPORT),
         ]
-    )
-    .collect()
+    ).collect()
 )
 
 df = df.to_pandas()
 
-fig, ax = plt.subplots(figsize=(16,3))
+fig, ax = plt.subplots(figsize=(16, 3))
 df[[LT_CONTACT, RT_CONTACT]].astype(int).plot(linewidth=0.2, ax=ax)
-ax.fill_between(df.index, df[LT_CONTACT].astype(int), alpha=0.2) # pyright: ignore
-ax.fill_between(df.index, df[RT_CONTACT].astype(int), alpha=0.2) # pyright: ignore
+ax.fill_between(df.index, df[LT_CONTACT].astype(int), alpha=0.2)  # pyright: ignore
+ax.fill_between(df.index, df[RT_CONTACT].astype(int), alpha=0.2)  # pyright: ignore
 plt.show()
